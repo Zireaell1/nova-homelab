@@ -1,0 +1,13 @@
+---
+authelia_memory_limit: "2g"
+authelia_redis_memory_limit: "2g"
+authelia_postgres_memory_limit: "2g"
+
+# https://hub.docker.com/r/authelia/authelia
+authelia_image: "docker.io/authelia/authelia:4.39.16"
+
+# https://hub.docker.com/_/redis
+authelia_redis_image: "docker.io/library/redis:8.6.2"
+
+# https://hub.docker.com/_/postgres
+authelia_postgres_image: "docker.io/library/postgres:18.3"

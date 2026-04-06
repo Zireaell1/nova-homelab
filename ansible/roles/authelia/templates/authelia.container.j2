@@ -1,0 +1,30 @@
+[Unit]
+Description=Authelia
+
+Wants=network-online.target
+After=network-online.target
+
+Requires=authelia-postgres.service authelia-redis.service
+After=authelia-postgres.service authelia-redis.service
+
+[Container]
+Image={{ authelia_image }}
+ContainerName=authelia
+Timezone={{ timezone }}
+Memory={{ authelia_memory_limit }}
+
+EnvironmentFile={{ stacks_path }}/authelia/authelia.env
+
+Volume={{ stacks_path }}/authelia/config:/config:Z
+Volume={{ stacks_path }}/authelia/secrets:/secrets:ro,z
+
+UserNS=keep-id
+
+Network=authelia.network
+Network=authelia-backend.network
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

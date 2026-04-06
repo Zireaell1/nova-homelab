@@ -1,0 +1,33 @@
+---
+- name: Restart authelia
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: authelia.service
+    state: restarted
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart authelia-postgres
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: authelia-postgres.service
+    state: restarted
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart authelia-redis
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: authelia-redis.service
+    state: restarted
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+  ignore_errors: "{{ ansible_check_mode }}"
