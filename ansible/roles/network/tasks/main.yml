@@ -1,0 +1,64 @@
+---
+- name: Let users set services on ports 53+
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_unprivileged_port_start
+    value: '53'
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+# Default: #allow 192.168.0.0/16
+- name: Allow NTP queries for selected subnet
+  ansible.builtin.lineinfile:
+    path: "/etc/chrony.conf"
+    regexp: '^#?allow\s+'
+    line: "allow {{ network_cctv }}"
+    state: present
+  notify: Restart chronyd
+
+- name: Enable cockpit.socket
+  ansible.builtin.systemd:
+    name: cockpit.socket
+    enabled: yes
+    state: started
+  ignore_errors: "{{ ansible_check_mode }}"
+
+# firewall-cmd --get-services (list of available services)
+- name: Open required ports (HTTP, HTTPS, DNS, NTP, Cockpit)
+  ansible.posix.firewalld:
+    service: "{{ item.service | default(omit) }}"
+    port: "{{ item.port | default(omit) }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop:
+    - { service: "cockpit" } # TODO: remove when caddy will work as a proxy to cockpit
+    - { service: "ntp" }
+    - { service: "dns" }
+    - { service: "http" }
+    - { service: "https" }
+    # TODO: webrtc.
+
+- name: Remove the default connection
+  community.general.nmcli:
+    conn_name: "Wired connection 1"
+    state: absent
+  ignore_errors: true
+
+- name: Configure second isolated network interface
+  community.general.nmcli:
+    conn_name: "{{ secondary_network_interface_name }}"
+    ifname: "{{ secondary_network_interface_name }}"
+    type: ethernet
+    ip4: "{{ secondary_ip }}"
+    method4: manual
+    state: present
+    conn_reload: true
+  register: secondary_network_interface
+
+- name: Apply secondary network interface changes
+  community.general.nmcli:
+    conn_name: "{{ secondary_network_interface_name }}"
+    ifname: "{{ secondary_network_interface_name }}"
+    state: up
+  when: secondary_network_interface.changed
