@@ -1,0 +1,131 @@
+---
+- name: Download Podman images
+  containers.podman.podman_image:
+    name: "{{ pihole_image }}"
+    state: present
+
+- name: Pi-Hole - Check if systemd-resolved stub is already disabled
+  ansible.builtin.stat:
+    path: /etc/systemd/resolved.conf.d/pihole.conf
+  register: pihole_stub_config
+
+- name: Pi-Hole - Create directory for systemd-resolved configs
+  ansible.builtin.file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Pi-Hole - Disable DNSStubListener (free port 53)
+  ansible.builtin.copy:
+    dest: /etc/systemd/resolved.conf.d/pihole.conf
+    content: |
+      [Resolve]
+      DNSStubListener=no
+    mode: '0644'
+  become: yes
+  register: pihole_stub_disabled
+
+# Default: ../run/systemd/resolve/stub-resolv.conf
+- name: Pi-Hole - Update /etc/resolv.conf symlink (bypass stub)
+  ansible.builtin.file:
+    src: /run/systemd/resolve/resolv.conf
+    dest: /etc/resolv.conf
+    state: link
+    force: yes
+  become: yes
+
+- name: Pi-Hole - Restart systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved.service
+    state: restarted
+  become: yes
+  when: pihole_stub_disabled.changed
+
+- name: Pi-Hole - Verify that port 53 is free
+  ansible.builtin.wait_for:
+    port: 53
+    state: stopped
+    host: 127.0.0.1
+    timeout: 10
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: pihole_stub_disabled.changed
+
+- name: Pi-Hole - Verify base directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ stacks_path }}/pihole"
+
+- name: Pi-Hole - Check if data directories exist
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ stacks_path }}/pihole/etc-pihole"
+  register: pihole_dirs_stat
+
+- name: Pi-Hole - Create data directories natively (Initial setup only)
+  ansible.builtin.file:
+    path: "{{ item.item }}"
+    state: directory
+    mode: '0777'
+  loop: "{{ pihole_dirs_stat.results }}"
+  when: not item.stat.exists
+
+- name: Pi-Hole - Generate .env file
+  ansible.builtin.template:
+    src: "pihole.env.j2"
+    dest: "{{ stacks_path }}/pihole/pihole.env"
+    mode: '0600'
+  no_log: true
+  register: pihole_env_tpl
+
+- name: Pi-Hole - Upload Quadlet Pi-Hole
+  ansible.builtin.template:
+    src: "pihole.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/pihole.container"
+    mode: '0644'
+  register: pihole_container_tpl
+
+- name: Pi-Hole - Start and enable Pi-hole service (with daemon-reload if needed)
+  ansible.builtin.systemd:
+    daemon_reload: "{{ pihole_container_tpl.changed }}"
+    name: pihole.service
+    state: "{{ 'restarted' if (pihole_env_tpl.changed or pihole_container_tpl.changed) else 'started' }}"
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Pi-Hole - Wait for Pi-hole to listen on port 53
+  ansible.builtin.wait_for:
+    port: 53
+    host: 127.0.0.1
+    delay: 10
+  become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Pi-Hole - Set host to use local Pi-hole for DNS
+  community.general.nmcli:
+    conn_name: "{{ pihole_main_network_interface_name }}"
+    ifname: "{{ pihole_main_network_interface_name }}"
+    type: ethernet
+    dns4:
+      - "127.0.0.1"
+    dns4_ignore_auto: true
+    state: present
+    conn_reload: true
+  become: yes
+  register: pihole_local_dns_result
+
+- name: Pi-Hole - Apply local DNS connection changes
+  community.general.nmcli:
+    conn_name: "{{ pihole_main_network_interface_name }}"
+    ifname: "{{ pihole_main_network_interface_name }}"
+    state: up
+  become: yes
+  when: pihole_local_dns_result.changed

@@ -1,0 +1,26 @@
+[Unit]
+Description=Pi-Hole
+
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image={{ pihole_image }}
+ContainerName=pihole
+Timezone={{ timezone }}
+Memory={{ pihole_memory_limit }}
+
+EnvironmentFile={{ stacks_path }}/pihole/pihole.env
+
+PublishPort=53:53/tcp
+PublishPort=53:53/udp
+
+PublishPort=8080:80
+
+Volume={{ stacks_path }}/pihole/etc-pihole:/etc/pihole:Z
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

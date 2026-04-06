@@ -1,0 +1,11 @@
+# TODO: not sure if the "all" listeningMode is correct one here
+pihole_dns_listeningMode: "all"
+pihole_dns_revServers: "true,192.168.2.0/24,192.168.2.1;true,192.168.4.0/24,192.168.4.1"
+pihole_session_timeout: 2592000
+
+pihole_memory_limit: "2g"
+
+pihole_main_network_interface_name: "enp129s0"
+
+# https://hub.docker.com/r/pihole/pihole
+pihole_image: "docker.io/pihole/pihole:2026.04.0"
