@@ -1,0 +1,50 @@
+---
+- name: Resize root volume to {{ lv_root_size }} and resize filesystem
+  community.general.lvol:
+    vg: "{{ vg_name }}"
+    lv: "root"
+    size: "{{ lv_root_size }}"
+    resizefs: true
+
+- name: Ensure /home LV exists and has {{ lv_home_size }} size
+  community.general.lvol:
+    vg: "{{ vg_name }}"
+    lv: "home"
+    size: "{{ lv_home_size }}"
+    resizefs: true
+
+- name: Ensure /home is in fstab and mounted
+  ansible.posix.mount:
+    path: /home
+    src: "/dev/{{ vg_name }}/home"
+    fstype: xfs
+    state: mounted
+
+- name: Check if mountpoints exists
+  ansible.builtin.file:
+    path: "{{ item.mountpoint }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  loop: "{{ data_drives }}"
+
+- name: Mount drives and add to fstab
+  ansible.posix.mount:
+    path: "{{ item.mountpoint }}"
+    src: "UUID={{ item.uuid }}"
+    fstype: "{{ item.fstype }}"
+    dump: "0"
+    passno: "{{ item.passno }}"
+    opts: defaults,nofail
+    state: mounted
+  loop: "{{ data_drives }}"
+
+- name: Ensure correct permissions on mounted drives
+  ansible.builtin.file:
+    path: "{{ item.mountpoint }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+  loop: "{{ data_drives }}"
