@@ -1,0 +1,37 @@
+---
+- name: Nova Homelab configuration
+  hosts: homelab
+  become: false
+
+  roles:
+    - role: base
+      become: true
+      tags: ['base']
+    - role: storage
+      become: true
+      tags: ['storage']
+    - role: users
+      become: true
+      tags: ['users']
+    - role: network
+      become: true
+      tags: ['network']
+    - role: pihole
+      tags: ['pihole']
+    - role: authelia
+      tags: ['authelia']
+    - role: restic
+      tags: ['restic']
+    - role: frigate
+      tags: ['frigate']
+    - role: caddy
+      tags: ['caddy']
+    - role: mosquitto
+      tags: ['mosquitto']
+  post_tasks:
+    - name: Clear unused Podman images
+      containers.podman.podman_prune:
+        image: true
+        image_filters:
+          dangling_only: false
+          until: 24h

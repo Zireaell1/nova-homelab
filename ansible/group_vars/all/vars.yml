@@ -1,0 +1,45 @@
+---
+stacks_path: "/home/{{ ansible_user }}/stacks"
+
+zellij_version: "0.43.1"
+
+user_shell: "/usr/bin/fish"
+
+data_drives:
+  - uuid: "21610a79-4efa-4a83-a9e9-bd033321f5d2"
+    fstype: "ext4"
+    mountpoint: "/mnt/backup"
+    passno: "2"
+  - uuid: "cb64996e-45e2-4806-b8b1-f14635ecaa2f"
+    fstype: "xfs"
+    mountpoint: "/mnt/frigate"
+    passno: "0"
+
+timezone: "Europe/Warsaw"
+
+ip: "192.168.3.2"
+secondary_ip: "10.10.10.1/24"
+
+network_tailscale: "100.64.0.0/10"
+network_home: "192.168.2.0/24"
+network_homelab: "192.168.3.0/24"
+network_iot: "192.168.4.0/24"
+network_cctv: "10.10.10.0/24"
+
+secondary_network_interface_name: "enp2s0"
+
+dashboard_tablet_ip: "192.168.4.10"
+
+printer_ip: "192.168.2.9:4409"
+
+switch_ip: "10.10.10.2:80"
+
+camera_doorbell_http_ip: "10.10.10.10:80"
+camera_doorbell_rtsp_ip: "10.10.10.10:554"
+camera_front_http_ip: "10.10.10.11:80"
+camera_back_http_ip: "10.10.10.12:80"
+camera_entry_http_ip: "10.10.10.13:80"
+
+vg_name: "fedora_nova-2"
+lv_root_size: "15g"
+lv_home_size: "50g"
