@@ -1,0 +1,35 @@
+[Unit]
+Description=Caddy Proxy
+
+Wants=network-online.target
+After=network-online.target
+
+After=caddy.socket
+Requires=caddy.socket
+
+[Container]
+Image=localhost/custom-caddy:{{ caddy_version }}
+ContainerName=caddy
+Timezone={{ timezone }}
+Memory={{ caddy_memory_limit }}
+
+EnvironmentFile={{ stacks_path }}/caddy/caddy.env
+
+Notify=true
+
+Volume={{ stacks_path }}/caddy/Caddyfile:/etc/caddy/Caddyfile:ro,Z
+Volume={{ stacks_path }}/caddy/data:/data:Z
+Volume={{ stacks_path }}/caddy/config:/config:Z
+
+UserNS=keep-id
+
+# TODO: maybe it could be better if other containers would join proxy network with some "isolated" option on network config
+Network=authelia.network
+#TODO: Network=frigate.network
+
+[Service]
+Restart=always
+# TODO: + caddyfile ExecReload=podman exec caddy /usr/bin/caddy reload --config /etc/caddy/Caddyfile --address unix//data/admin.sock --force
+
+[Install]
+WantedBy=default.target

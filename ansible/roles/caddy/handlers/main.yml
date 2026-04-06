@@ -1,0 +1,20 @@
+---
+- name: Restart caddy
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: caddy.service
+    state: restarted
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Reload caddy
+  ansible.builtin.systemd:
+    name: caddy.service
+    state: reloaded
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+  ignore_errors: "{{ ansible_check_mode }}"
