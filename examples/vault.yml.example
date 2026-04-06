@@ -1,0 +1,73 @@
+---
+vault_domain: ''
+
+# Format: 'Town, Country'
+vault_location: ''
+
+# Caddy
+
+# CloudFlare API token for DNS-01 challange
+vault_caddy_cf_api_token: ''
+
+# Auth secret for authenticating Frigate with Caddy
+vault_caddy_frigate_auth_secret: ''
+
+# Pi-Hole
+
+# Format: 'DNS1;DNS2'
+vault_pihole_dns_upstreams: ''
+
+# Local DNS entries. Format: 'IP DOMAIN; IP DOMAIN;...'
+vault_pihole_dns_hosts: ''
+
+# Password for web UI
+vault_pihole_webserver_api_password: ''
+
+# Hash of app password
+vault_pihole_webserver_app_password_hash: ''
+
+# App password
+vault_pihole_webserver_app_password: ''
+
+# Frigate
+
+vault_frigate_doorbell_user: ''
+vault_frigate_doorbell_password: ''
+vault_frigate_front_user: ''
+vault_frigate_front_password: ''
+vault_frigate_back_user: ''
+vault_frigate_back_password: ''
+vault_frigate_entry_user: ''
+vault_frigate_entry_password: ''
+
+# Mosquitto MQTT
+
+vault_mosquitto_zigbee2mqtt_user: ''
+vault_mosquitto_zigbee2mqtt_password: ''
+
+vault_mosquitto_frigate_user: ''
+vault_mosquitto_frigate_password: ''
+
+vault_mosquitto_homeassistant_user: ''
+vault_mosquitto_homeassistant_password: ''
+
+vault_mosquitto_pwfile_content: |
+  ...
+
+# Authelia
+
+vault_authelia_hmac_secret: ''
+vault_authelia_jwt_secret: ''
+vault_authelia_redis_password: ''
+vault_authelia_session_secret: ''
+vault_authelia_storage_encryption_key: ''
+vault_authelia_storage_password: ''
+
+vault_authelia_paperless_client_id: ''
+vault_authelia_paperless_client_secret: ''
+
+vault_authelia_users_database: |
+  ...
+
+vault_authelia_rsa2048: |
+  ...
