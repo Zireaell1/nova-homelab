@@ -1,0 +1,12 @@
+---
+- name: Restic - Upload Quadlet Restic
+  ansible.builtin.template:
+    src: "restic.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/restic.container"
+    mode: '0644'
+  notify: Restart restic
+
+- name: Download Podman images
+  containers.podman.podman_image:
+    name: "{{ restic_image }}"
+    state: present

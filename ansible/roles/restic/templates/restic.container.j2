@@ -1,0 +1,24 @@
+[Unit]
+Description=Restic
+
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image={{ restic_image }}
+ContainerName=restic
+Timezone={{ timezone }}
+Memory={{ restic_memory_limit }}
+
+Environment=OPTIONS=--private-repos
+
+# TODO: z, Z???
+Volume=/mnt/backup/restic-rest-repos:/data:Z
+
+Network=restic.network
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

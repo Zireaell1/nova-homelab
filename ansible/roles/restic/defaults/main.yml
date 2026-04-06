@@ -1,0 +1,5 @@
+restic_memory_limit: "2g"
+
+# TODO: is it the latest one like on github?
+# https://hub.docker.com/r/restic/restic
+restic_image: "docker.io/restic/rest-server:0.18.1"
