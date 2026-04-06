@@ -1,0 +1,52 @@
+---
+# - name: Ensure dnf-plugins-core is installed (for needs-restarting)
+#   ansible.builtin.dnf:
+#     name: dnf-plugins-core
+#     state: present
+
+- name: DNF Update
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+
+- name: Check if reboot is required after update
+  ansible.builtin.command: "dnf needs-restarting -r"
+  register: reboot_required
+  failed_when: false
+  check_mode: false
+  changed_when: false
+
+- name: Reboot after update
+  ansible.builtin.reboot:
+    msg: "Ansible: Reboot after DNF update"
+    reboot_timeout: 600
+  when: reboot_required.rc == 1
+
+- name: Software install
+  ansible.builtin.dnf:
+    name:
+      - fish
+      - fastfetch
+      - micro
+      - restic
+      - bat
+      - lm_sensors
+      - podman
+      - cockpit
+      - cockpit-storaged
+      - cockpit-networkmanager
+      #- cockpit-podman
+      - cockpit-selinux
+      #- cockpit-sosreport
+      #- cockpit-files
+      - rsync
+    state: present
+
+- name: Upload lm_sensors config
+  ansible.builtin.copy:
+    src: "lm_sensors/lm_sensors"
+    dest: "/etc/sysconfig/lm_sensors"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart lm_sensors

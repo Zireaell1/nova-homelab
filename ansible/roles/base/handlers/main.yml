@@ -1,0 +1,6 @@
+---
+- name: Restart lm_sensors
+  ansible.builtin.service:
+    name: lm_sensors
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
