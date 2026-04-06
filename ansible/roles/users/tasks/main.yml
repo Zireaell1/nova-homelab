@@ -1,0 +1,65 @@
+---
+- name: Check current version of Zellij
+  ansible.builtin.command: zellij --version
+  register: zellij_cmd_output
+  failed_when: false
+  check_mode: false
+  changed_when: false
+
+- name: Install Zellij from GitHub repo
+  ansible.builtin.unarchive:
+    src: "{{ base_zellij_link }}"
+    dest: /usr/local/bin
+    remote_src: yes
+    creates: /usr/local/bin/zellij
+    owner: root
+    group: root
+    mode: '0755'
+  when: zellij_cmd_output.rc != 0 or zellij_version not in zellij_cmd_output.stdout
+
+- name: Verify if group exists
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - render
+
+- name: Assign user to groups
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: render
+    append: true
+
+- name: Reset SSH connection to apply group changes
+  ansible.builtin.meta: reset_connection
+
+- name: Enable lingering for current user
+  ansible.builtin.command: "loginctl enable-linger {{ ansible_user }}"
+  args:
+    creates: "/var/lib/systemd/linger/{{ ansible_user }}"
+
+- name: Change default shell to Fish
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    shell: "{{ user_shell }}"
+
+- name: Verify if config directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "/home/{{ ansible_user }}/.config/fish", mode: "0700" }
+    - { path: "/home/{{ ansible_user }}/.config/containers/systemd", mode: "0755" }
+    - { path: "/home/{{ ansible_user }}/.config/systemd/user", mode: "0755" }
+    - { path: "{{ stacks_path }}", mode: "0755" }
+
+- name: Upload Fish config
+  ansible.builtin.copy:
+    src: "fish/config.fish"
+    dest: "/home/{{ ansible_user }}/.config/fish/config.fish"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
