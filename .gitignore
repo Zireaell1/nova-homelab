@@ -1,0 +1,10 @@
+*.log
+*.tmp
+
+group_vars/all/vault.yml
+inventory.ini
+
+tmp
+
+TODO.md
+README.md
