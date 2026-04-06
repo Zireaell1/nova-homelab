@@ -1,0 +1,4 @@
+mosquitto_memory_limit: "2g"
+
+# https://hub.docker.com/_/eclipse-mosquitto
+mosquitto_image: "docker.io/library/eclipse-mosquitto:2.1.2-alpine"

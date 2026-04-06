@@ -1,0 +1,38 @@
+---
+- name: Mosquitto - Verify directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ stacks_path }}/mosquitto"
+    - "{{ stacks_path }}/mosquitto/config"
+    - "{{ stacks_path }}/mosquitto/data"
+    - "{{ stacks_path }}/mosquitto/log"
+
+- name: Mosquitto - Generate pwfile
+  ansible.builtin.copy:
+    content: "{{ vault_mosquitto_pwfile_content }}"
+    dest: "{{ stacks_path }}/mosquitto/config/pwfile"
+    mode: '0600'
+  no_log: true
+  notify: Restart mosquitto
+
+- name: Mosquitto - Upload configuration file
+  ansible.builtin.template:
+    src: "mosquitto.conf.j2"
+    dest: "{{ stacks_path }}/mosquitto/config/mosquitto.conf"
+    mode: '0644'
+  notify: Restart mosquitto
+
+- name: Mosquitto - Upload Quadlet Mosquitto
+  ansible.builtin.template:
+    src: "mosquitto.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/mosquitto.container"
+    mode: '0644'
+  notify: Restart mosquitto
+
+- name: Download Podman images
+  containers.podman.podman_image:
+    name: "{{ mosquitto_image }}"
+    state: present

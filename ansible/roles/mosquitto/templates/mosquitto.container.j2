@@ -1,0 +1,22 @@
+[Unit]
+Description=Mosquitto MQTT
+
+[Container]
+Image={{ mosquitto_image }}
+ContainerName=mosquitto
+Timezone={{ timezone }}
+Memory={{ mosquitto_memory_limit }}
+
+Volume={{ stacks_path }}/mosquitto/config:/mosquitto/config:Z
+Volume={{ stacks_path }}/mosquitto/data:/mosquitto/data:Z
+Volume={{ stacks_path }}/mosquitto/log:/mosquitto/log:Z
+
+UserNS=keep-id
+
+Network=frigate.network
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
