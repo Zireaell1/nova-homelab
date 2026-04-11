@@ -1,68 +1,9 @@
-{
-    order respond before forward_auth
-
-	default_bind fd/4 {
-		protocols h1 h2
-	}
-
-	default_bind fdgram/5 {
-		protocols h3
-	}
-	# TODO: admin unix//data/admin.sock
-	auto_https disable_redirects
-}
-
-# ------------- ACL Rules ------------------
-# Tailscale VPN
-(allow_tailscale) {
-    @is_tailscale remote_ip {env.TAILSCALE_NETWORK}
-    vars @is_tailscale authorized true
-}
-
-# Home LAN
-(allow_home) {
-    @is_home remote_ip {env.HOME_NETWORK} 10.89.0.0/16
-    vars @is_home authorized true
-}
-
-# Homelab LAN
-(allow_homelab) {
-    @is_homelab remote_ip {env.HOMELAB_NETWORK}
-    vars @is_homelab authorized true
-}
-
-# IOT LAN
-(allow_iot) {
-    @is_iot remote_ip {env.IOT_NETWORK}
-    vars @is_iot authorized true
-}
-
-# Wall Dashboard Access
-(allow_dashboard) {
-    @is_dashboard remote_ip {env.DASHBOARD_IP}
-    vars @is_dashboard authorized true
-}
-
-# ------------------------------------------------
-
-# Gatekeeper
-(gatekeeper) {
-    @denied {
-        not vars authorized true
-    }
-    respond @denied "Access denied." 403
-}
-
-# -----------------------------------------------
-
 # Cloudflare DNS-01
 (cloudflare_tls) {
     tls {
         dns cloudflare {env.CF_API_TOKEN}
     }
 }
-
-# -----------------------------------------------
 
 # Authelia Forward Auth
 (authelia_middleware) {
@@ -79,28 +20,44 @@
     }
 }
 
-# -----------------------------------------------
-
-# Standard settings
 (standard) {
     encode
 }
 
-# -----------------------------------------------
+(gatekeeper) {
+    @denied {
+        not remote_ip {args[:]}
+    }
+    handle @denied {
+        respond "Access Denied by Gatekeeper" 403
+    }
+}
+
+{
+	default_bind fd/4 {
+		protocols h1 h2
+	}
+
+	default_bind fdgram/5 {
+		protocols h3
+	}
+	# TODO: admin unix//data/admin.sock
+	auto_https disable_redirects
+}
 
 http:// {
 	bind fd/3 {
 		protocols h1
 	}
 	redir https://{host}{uri}
-	log
+	log # TODO: 
 }
 
 # Wildcard controller
 *.{$DOMAIN} {
     import cloudflare_tls
 
-    respond "Service not found." 404
+    respond "Service not found" 404
 }
 
 # Root Domain
@@ -108,259 +65,238 @@ http:// {
     import cloudflare_tls
     import standard
 
-    import allow_home
-    import allow_tailscale
+    # TODO: need to verify if podman network is still needed there
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
 
-    import gatekeeper
-
-    reverse_proxy glance:8080
+    handle {
+        reverse_proxy glance:8080
+    }
 }
 
 # Subdomains
-restic.{$DOMAIN} {
-    # TODO: Probably doesn't make sense to compress data there, if sent data is already compressed
-
-    import allow_home
-
-    import gatekeeper
-
-    reverse_proxy restic:8000
-}
-
 auth.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
-    import allow_dashboard
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK} {env.DASHBOARD_IP}
 
-    import gatekeeper
-
-    reverse_proxy authelia:9091
+    handle {
+        reverse_proxy authelia:9091
+    }
 }
 
+restic.{$DOMAIN} {
+    # TODO: Probably doesn't make sense to compress data there, if sent data is already compressed
+
+    import gatekeeper {env.HOME_NETWORK}
+
+    handle {
+        reverse_proxy restic:8000
+    }
+}
+
+# TODO: add basic auth so it should work with orca slicer / service account for orca slicer and forward auth for user
 mainsail.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
 
-    import gatekeeper
-
-    reverse_proxy {$PRINTER_IP}
+    handle {
+        reverse_proxy {$PRINTER_IP}
+    }
 }
 
 switch.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK}
 
-    import gatekeeper
-
-    # TODO: do weryfikacji
-    reverse_proxy {$SWITCH_IP}
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy {$SWITCH_IP}
+    }
 }
 
 kuma.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
 
-    import gatekeeper
-
-    import authelia_middleware_basic
-
-    reverse_proxy uptime-kuma:3001
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy uptime-kuma:3001
+    }
 }
 
 status.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
 
-    import gatekeeper
-
-    reverse_proxy uptime-kuma:3001
+    handle {
+        reverse_proxy uptime-kuma:3001
+    }
 }
 
 frigate.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
 
-    import gatekeeper
-
-    import authelia_middleware
-
-    reverse_proxy frigate:8971 {
-        header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
+    handle {
+        import authelia_middleware
+        reverse_proxy frigate:8971 {
+            header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
+        }
     }
 }
 
-paperless.{$DOMAIN} {
-    import standard
-
-    import allow_home
-    import allow_tailscale
-
-    import gatekeeper
-
-    reverse_proxy paperless:8000 {
-        header_down Referrer-Policy "strict-origin-when-cross-origin"
-    }
-}
+# paperless.{$DOMAIN} {
+#     import standard
+# 
+#     import allow_home
+#     import allow_tailscale
+# 
+#     import gatekeeper
+# 
+#     reverse_proxy paperless:8000 {
+#         header_down Referrer-Policy "strict-origin-when-cross-origin"
+#     }
+# }
 
 z2m.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
 
-    import gatekeeper
-
-    # TODO: probably should be authelia_middleware_basic, but it worked like that for some time without problems, so for now it can stay
-    import authelia_middleware
-
-    reverse_proxy zigbee2mqtt:8080
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy zigbee2mqtt:8080
+    }
 }
 
 pihole.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
 
-    import gatekeeper
-
-    import authelia_middleware_basic
-
-    reverse_proxy host.containers.internal:8080
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy host.containers.internal:8080
+    }
 }
 
 ha.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
-    import allow_dashboard
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK} {env.DASHBOARD_IP}
 
-    import gatekeeper
-
-    reverse_proxy homeassistant:8123
-}
-
-dozzle.{$DOMAIN} {
-    import standard
-
-    import allow_home
-    import allow_tailscale
-
-    import gatekeeper
-
-    import authelia_middleware
-
-    reverse_proxy dozzle:8080
-}
-
-beszel.{$DOMAIN} {
-    import standard
-
-    import allow_home
-    import allow_tailscale
-    # Beszel Agent access to Hub
-    import allow_homelab
-
-    import gatekeeper
-
-    request_body {
-        max_size 10MB
-    }
-
-    reverse_proxy beszel:8090 {
-        transport http {
-            read_timeout 360s
-        }
+    handle {
+        reverse_proxy homeassistant:8123
     }
 }
+
+# dozzle.{$DOMAIN} {
+#     import standard
+# 
+#     import allow_home
+#     import allow_tailscale
+# 
+#     import gatekeeper
+# 
+#     import authelia_middleware
+# 
+#     reverse_proxy dozzle:8080
+# }
+
+# TODO: authelia service account
+# beszel.{$DOMAIN} {
+#     import standard
+# 
+#     import allow_home
+#     import allow_tailscale
+#     # Beszel Agent access to Hub
+#     import allow_homelab
+# 
+#     import gatekeeper
+# 
+#     request_body {
+#         max_size 10MB
+#     }
+# 
+#     reverse_proxy beszel:8090 {
+#         transport http {
+#             read_timeout 360s
+#         }
+#     }
+# }
 
 docs.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
 
-    import gatekeeper
-
-    import authelia_middleware_basic
-
-    reverse_proxy mkdocs:8000
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy mkdocs:8000
+    }
 }
 
 # TODO: need to verify if it works and later remove its port from firewall
 cockpit.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
 
-    import gatekeeper
-
-    # TODO: probably should proxy to http port or specify that it is https, because then it goes into redirect loop
-    reverse_proxy host.containers.internal:9090
+    handle {
+        # TODO: probably should proxy to http port or specify that it is https, because then it goes into redirect loop
+        reverse_proxy host.containers.internal:9090
+    }
 }
 
 camera-doorbell.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK}
 
-    import gatekeeper
-
-    reverse_proxy {$CAMERA_DOORBELL_HTTP_IP} {
-        header_up -Via
+    handle {
+        reverse_proxy {$CAMERA_DOORBELL_HTTP_IP} {
+            header_up -Via
+        }
     }
 }
 
 camera-front.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK}
 
-    import gatekeeper
-
-    reverse_proxy {$CAMERA_FRONT_HTTP_IP} {
-        header_up -Via
+    handle {
+        reverse_proxy {$CAMERA_FRONT_HTTP_IP} {
+            header_up -Via
+        }
     }
 }
 
 camera-back.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK}
 
-    import gatekeeper
-
-    reverse_proxy {$CAMERA_BACK_HTTP_IP} {
-        header_up -Via
+    handle {
+        reverse_proxy {$CAMERA_BACK_HTTP_IP} {
+            header_up -Via
+        }
     }
 }
 
 camera-entry.{$DOMAIN} {
     import standard
 
-    import allow_home
-    import allow_tailscale
+    import gatekeeper {env.HOME_NETWORK}
 
-    import gatekeeper
-
-    reverse_proxy {$CAMERA_ENTRY_HTTP_IP} {
-        header_up -Via
+    handle {
+        reverse_proxy {$CAMERA_ENTRY_HTTP_IP} {
+            header_up -Via
+        }
     }
 }
