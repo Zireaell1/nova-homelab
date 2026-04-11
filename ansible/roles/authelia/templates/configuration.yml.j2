@@ -23,6 +23,51 @@ definitions:
 access_control:
   default_policy: 'deny'
   rules:
+    # Camera-Front Two-factor Auth (Admin Only)
+    - domain: 'camera-front.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
+    # Camera-Back Two-factor Auth (Admin Only)
+    - domain: 'camera-back.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
+    # Camera-Doorbell Two-factor Auth (Admin Only)
+    - domain: 'camera-doorbell.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
+    # Camera-Entry Two-factor Auth (Admin Only)
+    - domain: 'camera-entry.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
+    # Switch Two-factor Auth (Admin Only)
+    - domain: 'switch.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
     # Z2M Bypass Webmanifest
     - domain: 'z2m.{{ vault_domain }}'
       policy: 'bypass'
@@ -33,6 +78,7 @@ access_control:
         - '^/.*\.webmanifest$'
         - '^/assets/.*\.png$'
         - '^/images/.*\.png$'
+
     # Z2M Two-factor Auth (Admin Only)
     - domain: 'z2m.{{ vault_domain }}'
       policy: 'two_factor'
@@ -41,6 +87,7 @@ access_control:
         - 'tailscale'
       subject:
         - ['group:admin']
+
     # Frigate Bypass Assets
     - domain: 'frigate.{{ vault_domain }}'
       policy: 'bypass'
@@ -49,12 +96,14 @@ access_control:
         - 'tailscale'
       resources:
         - '^/images/.*(maskable-icon).*\.png$'
+
     # Frigate Two-factor Auth (Based On Roles)
     - domain: 'frigate.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
         - 'tailscale'
+
     # Dozzle Bypass Webmanifest
     - domain: 'dozzle.{{ vault_domain }}'
       policy: 'bypass'
@@ -63,6 +112,7 @@ access_control:
         - 'tailscale'
       resources:
         - '^/manifest\.webmanifest$'
+
     # Dozzle Two-factor Auth (Admin Only)
     - domain: 'dozzle.{{ vault_domain }}'
       policy: 'two_factor'
@@ -71,6 +121,7 @@ access_control:
         - 'tailscale'
       subject:
         - ['group:admin']
+
     # Uptime Kuma Bypass Webmanifest
     - domain: 'kuma.{{ vault_domain }}'
       policy: 'bypass'
@@ -80,6 +131,7 @@ access_control:
       resources:
         - '^/manifest\.json$'
         - '^/icon-.*\.png$'
+
     # Uptime Kuma Two-factor Auth (Admin Only)
     - domain: 'kuma.{{ vault_domain }}'
       policy: 'two_factor'
@@ -88,23 +140,7 @@ access_control:
         - 'tailscale'
       subject:
         - ['group:admin']
-    # Dockge Bypass Webmanifest
-    - domain: 'dockge.{{ vault_domain }}'
-      policy: 'bypass'
-      networks:
-        - 'internal'
-        - 'tailscale'
-      resources:
-        - '^/manifest\.json$'
-        - '^/icon-.*\.png$'
-    # Dockge Two-factor Auth (Admin Only)
-    - domain: 'dockge.{{ vault_domain }}'
-      policy: 'two_factor'
-      networks:
-        - 'internal'
-        - 'tailscale'
-      subject:
-        - ['group:admin']
+
     # Pi-Hole Bypass Webmanifest
     - domain: 'pihole.{{ vault_domain }}'
       policy: 'bypass'
@@ -114,6 +150,7 @@ access_control:
       resources:
         - '^/admin/img/favicons/manifest\.json$'
         - '^/admin/img/favicons/.*\.png$'
+
     # Pi-Hole Two-factor Auth (Admin Only)
     - domain: 'pihole.{{ vault_domain }}'
       policy: 'two_factor'
@@ -122,6 +159,7 @@ access_control:
         - 'tailscale'
       subject:
         - ['group:admin']
+
     # Mkdocs Two-factor Auth (All Users)
     - domain: 'docs.{{ vault_domain }}'
       policy: 'two_factor'
