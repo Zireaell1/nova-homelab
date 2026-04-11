@@ -18,6 +18,14 @@
   no_log: true
   notify: Restart mosquitto
 
+# TODO: maybe it should be in HA, Frigate and Z2M tasks too?
+- name: Mosquitto - Upload Quadlet Network
+  ansible.builtin.template:
+    src: "home.network.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/home.network"
+    mode: '0644'
+  notify: Restart mosquitto
+
 - name: Mosquitto - Upload configuration file
   ansible.builtin.template:
     src: "mosquitto.conf.j2"
