@@ -1,3 +1,7 @@
+# logger:
+#   logs:
+#     frigate.record.maintainer: debug
+
 version: 0.17-0
 
 mqtt:
@@ -9,10 +13,6 @@ mqtt:
 
 tls:
   enabled: false
-
-# logger:
-#   logs:
-#     frigate.record.maintainer: debug
 
 auth:
   enabled: false
@@ -28,22 +28,32 @@ proxy:
 go2rtc:
   streams:
     Front:
-      - ffmpeg:http://{FRIGATE_FRONT_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_FRONT_USER}&password={FRIGATE_FRONT_PASSWORD}#video=copy#audio=copy#audio=opus
+      - ffmpeg:http://{FRIGATE_FRONT_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_FRONT_USER}&password={FRIGATE_FRONT_PASSWORD}
+      - ffmpeg:Front#audio=opus
+      - rtsp://{FRIGATE_FRONT_USER}:{FRIGATE_FRONT_PASSWORD}@{FRIGATE_FRONT_RTSP_ADDRESS}/Preview_01_sub
     Front_sub:
       - ffmpeg:http://{FRIGATE_FRONT_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_FRONT_USER}&password={FRIGATE_FRONT_PASSWORD}
+      - rtsp://{FRIGATE_FRONT_USER}:{FRIGATE_FRONT_PASSWORD}@{FRIGATE_FRONT_RTSP_ADDRESS}/Preview_01_sub
     Back:
-      - ffmpeg:http://{FRIGATE_BACK_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_BACK_USER}&password={FRIGATE_BACK_PASSWORD}#video=copy#audio=copy#audio=opus
+      - ffmpeg:http://{FRIGATE_BACK_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_BACK_USER}&password={FRIGATE_BACK_PASSWORD}
+      - ffmpeg:Back#audio=opus
+      - rtsp://{FRIGATE_BACK_USER}:{FRIGATE_BACK_PASSWORD}@{FRIGATE_BACK_RTSP_ADDRESS}/Preview_01_sub
     Back_sub:
       - ffmpeg:http://{FRIGATE_BACK_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_BACK_USER}&password={FRIGATE_BACK_PASSWORD}
+      - rtsp://{FRIGATE_BACK_USER}:{FRIGATE_BACK_PASSWORD}@{FRIGATE_BACK_RTSP_ADDRESS}/Preview_01_sub
     Entry:
-      - ffmpeg:http://{FRIGATE_ENTRY_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_ENTRY_USER}&password={FRIGATE_ENTRY_PASSWORD}#video=copy#audio=copy#audio=opus
+      - ffmpeg:http://{FRIGATE_ENTRY_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_ENTRY_USER}&password={FRIGATE_ENTRY_PASSWORD}
+      - ffmpeg:Entry#audio=opus
+      - rtsp://{FRIGATE_ENTRY_USER}:{FRIGATE_ENTRY_PASSWORD}@{FRIGATE_ENTRY_RTSP_ADDRESS}/Preview_01_sub
     Entry_sub:
       - ffmpeg:http://{FRIGATE_ENTRY_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_ENTRY_USER}&password={FRIGATE_ENTRY_PASSWORD}
+      - rtsp://{FRIGATE_ENTRY_USER}:{FRIGATE_ENTRY_PASSWORD}@{FRIGATE_ENTRY_RTSP_ADDRESS}/Preview_01_sub
     Doorbell:
-      - ffmpeg:http://{FRIGATE_DOORBELL_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_DOORBELL_USER}&password={FRIGATE_DOORBELL_PASSWORD}#video=copy#audio=copy#audio=opus
+      - ffmpeg:http://{FRIGATE_DOORBELL_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_DOORBELL_USER}&password={FRIGATE_DOORBELL_PASSWORD}
+      - ffmpeg:Doorbell#audio=opus
       - rtsp://{FRIGATE_DOORBELL_USER}:{FRIGATE_DOORBELL_PASSWORD}@{FRIGATE_DOORBELL_RTSP_ADDRESS}/Preview_01_sub
     Doorbell_sub:
-      - ffmpeg:http://{FRIGATE_DOORBELL_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_ext.bcs&user={FRIGATE_DOORBELL_USER}&password={FRIGATE_DOORBELL_PASSWORD}#video=copy#audio=copy#audio=opus
+      - ffmpeg:http://{FRIGATE_DOORBELL_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_ext.bcs&user={FRIGATE_DOORBELL_USER}&password={FRIGATE_DOORBELL_PASSWORD}
       - rtsp://{FRIGATE_DOORBELL_USER}:{FRIGATE_DOORBELL_PASSWORD}@{FRIGATE_DOORBELL_RTSP_ADDRESS}/Preview_01_sub
   webrtc:
     filters:
@@ -136,7 +146,7 @@ cameras:
       enabled: true
       annotation_offset: -1000
     record:
-      enabled: false
+      enabled: true
       alerts:
         retain:
           days: 30
@@ -189,7 +199,7 @@ cameras:
       enabled: true
       annotation_offset: -1000
     record:
-      enabled: false
+      enabled: true
       alerts:
         retain:
           days: 30
@@ -239,10 +249,10 @@ cameras:
           roles:
             - record
     detect:
-      enabled: false
+      enabled: true
       annotation_offset: -1000
     record:
-      enabled: false
+      enabled: true
       alerts:
         retain:
           days: 30
@@ -297,7 +307,7 @@ cameras:
       enabled: true
       annotation_offset: -1000
     record:
-      enabled: false
+      enabled: true
       alerts:
         retain:
           days: 30
