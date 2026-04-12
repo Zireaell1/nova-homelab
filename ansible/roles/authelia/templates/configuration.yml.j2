@@ -23,6 +23,15 @@ definitions:
 access_control:
   default_policy: 'deny'
   rules:
+    # go2rtc Two-factor Auth (Admin Only)
+    - domain: 'go2rtc.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
     # Camera-Front Two-factor Auth (Admin Only)
     - domain: 'camera-front.{{ vault_domain }}'
       policy: 'two_factor'

@@ -137,6 +137,17 @@ status.{$DOMAIN} {
     }
 }
 
+go2rtc.{$DOMAIN} {
+    import standard
+
+    import gatekeeper {env.HOME_NETWORK} {env.TAILSCALE_NETWORK}
+
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy frigate:1984
+    }
+}
+
 frigate.{$DOMAIN} {
     import standard
 
