@@ -1,0 +1,45 @@
+[Unit]
+Description=Frigate
+
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image={{ frigate_image }}
+ContainerName=frigate
+Timezone={{ timezone }}
+Memory={{ frigate_memory_limit }}
+
+StopTimeout=120
+
+ShmSize=1g
+
+Tmpfs=/tmp/cache:rw,size=1g,mode=1777
+
+AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
+AddDevice=/dev/accel/accel0:/dev/accel/accel0
+
+AddCapability=CAP_PERFMON
+SeccompProfile=unconfined
+SecurityLabelDisable=true
+
+GroupAdd=keep-groups
+UserNS=keep-id:uid=0,gid=0
+
+EnvironmentFile={{ stacks_path }}/frigate/frigate.env
+
+PublishPort=8555:8555/tcp
+PublishPort=8555:8555/udp
+
+Volume={{ stacks_path }}/frigate/config:/config:Z
+Volume={{ frigate_storage_path }}:/media/frigate:Z
+
+Network=frigate.network
+Network=home.network
+
+[Service]
+Restart=always
+TimeoutStopSec=130
+
+[Install]
+WantedBy=default.target

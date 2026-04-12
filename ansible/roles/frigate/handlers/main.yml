@@ -1,0 +1,11 @@
+---
+- name: Restart frigate
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: frigate.service
+    state: restarted
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+  ignore_errors: "{{ ansible_check_mode }}"

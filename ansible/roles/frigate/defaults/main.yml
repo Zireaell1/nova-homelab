@@ -1,0 +1,7 @@
+---
+frigate_memory_limit: "6g"
+
+frigate_storage_path: "/mnt/frigate/storage"
+
+# https://github.com/blakeblackshear/frigate
+frigate_image: "ghcr.io/blakeblackshear/frigate:0.17.1"
