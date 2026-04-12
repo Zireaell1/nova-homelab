@@ -37,7 +37,8 @@
     - { service: "dns" }
     - { service: "http" }
     - { service: "https" }
-    # TODO: webrtc.
+    - { port: "8555/tcp" }
+    - { port: "8555/udp "}
 
 - name: Remove the default connection
   community.general.nmcli:
