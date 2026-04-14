@@ -16,6 +16,9 @@
     - role: network
       become: true
       tags: ['network']
+    - role: nut
+      become: true
+      tags: ['nut']
     - role: pihole
       tags: ['pihole']
     - role: authelia

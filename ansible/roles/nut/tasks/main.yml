@@ -1,0 +1,134 @@
+---
+- name: Configure nut.conf
+  ansible.builtin.copy:
+    dest: "/etc/ups/nut.conf"
+    owner: "root"
+    group: "nut"
+    mode: '0640'
+    backup: yes
+    content: |
+      MODE={{ nut_mode }}
+  register: nut_conf_result
+
+- name: Configure ups.conf (Driver)
+  ansible.builtin.copy:
+    dest: "/etc/ups/ups.conf"
+    owner: "root"
+    group: "nut"
+    mode: '0640'
+    backup: yes
+    content: |
+      maxretry = 3
+
+      [{{ ups_name }}]
+          driver = {{ ups_driver }}
+          desc = "{{ ups_description }}"
+          port = {{ ups_port }}
+
+          vendorid = {{ ups_vendorid }}
+          productid = {{ ups_productid }}
+
+          waitbeforereconnect = {{ ups_waitbeforereconnect }}
+
+          lowbatt = {{ ups_lowbatt }}
+          offdelay = {{ ups_offdelay }}
+          ondelay = {{ ups_ondelay }}
+  register: ups_conf_result
+
+- name: Configure upsd.conf (Server Listener)
+  ansible.builtin.copy:
+    dest: "/etc/ups/upsd.conf"
+    owner: "root"
+    group: "nut"
+    mode: '0640'
+    backup: yes
+    content: |
+      LISTEN 127.0.0.1
+      LISTEN {{ ip }}
+  register: upsd_conf_result
+
+- name: Configure upsd.users (Server Credentials)
+  ansible.builtin.copy:
+    dest: "/etc/ups/upsd.users"
+    owner: "root"
+    group: "nut"
+    mode: '0640'
+    backup: yes
+    content: |
+      [{{ ups_admin_user }}]
+          password = {{ vault_ups_admin_password }}
+          actions = set
+          actions = fsd
+          instcmds = all
+          upsmon primary
+
+      [{{ ups_observer_user }}]
+          password = {{ vault_ups_observer_password }}
+          upsmon secondary
+  register: users_conf_result
+
+- name: Configure upsmon.conf (Monitor and Shutdown Trigger)
+  ansible.builtin.copy:
+    dest: "/etc/ups/upsmon.conf"
+    owner: "root"
+    group: "nut"
+    mode: '0640'
+    backup: yes
+    content: |
+      MINSUPPLIES 1
+      SHUTDOWNCMD "/sbin/shutdown -h +0"
+      POLLFREQ 5
+      POLLFREQALERT 5
+      HOSTSYNC 15
+      DEADTIME 15
+      POWERDOWNFLAG "/etc/killpower"
+      OFFDURATION 30
+      OVERDURATION -1
+      RBWARNTIME 43200
+      NOCOMMWARNTIME 300
+      FINALDELAY 5
+      ALARMCRITICAL 1
+
+      MONITOR {{ ups_name }}@localhost 1 {{ ups_admin_user }} {{ vault_ups_admin_password }} primary
+  register: upsmon_conf_result
+
+- name: Rebuild NUT Drivers (Enumerator)
+  ansible.builtin.systemd:
+    name: nut-driver-enumerator.service
+    state: restarted
+    daemon_reload: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: >
+    nut_conf_result.changed or
+    ups_conf_result.changed or
+    upsd_conf_result.changed or
+    users_conf_result.changed or
+    upsmon_conf_result.changed
+
+- name: Restart NUT
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - nut-driver.target
+    - nut-server.service
+    - nut-monitor.service
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: >
+    nut_conf_result.changed or
+    ups_conf_result.changed or
+    upsd_conf_result.changed or
+    users_conf_result.changed or
+    upsmon_conf_result.changed
+
+- name: Ensure that all service are running
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop:
+    - nut-driver-enumerator.path
+    - nut-driver.target
+    - nut-server.service
+    - nut-monitor.service
+  ignore_errors: "{{ ansible_check_mode }}"

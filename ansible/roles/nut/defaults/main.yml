@@ -1,0 +1,22 @@
+---
+nut_mode: "netserver"
+
+# https://networkupstools.org/docs/man/usbhid-ups.html
+ups_name: "eaton"
+ups_driver: "usbhid-ups"
+ups_description: "Eaton 5E"
+ups_port: "auto"
+
+ups_vendorid: "0463"
+ups_productid: "ffff"
+
+ups_waitbeforereconnect: 20
+# ups_interrupt_pipe_no_events_tolerance: 5
+# ups_pollfreq: 15
+
+ups_lowbatt: 30
+ups_offdelay: 30
+ups_ondelay: 600
+
+ups_admin_user: "ups_admin"
+ups_observer_user: "ups_observer"
