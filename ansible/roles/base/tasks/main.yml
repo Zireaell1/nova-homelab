@@ -51,3 +51,19 @@
     group: root
     mode: '0644'
   notify: Restart lm_sensors
+
+# Default: false
+- name: Allow containers to use host hardware devices (SELinux)
+  ansible.posix.seboolean:
+    name: container_use_devices
+    state: true
+    persistent: true
+
+# Default: 2
+- name: Allow unpriviledged users to read hardware performance counters
+  ansible.posix.sysctl:
+    name: kernel.perf_event_paranoid
+    value: '0'
+    sysctl_set: yes
+    state: present
+    reload: yes
