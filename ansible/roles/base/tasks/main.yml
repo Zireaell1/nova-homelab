@@ -35,7 +35,7 @@
       - cockpit
       - cockpit-storaged
       - cockpit-networkmanager
-      #- cockpit-podman
+      - cockpit-podman
       - cockpit-selinux
       #- cockpit-sosreport
       #- cockpit-files
