@@ -39,6 +39,9 @@
     - { service: "https" }
     - { port: "8555/tcp" }
     - { port: "8555/udp "}
+    - { service: "nut" }
+    - { service: "ssh" }
+    - { service: "dhcpv6-client" }
 
 - name: Remove the default connection
   community.general.nmcli:
