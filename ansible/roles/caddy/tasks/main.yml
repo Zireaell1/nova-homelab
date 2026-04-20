@@ -1,5 +1,5 @@
 ---
-- name: Caddy - Verify directory structure
+- name: Verify directory structure
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -10,7 +10,7 @@
     - "{{ stacks_path }}/caddy/config"
     - "{{ stacks_path }}/caddy/caddy-build"
 
-- name: Caddy - Generate .env file
+- name: Upload .env file
   ansible.builtin.template:
     src: "caddy.env.j2"
     dest: "{{ stacks_path }}/caddy/caddy.env"
@@ -18,7 +18,7 @@
   no_log: true
   notify: Restart caddy
 
-- name: Caddy - Upload Caddyfile
+- name: Upload Caddyfile
   ansible.builtin.copy:
     src: "Caddyfile"
     dest: "{{ stacks_path }}/caddy/Caddyfile"
@@ -26,14 +26,14 @@
   notify: Restart caddy
   # TODO: Reload caddy
 
-- name: Caddy - Generate Containerfile
+- name: Upload Containerfile
   ansible.builtin.template:
     src: "Containerfile.j2"
     dest: "{{ stacks_path }}/caddy/caddy-build/Containerfile"
     mode: '0644'
   register: caddy_containerfile
 
-- name: Caddy - Build image for Caddy with Cloudflare plugin
+- name: Build image with Cloudflare plugin
   containers.podman.podman_image:
     name: custom-caddy
     tag: "{{ caddy_version }}"
@@ -42,14 +42,14 @@
   register: caddy_image_result
   notify: Restart caddy
 
-- name: Caddy - Upload Caddy Socket
+- name: Upload .socket file
   ansible.builtin.template:
     src: "caddy.socket.j2"
     dest: "/home/{{ ansible_user }}/.config/systemd/user/caddy.socket"
     mode: '0644'
   notify: Restart caddy
 
-- name: Caddy - Upload Quadlet Caddy
+- name: Upload .container file
   ansible.builtin.template:
     src: "caddy.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/caddy.container"

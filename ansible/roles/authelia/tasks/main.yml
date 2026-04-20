@@ -1,5 +1,5 @@
 ---
-- name: Authelia - Verify directory structure
+- name: Verify directory structure
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -11,7 +11,7 @@
     - "{{ stacks_path }}/authelia/postgres"
     - "{{ stacks_path }}/authelia/redis"
 
-- name: Authelia - Generate secret files
+- name: Upload secret files
   ansible.builtin.copy:
     content: "{{ item.value }}"
     dest: "{{ stacks_path }}/authelia/secrets/{{ item.name }}"
@@ -29,7 +29,7 @@
     - Restart authelia
     - Restart authelia-postgres
 
-- name: Authelia - Upload users_database.yml file
+- name: Upload users_database.yml file
   ansible.builtin.copy:
     content: "{{ vault_authelia_users_database }}"
     dest: "{{ stacks_path }}/authelia/config/users_database.yml"
@@ -37,21 +37,21 @@
   no_log: true
   notify: Restart authelia
 
-- name: Authelia - Upload configuration file
+- name: Upload configuration.yml file
   ansible.builtin.template:
     src: "configuration.yml.j2"
     dest: "{{ stacks_path }}/authelia/config/configuration.yml"
     mode: '0644'
   notify: Restart authelia
 
-- name: Authelia - Generate .env file
+- name: Upload .env file
   ansible.builtin.template:
     src: "authelia.env.j2"
     dest: "{{ stacks_path }}/authelia/authelia.env"
     mode: '0600'
   notify: Restart authelia
 
-- name: Authelia - Upload Quadlet Network
+- name: Upload .network file
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
@@ -64,14 +64,14 @@
     - Restart authelia-postgres
     - Restart authelia-redis
 
-- name: Authelia - Upload Quadlet Authelia
+- name: Upload Authelia .container file
   ansible.builtin.template:
     src: "authelia.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/authelia.container"
     mode: '0644'
   notify: Restart authelia
 
-- name: Authelia - Upload Quadlet Postgres and Redis
+- name: Upload Postgres and Redis .container files
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
