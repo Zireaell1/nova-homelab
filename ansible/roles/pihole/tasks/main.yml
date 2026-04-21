@@ -98,7 +98,7 @@
     enabled: yes
     scope: user
   environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ ansible_user_uid }}"
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Wait for Pi-hole to listen on port 53
