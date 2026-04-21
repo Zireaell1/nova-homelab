@@ -17,6 +17,46 @@ data_drives:
 
 timezone: "Europe/Warsaw"
 
+services:
+  authelia:
+    subdomain: "auth"
+  frigate:
+    subdomain: "frigate"
+  grafana:
+    subdomain: "grafana"
+  pi-hole:
+    subdomain: "pihole"
+  prometheus:
+    subdomain: "prometheus"
+  restic:
+    subdomain: "restic"
+  immich:
+    subdomain: "immich"
+  vaultwarden:
+    subdomain: "vaultwarden"
+  go2rtc:
+    subdomain: "go2rtc"
+  zigbee2mqtt:
+    subdomain: "z2m"
+  homeassistant:
+    subdomain: "ha"
+  uptime-kuma:
+    subdomain: "kuma"
+  cockpit:
+    subdomain: "cockpit"
+  switch:
+    subdomain: "switch"
+  mainsail:
+    subdomain: "mainsail"
+  camera-doorbell:
+    subdomain: "camera-doorbell"
+  camera-front:
+    subdomain: "camera-front"
+  camera-back:
+    subdomain: "camera-back"
+  camera-entry:
+    subdomain: "camera-entry"
+
 ip: "192.168.3.2"
 secondary_ip: "10.10.10.1/24"
 

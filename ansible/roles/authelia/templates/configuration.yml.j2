@@ -23,8 +23,17 @@ definitions:
 access_control:
   default_policy: 'deny'
   rules:
+    # Prometheus Two-factor Auth (Admin Only)
+    - domain: '{{ services['subdomain']['prometheus'] }}.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
     # go2rtc Two-factor Auth (Admin Only)
-    - domain: 'go2rtc.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['go2rtc'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -33,7 +42,7 @@ access_control:
         - ['group:admin']
 
     # Camera-Front Two-factor Auth (Admin Only)
-    - domain: 'camera-front.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['camera-front'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -42,7 +51,7 @@ access_control:
         - ['group:admin']
 
     # Camera-Back Two-factor Auth (Admin Only)
-    - domain: 'camera-back.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['camera-back'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -51,7 +60,7 @@ access_control:
         - ['group:admin']
 
     # Camera-Doorbell Two-factor Auth (Admin Only)
-    - domain: 'camera-doorbell.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['camera-doorbell'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -60,7 +69,7 @@ access_control:
         - ['group:admin']
 
     # Camera-Entry Two-factor Auth (Admin Only)
-    - domain: 'camera-entry.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['camera-entry'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -69,7 +78,7 @@ access_control:
         - ['group:admin']
 
     # Switch Two-factor Auth (Admin Only)
-    - domain: 'switch.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['switch'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -78,7 +87,7 @@ access_control:
         - ['group:admin']
 
     # Z2M Bypass Webmanifest
-    - domain: 'z2m.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['zigbee2mqtt'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -89,7 +98,7 @@ access_control:
         - '^/images/.*\.png$'
 
     # Z2M Two-factor Auth (Admin Only)
-    - domain: 'z2m.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['zigbee2mqtt'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -98,7 +107,7 @@ access_control:
         - ['group:admin']
 
     # Frigate Bypass Assets
-    - domain: 'frigate.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['frigate] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -107,32 +116,14 @@ access_control:
         - '^/images/.*(maskable-icon).*\.png$'
 
     # Frigate Two-factor Auth (Based On Roles)
-    - domain: 'frigate.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['frigate'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
         - 'tailscale'
-
-    # Dozzle Bypass Webmanifest
-    - domain: 'dozzle.{{ vault_domain }}'
-      policy: 'bypass'
-      networks:
-        - 'internal'
-        - 'tailscale'
-      resources:
-        - '^/manifest\.webmanifest$'
-
-    # Dozzle Two-factor Auth (Admin Only)
-    - domain: 'dozzle.{{ vault_domain }}'
-      policy: 'two_factor'
-      networks:
-        - 'internal'
-        - 'tailscale'
-      subject:
-        - ['group:admin']
 
     # Uptime Kuma Bypass Webmanifest
-    - domain: 'kuma.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['uptime-kuma'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -142,7 +133,7 @@ access_control:
         - '^/icon-.*\.png$'
 
     # Uptime Kuma Two-factor Auth (Admin Only)
-    - domain: 'kuma.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['uptime-kuma'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -151,7 +142,7 @@ access_control:
         - ['group:admin']
 
     # Pi-Hole Bypass Webmanifest
-    - domain: 'pihole.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['pi-hole'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -161,20 +152,13 @@ access_control:
         - '^/admin/img/favicons/.*\.png$'
 
     # Pi-Hole Two-factor Auth (Admin Only)
-    - domain: 'pihole.{{ vault_domain }}'
+    - domain: '{{ services['subdomain']['pi-hole'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
         - 'tailscale'
       subject:
         - ['group:admin']
-
-    # Mkdocs Two-factor Auth (All Users)
-    - domain: 'docs.{{ vault_domain }}'
-      policy: 'two_factor'
-      networks:
-        - 'internal'
-        - 'tailscale'
 
 regulation:
   modes:
@@ -188,7 +172,7 @@ session:
   cookies:
     - name: 'authelia_session'
       domain: '{{ vault_domain }}'
-      authelia_url: 'https://auth.{{ vault_domain }}'
+      authelia_url: 'https://{{ services['subdomain']['authelia'] }}.{{ vault_domain }}'
   redis:
     host: 'authelia-redis'
     port: 6379

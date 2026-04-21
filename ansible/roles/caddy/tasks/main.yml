@@ -19,8 +19,8 @@
   notify: Restart caddy
 
 - name: Upload Caddyfile
-  ansible.builtin.copy:
-    src: "Caddyfile"
+  ansible.builtin.template:
+    src: "Caddyfile.j2"
     dest: "{{ stacks_path }}/caddy/Caddyfile"
     mode: '0644'
   notify: Restart caddy

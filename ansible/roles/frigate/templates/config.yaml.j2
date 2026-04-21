@@ -128,7 +128,7 @@ classification:
 cameras:
   Front:
     enabled: true
-    webui_url: "https://camera-front.{{ vault_domain }}"
+    webui_url: "https://{{ services['camera-front']['subdomain'] }}.{{ vault_domain }}"
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy
@@ -181,7 +181,7 @@ cameras:
 
   Entry:
     enabled: true
-    webui_url: "https://camera-entry.{{ vault_domain }}"
+    webui_url: "https://{{ services['camera-entry']['subdomain'] }}.{{ vault_domain }}"
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy
@@ -234,7 +234,7 @@ cameras:
 
   Back:
     enabled: true
-    webui_url: "https://camera-back.{{ vault_domain }}"
+    webui_url: "https://{{ services['camera-back']['subdomain'] }}.{{ vault_domain }}"
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy
@@ -289,7 +289,7 @@ cameras:
 
   Doorbell:
     enabled: true
-    webui_url: "https://camera-doorbell.{{ vault_domain }}"
+    webui_url: "https://{{ services['camera-doorbell']['subdomain'] }}.{{ vault_domain }}"
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy

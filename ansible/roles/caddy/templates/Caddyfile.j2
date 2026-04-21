@@ -1,0 +1,254 @@
+# Cloudflare DNS-01
+(cloudflare_tls) {
+    tls {
+        dns cloudflare {env.CF_API_TOKEN}
+    }
+}
+
+# Authelia Forward Auth
+(authelia_middleware) {
+    forward_auth authelia:9091 {
+        uri /api/authz/forward-auth
+        copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+    }
+}
+
+# Authelia Forward Auth Basic (without passing headers)
+(authelia_middleware_basic) {
+    forward_auth authelia:9091 {
+        uri /api/authz/forward-auth
+    }
+}
+
+(standard) {
+    encode
+}
+
+(gatekeeper) {
+    @denied {
+        not remote_ip {args[:]}
+    }
+    handle @denied {
+        respond "Access Denied by Gatekeeper" 403
+    }
+}
+
+{
+	default_bind fd/4 {
+		protocols h1 h2
+	}
+
+	default_bind fdgram/5 {
+		protocols h3
+	}
+	# TODO: admin unix//data/admin.sock
+	auto_https disable_redirects
+}
+
+http:// {
+	bind fd/3 {
+		protocols h1
+	}
+	redir https://{host}{uri}
+	log # TODO: 
+}
+
+# Wildcard controller
+*.{{ vault_domain }} {
+    import cloudflare_tls
+
+    respond "Service not found" 404
+}
+
+# Root Domain
+{{ vault_domain }} {
+    import cloudflare_tls
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        reverse_proxy glance:8080
+    }
+}
+
+# Subdomains
+{{ services['authelia']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        reverse_proxy authelia:9091
+    }
+}
+
+{{ services['prometheus']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        import authelia_middleware_basic # TODO: prometheus does not support any forward auth?? - need to check
+        reverse_proxy prometheus: # TODO: port
+    }
+}
+
+{{ services['restic']['subdomain'] }}.{{ vault_domain }} {
+    # TODO: Probably doesn't make sense to compress data there, if sent data is already compressed
+
+    import gatekeeper {{ network_home }}
+
+    handle {
+        reverse_proxy restic:8000
+    }
+}
+
+# TODO: add basic auth so it should work with orca slicer / service account for orca slicer and forward auth for user
+{{ services['mainsail']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        reverse_proxy {{ printer_ip }}
+    }
+}
+
+{{ services['switch']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }}
+
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy {{ switch_ip }}
+    }
+}
+
+{{ services['uptime-kuma']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy uptime-kuma:3001
+    }
+}
+
+{{ services['go2rtc']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy frigate:1984
+    }
+}
+
+{{ services['frigate']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        import authelia_middleware
+        reverse_proxy frigate:8971 {
+            header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
+        }
+    }
+}
+
+{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy zigbee2mqtt:8080
+    }
+}
+
+{{ services['pi-hole']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy host.containers.internal:8080
+    }
+}
+
+{{ services['homeassistant']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }} {{ dashboard_tablet_ip }}
+
+    handle {
+        reverse_proxy homeassistant:8123
+    }
+}
+
+# TODO: need to verify if it works and later remove its port from firewall
+{{ services['cockpit']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        # TODO: probably should proxy to http port or specify that it is https, because then it goes into redirect loop
+        reverse_proxy host.containers.internal:9090
+    }
+}
+
+{{ services['camera-doorbell']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }}
+
+    handle {
+        reverse_proxy {{ camera_doorbell_http_ip }} {
+            header_up -Via
+        }
+    }
+}
+
+{{ services['camera-front']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }}
+
+    handle {
+        reverse_proxy {{ camera_front_http_ip }} {
+            header_up -Via
+        }
+    }
+}
+
+{{ services['camera-back']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }}
+
+    handle {
+        reverse_proxy {{ camera_back_http_ip }} {
+            header_up -Via
+        }
+    }
+}
+
+{{ services['camera-entry']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }}
+
+    handle {
+        reverse_proxy {{ camera_entry_http_ip }} {
+            header_up -Via
+        }
+    }
+}
