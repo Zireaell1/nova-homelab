@@ -1,0 +1,35 @@
+---
+- name: Verify directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ stacks_path }}/prometheus"
+    - "{{ stacks_path }}/prometheus/prometheus"
+
+- name: Upload .network file
+  ansible.builtin.template:
+    src: "prometheus.network.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/prometheus.network"
+    mode: '0644'
+  notify: Restart prometheus
+
+- name: Upload prometheus.yml file
+  ansible.builtin.template:
+    src: "prometheus.yml.j2"
+    dest: "{{ stacks_path }}/prometheus/prometheus.yml"
+    mode: '0644'
+  notify: Restart prometheus
+
+- name: Upload .container file
+  ansible.builtin.template:
+    src: "prometheus.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/prometheus.container"
+    mode: '0644'
+  notify: Restart prometheus
+
+- name: Download Podman images
+  containers.podman.podman_image:
+    name: "{{ prometheus_image }}"
+    state: present

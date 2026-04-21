@@ -90,7 +90,7 @@ http:// {
 
     handle {
         import authelia_middleware_basic # TODO: prometheus does not support any forward auth?? - need to check
-        reverse_proxy prometheus: # TODO: port
+        reverse_proxy prometheus:9090
     }
 }
 

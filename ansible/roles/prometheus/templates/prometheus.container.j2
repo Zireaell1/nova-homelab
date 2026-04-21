@@ -1,0 +1,24 @@
+[Unit]
+Description=Prometheus
+
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image={{ prometheus_image }}
+ContainerName=prometheus
+Timezone={{ timezone }}
+Memory={{ prometheus_memory_limit }}
+
+UserNS=keep-id
+
+Volume={{ stacks_path }}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+Volume={{ stacks_path }}/prometheus/prometheus-data:/prometheus:Z
+
+Network=home.network
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
