@@ -84,5 +84,16 @@ camera_entry_http_ip: "10.10.10.13:80"
 camera_entry_rtsp_ip: "10.10.10.13:554"
 
 vg_name: "fedora_nova-2"
-lv_root_size: "15g"
-lv_home_size: "50g"
+
+target_lvs:
+  - name: root
+    size: 15g
+    manage_fs_and_mount: false
+  - name: home
+    size: 50g
+    mount_path: /home
+    manage_fs_and_mount: true
+  - name: monitoring
+    size: 10g
+    mount_path: /srv/monitoring
+    manage_fs_and_mount: true

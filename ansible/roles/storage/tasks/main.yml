@@ -1,24 +1,36 @@
 ---
-- name: Resize root volume to {{ lv_root_size }} and resize filesystem
+- name: Ensure Logical Volumes exist and are sized correctly
   community.general.lvol:
     vg: "{{ vg_name }}"
-    lv: "root"
-    size: "{{ lv_root_size }}"
+    lv: "{{ item.name }}"
+    size: "{{ item.size }}"
     resizefs: true
+  loop: "{{ target_lvs }}"
 
-- name: Ensure /home LV exists and has {{ lv_home_size }} size
-  community.general.lvol:
-    vg: "{{ vg_name }}"
-    lv: "home"
-    size: "{{ lv_home_size }}"
-    resizefs: true
+- name: Ensure XFS filesystem is formatted on required LVs
+  community.general.filesystem:
+    fstype: xfs
+    dev: "/dev/{{ vg_name }}/{{ item.name }}"
+  loop: "{{ target_lvs }}"
+  when: item.manage_fs_and_mount | bool
+  ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Ensure /home is in fstab and mounted
+- name: Ensure required LVs are in fstab and mounted
   ansible.posix.mount:
-    path: /home
-    src: "/dev/{{ vg_name }}/home"
+    path: "{{ item.mount_path }}"
+    src: "/dev/{{ vg_name }}/{{ item.name }}"
     fstype: xfs
     state: mounted
+  loop: "{{ target_lvs }}"
+  when: item.manage_fs_and_mount | bool
+
+- name: Hand over /srv/monitoring to the rootless user
+  ansible.builtin.file:
+    path: /srv/monitoring
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
 
 - name: Check if mountpoints exists
   ansible.builtin.file:
