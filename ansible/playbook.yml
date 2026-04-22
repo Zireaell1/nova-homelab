@@ -27,12 +27,12 @@
       tags: ['restic']
     - role: frigate
       tags: ['frigate']
+    - role: prometheus
+      tags: ['prometheus']
     - role: caddy
       tags: ['caddy']
     - role: mosquitto
       tags: ['mosquitto']
-    - role: prometheus
-      tags: ['prometheus']
   post_tasks:
     - name: Clear unused Podman images
       containers.podman.podman_prune:
