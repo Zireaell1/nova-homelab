@@ -5,20 +5,20 @@
     state: directory
     mode: '0755'
   loop:
-    - "{{ stacks_path }}/prometheus"
-    - "{{ stacks_path }}/prometheus/prometheus"
+    - "/srv/monitoring/prometheus"
+    - "/srv/monitoring/prometheus/data"
+
+- name: Upload prometheus.yml file
+  ansible.builtin.template:
+    src: "prometheus.yml.j2"
+    dest: "/srv/monitoring/prometheus/prometheus.yml"
+    mode: '0644'
+  notify: Restart prometheus
 
 - name: Upload .network file
   ansible.builtin.template:
     src: "prometheus.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/prometheus.network"
-    mode: '0644'
-  notify: Restart prometheus
-
-- name: Upload prometheus.yml file
-  ansible.builtin.template:
-    src: "prometheus.yml.j2"
-    dest: "{{ stacks_path }}/prometheus/prometheus.yml"
     mode: '0644'
   notify: Restart prometheus
 

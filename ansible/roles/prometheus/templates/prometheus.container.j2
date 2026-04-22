@@ -10,11 +10,12 @@ ContainerName=prometheus
 Timezone={{ timezone }}
 Memory={{ prometheus_memory_limit }}
 
-UserNS=keep-id
+UserNS=keep-id:uid=65532,gid=65532
 
-Volume={{ stacks_path }}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
-Volume={{ stacks_path }}/prometheus/prometheus-data:/prometheus:Z
+Volume=/srv/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+Volume=/srv/monitoring/prometheus/data:/prometheus:Z
 
+Network=prometheus.network
 Network=home.network
 
 [Service]
