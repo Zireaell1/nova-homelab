@@ -28,6 +28,8 @@ services:
     subdomain: "pihole"
   prometheus:
     subdomain: "prometheus"
+  loki:
+    subdomain: "logs"
   restic:
     subdomain: "restic"
   immich:

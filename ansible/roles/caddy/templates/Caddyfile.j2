@@ -83,6 +83,17 @@ http:// {
     }
 }
 
+{{ services['loki']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        # TODO: auth
+        reverse_proxy loki:3100
+    }
+}
+
 {{ services['prometheus']['subdomain'] }}.{{ vault_domain }} {
     import standard
 

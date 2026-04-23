@@ -1,0 +1,30 @@
+[Unit]
+Description=Loki
+
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image={{ loki_image }}
+ContainerName=loki
+Timezone={{ timezone }}
+Memory={{ loki_memory_limit }}
+
+UserNS=keep-id:uid=10001,gid=10001
+
+Volume=/srv/monitoring/loki/loki.yaml:/etc/loki/local-config.yaml:ro,Z
+Volume=/srv/monitoring/loki/data:/loki:Z
+
+Network=loki.network
+
+HealthCmd=/usr/bin/loki -health
+HealthInterval=15s
+HealthRetries=5
+HealthStartPeriod=30s
+HealthTimeout=5s
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
