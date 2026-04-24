@@ -16,6 +16,8 @@ Volume=/srv/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:
 Volume=/srv/monitoring/prometheus/data:/prometheus:Z
 
 Network=prometheus.network
+Network=monitoring-backend.network
+
 Network=home.network
 
 [Service]

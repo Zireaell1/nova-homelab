@@ -16,6 +16,7 @@ Volume=/srv/monitoring/loki/loki.yaml:/etc/loki/local-config.yaml:ro,Z
 Volume=/srv/monitoring/loki/data:/loki:Z
 
 Network=loki.network
+Network=monitoring-backend.network
 
 HealthCmd=/usr/bin/loki -health
 HealthInterval=15s
