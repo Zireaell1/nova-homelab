@@ -4,6 +4,8 @@ Description=Pi-Hole
 Wants=network-online.target
 After=network-online.target
 
+RequiresMountsFor={{ stacks_path }}/pihole/etc-pihole
+
 [Container]
 Image={{ pihole_image }}
 ContainerName=pihole

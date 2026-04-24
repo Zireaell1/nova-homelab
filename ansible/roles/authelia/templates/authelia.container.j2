@@ -7,6 +7,8 @@ After=network-online.target
 Requires=authelia-postgres.service authelia-redis.service
 After=authelia-postgres.service authelia-redis.service
 
+RequiresMountsFor={{ stacks_path }}/authelia/config
+
 [Container]
 Image={{ authelia_image }}
 ContainerName=authelia
@@ -25,6 +27,7 @@ Network=authelia-backend.network
 
 [Service]
 Restart=always
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target

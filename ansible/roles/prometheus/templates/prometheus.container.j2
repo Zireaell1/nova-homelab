@@ -4,6 +4,8 @@ Description=Prometheus
 Wants=network-online.target
 After=network-online.target
 
+RequiresMountsFor=/srv/monitoring/prometheus/data
+
 [Container]
 Image={{ prometheus_image }}
 ContainerName=prometheus
@@ -22,6 +24,7 @@ Network=home.network
 
 [Service]
 Restart=always
+TimeoutStopSec=330
 
 [Install]
 WantedBy=default.target

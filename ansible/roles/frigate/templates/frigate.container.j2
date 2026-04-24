@@ -4,6 +4,9 @@ Description=Frigate
 Wants=network-online.target
 After=network-online.target
 
+RequiresMountsFor={{ stacks_path }}/frigate/config
+RequiresMountsFor={{ frigate_storage_path }}
+
 [Container]
 Image={{ frigate_image }}
 ContainerName=frigate

@@ -1,6 +1,8 @@
 [Unit]
 Description=Authelia PostgreSQL
 
+RequiresMountsFor={{ stacks_path }}/authelia/postgres
+
 [Container]
 Image={{ authelia_postgres_image }}
 ContainerName=authelia-postgres
@@ -17,6 +19,7 @@ Network=authelia-backend.network
 
 [Service]
 Restart=always
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target

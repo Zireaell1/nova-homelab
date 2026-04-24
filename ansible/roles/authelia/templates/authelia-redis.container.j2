@@ -1,6 +1,8 @@
 [Unit]
 Description=Authelia Redis
 
+RequiresMountsFor={{ stacks_path }}/authelia/redis
+
 [Container]
 Image={{ authelia_redis_image }}
 ContainerName=authelia-redis
@@ -15,6 +17,7 @@ Network=authelia-backend.network
 
 [Service]
 Restart=always
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target

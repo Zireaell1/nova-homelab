@@ -7,6 +7,9 @@ After=network-online.target
 After=caddy.socket
 Requires=caddy.socket
 
+RequiresMountsFor={{ stacks_path }}/caddy/data
+RequiresMountsFor={{ stacks_path }}/caddy/config
+
 [Container]
 Image=localhost/custom-caddy:{{ caddy_version }}
 ContainerName=caddy
