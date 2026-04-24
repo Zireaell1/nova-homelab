@@ -20,7 +20,7 @@ Volume=/srv/monitoring/loki/data:/loki:Z
 Network=loki.network
 Network=monitoring-backend.network
 
-HealthCmd=/usr/bin/loki -health
+HealthCmd=/usr/bin/loki -health -health.url=http://127.0.0.1:3100/ready
 HealthInterval=15s
 HealthRetries=5
 HealthStartPeriod=30s
