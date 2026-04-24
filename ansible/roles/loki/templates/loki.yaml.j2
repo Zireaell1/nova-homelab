@@ -1,5 +1,8 @@
 auth_enabled: false
 
+server:
+  log_level: warn
+
 analytics:
   reporting_enabled: false
 
@@ -49,6 +52,7 @@ compactor:
   retention_enabled: true
   retention_delete_delay: 2h
   retention_delete_worker_count: 150
+  delete_request_store: filesystem
 
 limits_config:
   retention_period: 14d
@@ -63,6 +67,6 @@ ruler:
   storage:
     type: local
     local:
-      directory: /rules
+      directory: /loki/rules
   rule_path: /loki/rules-temp
   evaluation_interval: 1m
