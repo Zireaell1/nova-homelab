@@ -1,0 +1,6 @@
+---
+- name: Upload .network file
+  ansible.builtin.template:
+    src: "monitoring-backend.network.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/monitoring-backend.network"
+    mode: '0644'

@@ -27,6 +27,8 @@
       tags: ['restic']
     - role: frigate
       tags: ['frigate']
+    - role: monitoring-base
+      tags: ['monitoring-base', 'monitoring']
     - role: prometheus
       tags: ['prometheus', 'monitoring']
     - role: loki
