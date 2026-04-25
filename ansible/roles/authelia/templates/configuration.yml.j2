@@ -23,6 +23,15 @@ definitions:
 access_control:
   default_policy: 'deny'
   rules:
+    # Grafana Two-factor Auth (Admin Only)
+    - domain: '{{ services['grafana']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
     # Prometheus Two-factor Auth (Admin Only)
     - domain: '{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
