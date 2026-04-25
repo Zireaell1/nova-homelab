@@ -12,6 +12,10 @@ ContainerName=prometheus
 Timezone={{ timezone }}
 Memory={{ prometheus_memory_limit }}
 
+Exec=--config.file=/etc/prometheus/prometheus.yml \
+     --storage.tsdb.path=/prometheus \
+     --web.enable-remote-write-receiver
+
 UserNS=keep-id:uid=65532,gid=65532
 
 Volume=/srv/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
