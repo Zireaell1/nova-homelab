@@ -19,24 +19,27 @@
     - role: nut
       become: true
       tags: ['nut']
-    - role: pihole
-      tags: ['pihole']
-    - role: authelia
-      tags: ['authelia']
-    - role: restic
-      tags: ['restic']
-    - role: frigate
-      tags: ['frigate']
     - role: monitoring-base
       tags: ['monitoring-base', 'monitoring']
     - role: prometheus
       tags: ['prometheus', 'monitoring']
     - role: loki
       tags: ['loki', 'monitoring']
-    - role: caddy
-      tags: ['caddy']
+    - role: alloy
+      become: true
+      tags: ['alloy', 'monitoring']
+    - role: pihole
+      tags: ['pihole']
+    - role: authelia
+      tags: ['authelia']
     - role: mosquitto
       tags: ['mosquitto']
+    - role: restic
+      tags: ['restic']
+    - role: frigate
+      tags: ['frigate']
+    - role: caddy
+      tags: ['caddy']
   post_tasks:
     - name: Clear unused Podman images
       containers.podman.podman_prune:

@@ -1,0 +1,48 @@
+---
+- name: Add Grafana package repository
+  ansible.builtin.yum_repository:
+    name: grafana
+    description: grafana
+    baseurl: https://rpm.grafana.com
+    gpgcheck: yes
+    repo_gpgcheck: yes
+    gpgkey: https://rpm.grafana.com/gpg.key
+    enabled: yes
+    sslverify: yes
+    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+
+- name: Install Grafana Alloy
+  ansible.builtin.dnf:
+    name: alloy
+    state: present
+    update_cache: yes
+
+- name: Add alloy user to systemd-journal group
+  ansible.builtin.user:
+    name: alloy
+    groups: systemd-journal
+    append: yes
+  notify: Restart Alloy
+
+- name: Configure Alloy environment variables
+  ansible.builtin.lineinfile:
+    path: /etc/sysconfig/alloy
+    regexp: '^#?\s*CUSTOM_ARGS='
+    line: 'CUSTOM_ARGS="--disable-reporting"'
+    state: present
+  notify: Restart Alloy
+
+- name: Deploy Alloy configuration
+  ansible.builtin.template:
+    src: config.alloy.j2
+    dest: /etc/alloy/config.alloy
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Alloy
+
+- name: Ensure Alloy is enabled and running
+  ansible.builtin.systemd:
+    name: alloy.service
+    state: started
+    enabled: yes

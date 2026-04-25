@@ -1,0 +1,55 @@
+logging {
+    level = "info"
+}
+
+prometheus.remote_write "local_prom" {
+    endpoint {
+        url = "http://127.0.0.1:9080/api/v1/write"
+    }
+}
+
+loki.write "local_loki" {
+    endpoint {
+        url = "http://127.0.0.1:3100/loki/api/v1/push"
+    }
+}
+
+loki.source.journal "system" {
+    forward_to = [loki.relabel.journal.receiver]
+}
+
+loki.relabel "journal" {
+    forward_to = [loki.write.local_loki.receiver]
+
+    rule {
+        source_labels = ["__journal__systemd_unit"]
+        target_label  = "unit"
+    }
+    rule {
+        source_labels = ["__journal_syslog_identifier"]
+        target_label  = "syslog_identifier"
+    }
+    
+    rule {
+        target_label = "host"
+        replacement  = constants.hostname
+    }
+}
+
+prometheus.exporter.unix "host" {
+    include_exporter_metrics = true
+    disable_collectors       = ["mdadm"]
+}
+
+prometheus.scrape "host_metrics" {
+    targets = array.concat(
+        prometheus.exporter.unix.host.targets,
+        [{
+            job         = "alloy",
+            __address__ = "127.0.0.1:12345",
+        }],
+    )
+    forward_to      = [prometheus.remote_write.local_prom.receiver]
+
+    scrape_interval = "15s" 
+}
