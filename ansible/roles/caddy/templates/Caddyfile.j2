@@ -105,6 +105,17 @@ http:// {
     }
 }
 
+{{ services['grafana']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        import authelia_middleware
+        reverse_proxy grafana:3000
+    }
+}
+
 {{ services['restic']['subdomain'] }}.{{ vault_domain }} {
     # TODO: Probably doesn't make sense to compress data there, if sent data is already compressed
 
