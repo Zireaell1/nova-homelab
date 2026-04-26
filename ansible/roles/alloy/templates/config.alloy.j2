@@ -39,6 +39,7 @@ loki.relabel "journal" {
 prometheus.exporter.unix "host" {
     include_exporter_metrics = true
     disable_collectors       = ["mdadm"]
+    enable_collectors        = ["systemd", "processes", "logind"]
 }
 
 prometheus.scrape "host_metrics" {
