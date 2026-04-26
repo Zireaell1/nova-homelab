@@ -28,6 +28,8 @@
     - role: alloy
       become: true
       tags: ['alloy', 'monitoring']
+    - role: grafana
+      tags: ['grafana', 'monitoring']
     - role: pihole
       tags: ['pihole']
     - role: authelia

@@ -1,0 +1,5 @@
+---
+grafana_memory_limit: "2g"
+
+# https://hub.docker.com/r/grafana/grafana/
+grafana_image: "docker.io/grafana/grafana:13.0.1"

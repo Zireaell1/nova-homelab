@@ -1,0 +1,30 @@
+[Unit]
+Description=Grafana
+
+Wants=network-online.target
+After=network-online.target
+
+RequiresMountsFor=/srv/monitoring/grafana/data
+
+[Container]
+Image={{ grafana_image }}
+ContainerName=grafana
+Timezone={{ timezone }}
+Memory={{ grafana_memory_limit }}
+
+UserNS=keep-id:uid=472,gid=472
+
+EnvironmentFile=/srv/monitoring/grafana/grafana.env
+
+Volume=/srv/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro,Z
+Volume=/srv/monitoring/grafana/data:/var/lib/grafana:Z
+
+Network=grafana.network
+Network=monitoring-backend.network
+
+[Service]
+Restart=always
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target
