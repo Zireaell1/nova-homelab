@@ -73,6 +73,16 @@ http:// {
 }
 
 # Subdomains
+{{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        reverse_proxy vaultwarden:8000
+    }
+}
+
 {{ services['authelia']['subdomain'] }}.{{ vault_domain }} {
     import standard
 

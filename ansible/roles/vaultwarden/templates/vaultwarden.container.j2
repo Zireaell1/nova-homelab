@@ -1,0 +1,38 @@
+[Unit]
+Description=Vaultwarden
+
+Wants=network-online.target
+After=network-online.target
+
+RequiresMountsFor={{ stacks_path }}/vaultwarden/data
+
+[Container]
+Image={{ vaultwarden_image }}
+ContainerName=vaultwarden
+Timezone={{ timezone }}
+Memory={{ vaultwarden_memory_limit }}
+
+DropCapability=all
+NoNewPrivileges=true
+
+HealthCmd=/healthcheck.sh
+HealthInterval=120s
+HealthRetries=10
+HealthTimeout=45s
+
+EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.env
+
+Exec=/start.sh
+
+UserNS=keep-id:uid=0,gid=0
+
+Volume={{ stacks_path }}/vaultwarden/data:/data:Z
+
+Network=vaultwarden.network
+
+[Service]
+Restart=always
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

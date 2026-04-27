@@ -35,7 +35,7 @@ services:
   immich:
     subdomain: "immich"
   vaultwarden:
-    subdomain: "vaultwarden"
+    subdomain: "vault"
   go2rtc:
     subdomain: "go2rtc"
   zigbee2mqtt:
