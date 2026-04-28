@@ -15,16 +15,18 @@ loki.write "local_loki" {
 }
 
 loki.source.journal "system" {
-    forward_to = [loki.relabel.journal.receiver]
+    forward_to    = [loki.write.local_loki.receiver]
+    relabel_rules = loki.relabel.journal.rules
 }
 
 loki.relabel "journal" {
-    forward_to = [loki.write.local_loki.receiver]
+    forward_to = []
 
     rule {
         source_labels = ["__journal__systemd_unit"]
         target_label  = "unit"
     }
+
     rule {
         source_labels = ["__journal_syslog_identifier"]
         target_label  = "syslog_identifier"
@@ -50,7 +52,7 @@ prometheus.scrape "host_metrics" {
             __address__ = "127.0.0.1:12345",
         }],
     )
-    forward_to      = [prometheus.remote_write.local_prom.receiver]
+    forward_to = [prometheus.remote_write.local_prom.receiver]
 
     scrape_interval = "15s" 
 }
