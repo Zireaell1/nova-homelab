@@ -22,15 +22,15 @@
     name: alloy
     groups: systemd-journal
     append: yes
-  notify: Restart Alloy
+  notify: Restart alloy
 
 - name: Configure Alloy environment variables
   ansible.builtin.lineinfile:
     path: /etc/sysconfig/alloy
     regexp: '^#?\s*CUSTOM_ARGS='
-    line: 'CUSTOM_ARGS="--disable-reporting"'
+    line: 'CUSTOM_ARGS="--disable-reporting --server.http.listen-addr=0.0.0.0:12345"'
     state: present
-  notify: Restart Alloy
+  notify: Restart alloy
 
 - name: Deploy Alloy configuration
   ansible.builtin.template:
@@ -39,7 +39,7 @@
     owner: root
     group: root
     mode: '0644'
-  notify: Restart Alloy
+  notify: Restart alloy
 
 - name: Ensure Alloy is enabled and running
   ansible.builtin.systemd:

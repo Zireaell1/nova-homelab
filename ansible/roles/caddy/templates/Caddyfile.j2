@@ -73,6 +73,16 @@ http:// {
 }
 
 # Subdomains
+{{ services['alloy']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        reverse_proxy host.containers.internal:12345
+    }
+}
+
 {{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }} {
     import standard
 

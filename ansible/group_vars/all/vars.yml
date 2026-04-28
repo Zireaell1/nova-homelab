@@ -18,6 +18,8 @@ data_drives:
 timezone: "Europe/Warsaw"
 
 services:
+  alloy:
+    subdomain: "alloy"
   authelia:
     subdomain: "auth"
   frigate:
