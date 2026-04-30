@@ -79,6 +79,7 @@ http:// {
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
+        import authelia_middleware_basic
         reverse_proxy host.containers.internal:12345
     }
 }
