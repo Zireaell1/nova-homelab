@@ -41,6 +41,7 @@
       #- cockpit-files
       - rsync
       - nut
+      - prometheus-podman-exporter
     state: present
 
 - name: Upload lm_sensors config
