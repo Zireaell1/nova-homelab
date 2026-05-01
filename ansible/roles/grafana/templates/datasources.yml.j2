@@ -13,6 +13,7 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
     editable: false 
+    uid: {{ grafana_prometheus_datasource_name }}
     jsonData:
       timeInterval: "15s"
 
@@ -21,5 +22,6 @@ datasources:
     access: proxy
     url: http://loki:3100
     editable: false
+    uid: {{ grafana_loki_datasource_name }}
     jsonData:
       maxLines: 1000

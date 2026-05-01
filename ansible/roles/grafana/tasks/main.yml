@@ -8,6 +8,7 @@
     - "/srv/monitoring/grafana"
     - "/srv/monitoring/grafana/provisioning"
     - "/srv/monitoring/grafana/provisioning/datasources"
+    - "/srv/monitoring/grafana/provisioning/dashboards"
     - "/srv/monitoring/grafana/data"
 
 - name:  Upload .network file
@@ -30,6 +31,16 @@
     src: "datasources.yml.j2"
     dest: "/srv/monitoring/grafana/provisioning/datasources/datasources.yml"
     mode: '0644'
+  notify: Restart grafana
+
+- name: Upload provisioning/dashboards files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/srv/monitoring/grafana/provisioning/dashboards/{{ item }}"
+    mode: '0644'
+  loop:
+    - "frigate-dashboard.json"
+    - "podman-dashboard.json"
   notify: Restart grafana
 
 - name: Upload .container file

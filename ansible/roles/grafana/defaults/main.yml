@@ -3,3 +3,6 @@ grafana_memory_limit: "1g"
 
 # https://hub.docker.com/r/grafana/grafana/
 grafana_image: "docker.io/grafana/grafana:13.0.1"
+
+grafana_prometheus_datasource_name: "prometheus-datasource"
+grafana_loki_datasource_name: "loki-datasource"
