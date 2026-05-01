@@ -47,10 +47,16 @@ prometheus.exporter.unix "host" {
 prometheus.scrape "host_metrics" {
     targets = array.concat(
         prometheus.exporter.unix.host.targets,
-        [{
-            job         = "alloy",
-            __address__ = "127.0.0.1:12345",
-        }],
+        [
+            {
+                job         = "alloy",
+                __address__ = "127.0.0.1:12345",
+            },
+            {
+                job         = "podman",
+                __address__ = "127.0.0.1:9882",
+            },
+        ],
     )
     forward_to = [prometheus.remote_write.local_prom.receiver]
 
