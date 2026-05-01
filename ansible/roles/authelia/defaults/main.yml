@@ -1,7 +1,7 @@
 ---
-authelia_memory_limit: "200m"
+authelia_memory_limit: "150m"
 authelia_redis_memory_limit: "100m"
-authelia_postgres_memory_limit: "200m"
+authelia_postgres_memory_limit: "150m"
 
 # https://hub.docker.com/r/authelia/authelia
 authelia_image: "docker.io/authelia/authelia:4.39.16"
