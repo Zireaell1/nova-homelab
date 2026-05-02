@@ -2,11 +2,11 @@
   "apiVersion": "dashboard.grafana.app/v2",
   "kind": "Dashboard",
   "metadata": {
-    "name": "podman",
+    "name": "zinsxmz",
     "namespace": "default",
     "uid": "2970051c-64ce-49f9-9fac-602c80312a9f",
-    "resourceVersion": "1777673730244991",
-    "generation": 9,
+    "resourceVersion": "1777726663659989",
+    "generation": 11,
     "creationTimestamp": "2026-05-01T18:11:25Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "1139093707173888"
@@ -16,7 +16,7 @@
       "grafana.app/folder": "",
       "grafana.app/saved-from-ui": "Grafana v13.0.1 (a100054f)",
       "grafana.app/updatedBy": "user:ffk8t5pe2c8hsf",
-      "grafana.app/updatedTimestamp": "2026-05-01T22:15:30Z"
+      "grafana.app/updatedTimestamp": "2026-05-02T12:57:43Z"
     }
   },
   "spec": {
@@ -157,6 +157,121 @@
                     }
                   }
                 },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-10": {
+        "kind": "Panel",
+        "spec": {
+          "id": 10,
+          "title": "Container Health Log",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "alertlist",
+            "version": "13.0.1",
+            "spec": {
+              "options": {
+                "alertInstanceLabelFilter": "",
+                "alertName": "",
+                "dashboardAlerts": false,
+                "folder": {
+                  "title": "Homelab Alerts",
+                  "uid": "cfkuik6ptfmdca"
+                },
+                "groupBy": [],
+                "groupMode": "default",
+                "maxItems": 20,
+                "showInactiveAlerts": false,
+                "sortOrder": 5,
+                "stateFilter": {
+                  "error": true,
+                  "firing": true,
+                  "noData": false,
+                  "normal": false,
+                  "pending": true,
+                  "recovering": true
+                },
+                "viewMode": "list"
+              },
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-11": {
+        "kind": "Panel",
+        "spec": {
+          "id": 11,
+          "title": "Container Logs",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "loki",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "{{ grafana_loki_datasource_name }}"
+                      },
+                      "spec": {
+                        "direction": "backward",
+                        "editorMode": "code",
+                        "expr": "{container=~\"$container\"}",
+                        "queryType": "range"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "logs",
+            "version": "13.0.1",
+            "spec": {
+              "options": {
+                "dedupStrategy": "exact",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": false,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showTime": false,
+                "sortOrder": "Descending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": true
+              },
+              "fieldConfig": {
+                "defaults": {},
                 "overrides": []
               }
             }
@@ -1412,6 +1527,19 @@
             "spec": {
               "x": 0,
               "y": 5,
+              "width": 24,
+              "height": 4,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-10"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 9,
               "width": 12,
               "height": 8,
               "element": {
@@ -1424,7 +1552,7 @@
             "kind": "GridLayoutItem",
             "spec": {
               "x": 12,
-              "y": 5,
+              "y": 9,
               "width": 12,
               "height": 8,
               "element": {
@@ -1437,7 +1565,7 @@
             "kind": "GridLayoutItem",
             "spec": {
               "x": 0,
-              "y": 13,
+              "y": 17,
               "width": 12,
               "height": 8,
               "element": {
@@ -1450,7 +1578,7 @@
             "kind": "GridLayoutItem",
             "spec": {
               "x": 12,
-              "y": 13,
+              "y": 17,
               "width": 12,
               "height": 8,
               "element": {
@@ -1463,12 +1591,25 @@
             "kind": "GridLayoutItem",
             "spec": {
               "x": 0,
-              "y": 21,
+              "y": 25,
               "width": 24,
-              "height": 17,
+              "height": 13,
               "element": {
                 "kind": "ElementReference",
                 "name": "panel-9"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 38,
+              "width": 24,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-11"
               }
             }
           }

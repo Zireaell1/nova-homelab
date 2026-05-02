@@ -33,9 +33,23 @@
     mode: '0644'
   notify: Restart grafana
 
-- name: Upload provisioning/dashboards files
+- name: Upload provisioning/alerting/alerting.yml file
   ansible.builtin.template:
-    src: "{{ item }}.j2"
+    src: "alerting.yml.j2"
+    dest: "/srv/monitoring/grafana/provisioning/alerting/alerting.yml"
+    mode: '0644'
+  notify: Restart grafana
+
+- name: Upload provisioning/dashboards/dashboards.yml file
+  ansible.builtin.template:
+    src: "dashboards.yml.j2"
+    dest: "/srv/monitoring/grafana/provisioning/dashboards/dashboards.yml"
+    mode: '0644'
+  notify: Restart grafana
+
+- name: Upload dashboard files
+  ansible.builtin.template:
+    src: "dashboards/{{ item }}.j2"
     dest: "/srv/monitoring/grafana/provisioning/dashboards/{{ item }}"
     mode: '0644'
   loop:
