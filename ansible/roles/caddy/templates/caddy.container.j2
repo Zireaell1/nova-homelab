@@ -39,7 +39,6 @@ Network=grafana.network
 
 [Service]
 Restart=always
-# TODO: + caddyfile ExecReload=podman exec caddy /usr/bin/caddy reload --config /etc/caddy/Caddyfile --address unix//data/admin.sock --force
 
 [Install]
 WantedBy=default.target

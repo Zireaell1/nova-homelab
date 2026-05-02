@@ -41,8 +41,11 @@
 	default_bind fdgram/5 {
 		protocols h3
 	}
-	# TODO: admin unix//data/admin.sock
+
+	admin off
 	auto_https disable_redirects
+
+    metrics
 }
 
 http:// {
@@ -51,6 +54,12 @@ http:// {
 	}
 	redir https://{host}{uri}
 	log # TODO: 
+}
+
+:9091 {
+    bind 0.0.0.0
+
+    metrics
 }
 
 # Wildcard controller
