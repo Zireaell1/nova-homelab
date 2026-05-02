@@ -55,6 +55,7 @@
   loop:
     - "frigate-dashboard.json"
     - "podman-dashboard.json"
+    - "caddy-dashboard.json"
   notify: Restart grafana
 
 - name: Upload .container file
