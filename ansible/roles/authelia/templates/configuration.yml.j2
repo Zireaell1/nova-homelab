@@ -23,6 +23,15 @@ definitions:
 access_control:
   default_policy: 'deny'
   rules:
+    # Alloy Two-factor Auth (Admin Only)
+    - domain: '{{ services['alloy']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
     # Grafana Two-factor Auth (Admin Only)
     - domain: '{{ services['grafana']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
