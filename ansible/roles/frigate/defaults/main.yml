@@ -1,5 +1,5 @@
 ---
-frigate_memory_limit: "5g"
+frigate_memory_limit: "6g"
 
 frigate_storage_path: "/mnt/frigate/storage"
 
