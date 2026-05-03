@@ -22,6 +22,10 @@ services:
     subdomain: "alloy"
   authelia:
     subdomain: "auth"
+  authelia_postgres:
+    quadlet_name: authelia-postgres.service
+  authelia_redis:
+    quadlet_name: authelia-redis.service
   frigate:
     subdomain: "frigate"
   grafana:
