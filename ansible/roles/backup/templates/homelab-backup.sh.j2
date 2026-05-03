@@ -1,0 +1,142 @@
+#!/bin/bash
+
+set -uo pipefail
+
+# ==========================================
+# 1. CONFIGURATION
+# ==========================================
+export RESTIC_PASSWORD="{{ vault_backup_restic_password }}"
+export XDG_CONFIG_HOME="/home/{{ ansible_user }}/.config"
+
+REPO_CRITICAL="{{ backup_repo_critical }}"
+REPO_DEVICES="{{ backup_repo_devices }}"
+RCLONE_TARGET="{{ backup_rclone_target }}"
+
+# ==========================================
+# 2. GENERATE DYNAMIC PATH LISTS
+# ==========================================
+INCLUDE_FILE=$(mktemp /tmp/restic_includes.XXXXXX)
+EXCLUDE_FILE=$(mktemp /tmp/restic_excludes.XXXXXX)
+
+cat << 'EOF' > "$INCLUDE_FILE"
+{% for svc_name, svc_vars in services.items() %}
+{% if 'backup' in svc_vars and svc_vars.backup.get('paths') %}
+{% for path in svc_vars.backup.paths %}
+{{ path }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+EOF
+
+cat << 'EOF' > "$EXCLUDE_FILE"
+{% for svc_name, svc_vars in services.items() %}
+{% if 'backup' in svc_vars and svc_vars.backup.get('excludes') %}
+{% for path in svc_vars.backup.excludes %}
+{{ path }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+EOF
+
+sed -i '/^[[:space:]]*$/d' "$INCLUDE_FILE" "$EXCLUDE_FILE"
+
+SERVICES_TO_STOP=(
+{% for svc_name, svc_vars in services.items() %}
+{% if 'backup' in svc_vars and svc_vars.backup.get('stop', false) %}
+  "{{ svc_vars.get('quadlet_name', svc_name ~ '.service') }}"
+{% endif %}
+{% endfor %}
+)
+
+# ==========================================
+# 3. TRAP CLEANUP
+# ==========================================
+cleanup_and_start() {
+    local exit_code=$?
+    echo "[INFO] Running final cleanup procedure (Trap)..."
+    
+    if [ ${#SERVICES_TO_STOP[@]} -gt 0 ]; then
+        echo "[INFO] Restarting systemd services..."
+        for service in "${SERVICES_TO_STOP[@]}"; do
+            systemctl --user start "$service" || echo "[WARNING] Failed to start $service"
+        done
+    fi
+
+    rm -f "$INCLUDE_FILE" "$EXCLUDE_FILE"
+
+    if [ $exit_code -ne 0 ]; then
+        echo "[CRITICAL] Script failed with exit code: $exit_code"
+    else
+        echo "[SUCCESS] Backup routine completed successfully."
+    fi
+    exit $exit_code
+}
+
+trap cleanup_and_start EXIT INT TERM
+
+# ==========================================
+# 4. PRE-FLIGHT CHECKS
+# ==========================================
+echo "[INFO] Running pre-flight checks..."
+
+export RESTIC_REPOSITORY="$REPO_CRITICAL"
+if ! restic snapshots >/dev/null 2>&1; then
+    echo >&2 "[ERROR] Critical repository $REPO_CRITICAL does not exist, is corrupted, or password is incorrect!"
+    exit 1
+fi
+
+# ==========================================
+# 5. PRE-HOOK: STOP SERVICES
+# ==========================================
+if [ ${#SERVICES_TO_STOP[@]} -gt 0 ]; then
+    echo "[INFO] Stopping stateful services (Rootless Quadlets)..."
+    for service in "${SERVICES_TO_STOP[@]}"; do
+        systemctl --user stop "$service"
+    done
+fi
+
+# ==========================================
+# 6. BACKUP: CRITICAL DATA
+# ==========================================
+if [ -s "$INCLUDE_FILE" ]; then
+    echo "[INFO] Running Restic backup for critical data..."
+    export RESTIC_REPOSITORY="$REPO_CRITICAL"
+
+    restic backup \
+        --files-from "$INCLUDE_FILE" \
+        --exclude-file "$EXCLUDE_FILE" \
+        --compression max \
+        --verbose=1
+
+    echo "[INFO] Verifying repository integrity..."
+    restic check --read-data-subset=10% || { echo "[ERROR] Repository is corrupted!"; exit 1; }
+else
+    echo "[INFO] No critical paths defined to backup. Skipping Restic execution."
+fi
+
+if [ ${#SERVICES_TO_STOP[@]} -gt 0 ]; then
+    echo "[INFO] Local backup finished. Fast restarting services..."
+    for service in "${SERVICES_TO_STOP[@]}"; do
+        systemctl --user start "$service"
+    done
+    SERVICES_TO_STOP=()
+fi
+
+# ==========================================
+# 7. CLOUD SYNC (Rclone)
+# ==========================================
+echo "[INFO] Syncing local repositories to the cloud..."
+
+rclone sync "$REPO_CRITICAL" "${RCLONE_TARGET}/homelab-critical" --fast-list --transfers 8
+
+if [ -d "$REPO_DEVICES" ]; then
+    echo "[INFO] Syncing external device repositories..."
+    rclone sync "$REPO_DEVICES" "${RCLONE_TARGET}/devices" --fast-list --transfers 8
+fi
+
+# ==========================================
+# 8. RETENTION (Pruning)
+# ==========================================
+echo "[INFO] Running retention policy (Prune)..."
+export RESTIC_REPOSITORY="$REPO_CRITICAL"
+restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 6

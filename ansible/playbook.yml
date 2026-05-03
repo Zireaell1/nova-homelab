@@ -47,7 +47,11 @@
       tags: ['vaultwarden']
     - role: caddy
       tags: ['caddy']
+
+    - role: backup
+      tags: ['backup']
   post_tasks:
+    # TODO: not working, should be a service with timer
     - name: Clear unused Podman images
       containers.podman.podman_prune:
         image: true

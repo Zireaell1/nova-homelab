@@ -1,0 +1,82 @@
+---
+- name: Verify directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0700'
+  loop:
+    - "{{ backup_repo_critical }}"
+    - "{{ backup_repo_bulk }}"
+
+- name: Ensure rclone config directory exists
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user }}/.config/rclone"
+    state: directory
+    mode: '0700'
+
+- name: Generate rclone configuration file
+  ansible.builtin.template:
+    src: rclone.conf.j2
+    dest: "/home/{{ ansible_user }}/.config/rclone/rclone.conf"
+    mode: '0600'
+
+- name: Check if CRITICAL repository is already initialized
+  ansible.builtin.command: restic snapshots
+  environment:
+    RESTIC_PASSWORD: "{{ backup_restic_password }}"
+    RESTIC_REPOSITORY: "{{ backup_repo_critical }}"
+  register: restic_critical_check
+  failed_when: false
+  changed_when: false
+
+- name: Initialize CRITICAL repository
+  ansible.builtin.command: restic init
+  environment:
+    RESTIC_PASSWORD: "{{ backup_restic_password }}"
+    RESTIC_REPOSITORY: "{{ backup_repo_critical }}"
+  when: restic_critical_check.rc != 0
+
+- name: Generate backup script from Jinja2 template (with Bash validation)
+  ansible.builtin.template:
+    src: homelab-backup.sh.j2
+    dest: "/home/{{ ansible_user }}/.local/bin/homelab-backup.sh"
+    mode: '0700'
+    validate: 'bash -n %s'
+
+- name: Deploy Systemd Service file
+  ansible.builtin.copy:
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup.service"
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Restic & Rclone Homelab Backup
+      
+      [Service]
+      Type=oneshot
+      ExecStart=/home/{{ ansible_user }}/.local/bin/homelab-backup.sh
+      StandardOutput=journal
+      StandardError=journal
+
+- name: Deploy Systemd Timer file
+  ansible.builtin.copy:
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup.timer"
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Daily homelab backup (Restic)
+
+      [Timer]
+      OnCalendar=*-*-* 02:00:00
+      Persistent=true
+      RandomizedDelaySec=5m
+
+      [Install]
+      WantedBy=timers.target
+
+- name: Enable and start the Timer for user
+  ansible.builtin.systemd:
+    name: homelab-backup.timer
+    scope: user
+    enabled: yes
+    state: started
+    daemon_reload: yes

@@ -1,0 +1,6 @@
+---
+backup_repo_critical: "/mnt/backup/homelab-critical"
+backup_repo_devices: "/mnt/backup/rest-server-data"
+
+backup_rclone_remote_name: "external"
+backup_rclone_target: "{{ backup_rclone_remote_name }}:{{ vault_backup_rclone_bucket_name }}"
