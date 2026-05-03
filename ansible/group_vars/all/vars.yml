@@ -26,7 +26,7 @@ services:
     subdomain: "frigate"
   grafana:
     subdomain: "grafana"
-  pi-hole:
+  pihole:
     subdomain: "pihole"
   prometheus:
     subdomain: "prometheus"
@@ -52,13 +52,13 @@ services:
     subdomain: "switch"
   mainsail:
     subdomain: "mainsail"
-  camera-doorbell:
+  camera_doorbell:
     subdomain: "camera-doorbell"
-  camera-front:
+  camera_front:
     subdomain: "camera-front"
-  camera-back:
+  camera_back:
     subdomain: "camera-back"
-  camera-entry:
+  camera_entry:
     subdomain: "camera-entry"
 
 ip: "192.168.3.2"

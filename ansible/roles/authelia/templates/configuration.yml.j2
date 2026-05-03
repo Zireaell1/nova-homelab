@@ -60,7 +60,7 @@ access_control:
         - ['group:admin']
 
     # Camera-Front Two-factor Auth (Admin Only)
-    - domain: '{{ services['camera-front']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ services['camera_front']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -69,7 +69,7 @@ access_control:
         - ['group:admin']
 
     # Camera-Back Two-factor Auth (Admin Only)
-    - domain: '{{ services['camera-back']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ services['camera_back']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -78,7 +78,7 @@ access_control:
         - ['group:admin']
 
     # Camera-Doorbell Two-factor Auth (Admin Only)
-    - domain: '{{ services['camera-doorbell']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -87,7 +87,7 @@ access_control:
         - ['group:admin']
 
     # Camera-Entry Two-factor Auth (Admin Only)
-    - domain: '{{ services['camera-entry']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ services['camera_entry']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -160,7 +160,7 @@ access_control:
         - ['group:admin']
 
     # Pi-Hole Bypass Webmanifest
-    - domain: '{{ services['pi-hole']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ services['pihole']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -170,7 +170,7 @@ access_control:
         - '^/admin/img/favicons/.*\.png$'
 
     # Pi-Hole Two-factor Auth (Admin Only)
-    - domain: '{{ services['pi-hole']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ services['pihole']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'

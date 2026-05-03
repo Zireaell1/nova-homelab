@@ -224,7 +224,7 @@ http:// {
     }
 }
 
-{{ services['pi-hole']['subdomain'] }}.{{ vault_domain }} {
+{{ services['pihole']['subdomain'] }}.{{ vault_domain }} {
     import standard
 
     import gatekeeper {{ network_home }} {{ network_tailscale }}
@@ -257,7 +257,7 @@ http:// {
     }
 }
 
-{{ services['camera-doorbell']['subdomain'] }}.{{ vault_domain }} {
+{{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }} {
     import standard
 
     import gatekeeper {{ network_home }}
@@ -269,7 +269,7 @@ http:// {
     }
 }
 
-{{ services['camera-front']['subdomain'] }}.{{ vault_domain }} {
+{{ services['camera_front']['subdomain'] }}.{{ vault_domain }} {
     import standard
 
     import gatekeeper {{ network_home }}
@@ -281,7 +281,7 @@ http:// {
     }
 }
 
-{{ services['camera-back']['subdomain'] }}.{{ vault_domain }} {
+{{ services['camera_back']['subdomain'] }}.{{ vault_domain }} {
     import standard
 
     import gatekeeper {{ network_home }}
@@ -293,7 +293,7 @@ http:// {
     }
 }
 
-{{ services['camera-entry']['subdomain'] }}.{{ vault_domain }} {
+{{ services['camera_entry']['subdomain'] }}.{{ vault_domain }} {
     import standard
 
     import gatekeeper {{ network_home }}
