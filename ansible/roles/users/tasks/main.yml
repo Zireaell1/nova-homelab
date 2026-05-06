@@ -23,12 +23,16 @@
     state: present
   loop:
     - render
+    - dialout
 
 - name: Assign user to groups
   ansible.builtin.user:
     name: "{{ ansible_user }}"
-    groups: render
+    groups: "{{ item }}"
     append: true
+  loop:
+    - render
+    - dialout
 
 - name: Reset SSH connection to apply group changes
   ansible.builtin.meta: reset_connection
