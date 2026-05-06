@@ -1,0 +1,41 @@
+[Unit]
+Description=Zigbee2MQTT
+Documentation=https://www.zigbee2mqtt.io/
+
+Wants=network-online.target
+After=network-online.target
+
+RequiresMountsFor={{ stacks_path }}/zigbee2mqtt/data
+RequiresMountsFor={{ stacks_path }}/zigbee2mqtt/config
+
+[Container]
+Image={{ zigbee2mqtt_image }}
+ContainerName=zigbee2mqtt
+Timezone={{ timezone }}
+Memory={{ zigbee2mqtt_memory_limit }}
+
+EnvironmentFile={{ stacks_path }}/zigbee2mqtt/zigbee2mqtt.env
+
+StopTimeout=20
+
+AddDevice=/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_348e0dcf501fef11abc857d0639e525b-if00-port0:/dev/ttyACM0
+
+GroupAdd=keep-groups
+UserNS=keep-id:uid=0,gid=0
+
+Volume={{ stacks_path }}/zigbee2mqtt/data:/app/data:Z
+Volume={{ stacks_path }}/zigbee2mqtt/config/configuration.yaml:/app/data/configuration.yaml:Z
+Volume={{ stacks_path }}/zigbee2mqtt/config/secret.yaml:/app/data/secret.yaml:Z
+Volume={{ stacks_path }}/zigbee2mqtt/config/devices.yaml:/app/data/devices.yaml:Z
+Volume={{ stacks_path }}/zigbee2mqtt/config/groups.yaml:/app/data/groups.yaml:Z
+
+Network=zigbee2mqtt.network
+Network=home.network
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

@@ -38,13 +38,16 @@
     - role: authelia
       tags: ['authelia']
     - role: mosquitto
-      tags: ['mosquitto']
+      tags: ['mosquitto', 'home']
     - role: restic
       tags: ['restic']
     - role: frigate
-      tags: ['frigate']
+      tags: ['frigate', 'home']
     - role: vaultwarden
       tags: ['vaultwarden']
+    - role: zigbee2mqtt
+      tags: ['zigbee2mqtt', 'home']
+
     - role: caddy
       tags: ['caddy']
 

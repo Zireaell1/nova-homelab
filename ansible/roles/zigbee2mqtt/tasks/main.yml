@@ -1,0 +1,55 @@
+---
+- name: Verify directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ stacks_path }}/zigbee2mqtt"
+    - "{{ stacks_path }}/zigbee2mqtt/data"
+    - "{{ stacks_path }}/zigbee2mqtt/config"
+
+- name: Upload .network file
+  ansible.builtin.template:
+    src: "zigbee2mqtt.network.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/zigbee2mqtt.network"
+    mode: '0644'
+  notify: Restart zigbee2mqtt
+
+- name: Upload .env file
+  ansible.builtin.template:
+    src: "zigbee2mqtt.env.j2"
+    dest: "{{ stacks_path }}/zigbee2mqtt/zigbee2mqtt.env"
+    mode: '0600'
+  notify: Restart zigbee2mqtt
+
+- name: Upload configuration.yaml, devices.yaml, groups.yaml files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ stacks_path }}/zigbee2mqtt/config/{{ item }}"
+    mode: '0644'
+  loop:
+    - "configuration.yaml"
+    - "devices.yaml"
+    - "groups.yaml"
+  notify: Restart zigbee2mqtt
+
+- name: Upload secret.yaml file
+  ansible.builtin.template:
+    src: "secret.yaml.j2"
+    dest: "{{ stacks_path }}/zigbee2mqtt/config/secret.yaml"
+    mode: '0600'
+  no_log: true
+  notify: Restart zigbee2mqtt
+
+- name: Upload .container file
+  ansible.builtin.template:
+    src: "zigbee2mqtt.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/zigbee2mqtt.container"
+    mode: '0644'
+  notify: Restart zigbee2mqtt
+
+- name: Download Podman images
+  containers.podman.podman_image:
+    name: "{{ zigbee2mqtt_image }}"
+    state: present

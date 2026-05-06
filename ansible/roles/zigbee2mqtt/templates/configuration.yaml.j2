@@ -1,0 +1,29 @@
+version: 5
+
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mosquitto:1883
+  user: '!secret.yaml user'
+  password: '!secret.yaml password'
+  client_id: zigbee2mqtt
+
+serial:
+  port: /dev/ttyACM0
+  adapter: ember
+
+advanced:
+  channel: 11
+  network_key: '!secret.yaml network_key'
+  pan_id: 26794
+  ext_pan_id: [88, 193, 119, 212, 12, 5, 136, 240]
+
+frontend:
+  enabled: true
+  url: {{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}
+
+homeassistant:
+  enabled: true
+
+devices: devices.yaml
+
+groups: groups.yaml
