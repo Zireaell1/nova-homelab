@@ -1,9 +1,4 @@
 ---
-# - name: Ensure dnf-plugins-core is installed (for needs-restarting)
-#   ansible.builtin.dnf:
-#     name: dnf-plugins-core
-#     state: present
-
 - name: DNF Update
   ansible.builtin.dnf:
     name: "*"
@@ -16,10 +11,9 @@
   check_mode: false
   changed_when: false
 
-- name: Reboot after update
-  ansible.builtin.reboot:
-    msg: "Ansible: Reboot after DNF update"
-    reboot_timeout: 600
+- name: Notify that a reboot is required after update
+  ansible.builtin.debug:
+    msg: "WARNING: A reboot is required after the DNF update. Please restart the system manually."
   when: reboot_required.rc == 1
 
 - name: Software install
