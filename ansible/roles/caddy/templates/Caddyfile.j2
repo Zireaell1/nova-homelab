@@ -24,6 +24,18 @@
     encode
 }
 
+(secure_headers) {
+    header {
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "0"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        -Server
+        -X-Powered-By
+    }
+}
+
 (gatekeeper) {
     @denied {
         not remote_ip {args[:]}
@@ -73,7 +85,7 @@ http:// {
 {{ vault_domain }} {
     import cloudflare_tls
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -84,7 +96,7 @@ http:// {
 # Subdomains
 {{ services['alloy']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -95,11 +107,21 @@ http:// {
 
 {{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
+    handle /admin* {
+        import authelia_middleware_basic
+
+        reverse_proxy vaultwarden:8000 {
+            header_up X-Real-IP {remote_host}
+        }
+    }
+
     handle {
-        reverse_proxy vaultwarden:8000
+        reverse_proxy vaultwarden:8000 {
+            header_up X-Real-IP {remote_host}
+        }
     }
 }
 
@@ -115,7 +137,7 @@ http:// {
 
 {{ services['loki']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -126,7 +148,7 @@ http:// {
 
 {{ services['prometheus']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -137,7 +159,7 @@ http:// {
 
 {{ services['grafana']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -148,7 +170,7 @@ http:// {
 
 {{ services['restic']['subdomain'] }}.{{ vault_domain }} {
     # TODO: Probably doesn't make sense to compress data there, if sent data is already compressed
-
+    import secure_headers
     import gatekeeper {{ network_home }}
 
     handle {
@@ -159,7 +181,7 @@ http:// {
 # TODO: add basic auth so it should work with orca slicer / service account for orca slicer and forward auth for user
 {{ services['mainsail']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -169,7 +191,7 @@ http:// {
 
 {{ services['switch']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }}
 
     handle {
@@ -180,7 +202,7 @@ http:// {
 
 {{ services['uptime-kuma']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -191,7 +213,7 @@ http:// {
 
 {{ services['go2rtc']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -202,20 +224,27 @@ http:// {
 
 {{ services['frigate']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
         import authelia_middleware
         reverse_proxy frigate:8971 {
             header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
+
+            flush_interval -1
+
+            transport http {
+                versions 1.1
+                compression off
+            }
         }
     }
 }
 
 {{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -226,7 +255,7 @@ http:// {
 
 {{ services['pihole']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -237,7 +266,7 @@ http:// {
 
 {{ services['homeassistant']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }} {{ dashboard_tablet_ip }}
 
     handle {
@@ -248,7 +277,7 @@ http:// {
 # TODO: need to verify if it works and later remove its port from firewall
 {{ services['cockpit']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
@@ -259,7 +288,7 @@ http:// {
 
 {{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }}
 
     handle {
@@ -271,7 +300,7 @@ http:// {
 
 {{ services['camera_front']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }}
 
     handle {
@@ -283,7 +312,7 @@ http:// {
 
 {{ services['camera_back']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }}
 
     handle {
@@ -295,7 +324,7 @@ http:// {
 
 {{ services['camera_entry']['subdomain'] }}.{{ vault_domain }} {
     import standard
-
+    import secure_headers
     import gatekeeper {{ network_home }}
 
     handle {
