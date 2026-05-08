@@ -24,7 +24,7 @@
   ignore_errors: "{{ ansible_check_mode }}"
 
 # firewall-cmd --get-services (list of available services)
-- name: Open required ports (HTTP, HTTPS, DNS, NTP, Cockpit)
+- name: Open required ports
   ansible.posix.firewalld:
     service: "{{ item.service | default(omit) }}"
     port: "{{ item.port | default(omit) }}"
@@ -42,6 +42,7 @@
     - { service: "nut" }
     - { service: "ssh" }
     - { service: "dhcpv6-client" }
+    - { port: "443/udp"}
 
 - name: Remove the default connection
   community.general.nmcli:
