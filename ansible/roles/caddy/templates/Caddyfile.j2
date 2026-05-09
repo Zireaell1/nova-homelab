@@ -264,6 +264,17 @@ http:// {
     }
 }
 
+{{ services['peanut']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+    import secure_headers
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        import authelia_middleware_basic
+        reverse_proxy peanut:8080
+    }
+}
+
 {{ services['homeassistant']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers

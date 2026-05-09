@@ -178,6 +178,15 @@ access_control:
       subject:
         - ['group:admin']
 
+    # PeaNUT Two-factor Auth (Admin Only)
+    - domain: '{{ services['peanut']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
 regulation:
   modes:
     - 'user'
