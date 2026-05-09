@@ -109,7 +109,6 @@
     name: "{{ item }}"
     state: restarted
   loop:
-    - nut-driver.target
     - nut-server.service
     - nut-monitor.service
   ignore_errors: "{{ ansible_check_mode }}"
@@ -126,8 +125,9 @@
     state: started
     enabled: yes
   loop:
+    - nut-driver-enumerator.service
     - nut-driver-enumerator.path
-    - nut-driver.target
     - nut-server.service
     - nut-monitor.service
+    - nut.target
   ignore_errors: "{{ ansible_check_mode }}"
