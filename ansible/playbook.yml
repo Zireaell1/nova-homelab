@@ -47,6 +47,8 @@
       tags: ['vaultwarden']
     - role: zigbee2mqtt
       tags: ['zigbee2mqtt', 'home']
+    - role: peanut
+      tags: ['peanut']
 
     - role: caddy
       tags: ['caddy']

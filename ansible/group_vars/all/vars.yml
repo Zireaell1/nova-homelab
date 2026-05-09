@@ -50,6 +50,8 @@ services:
     subdomain: "ha"
   uptime_kuma:
     subdomain: "kuma"
+  peanut:
+    subdomain: "peanut"
   cockpit:
     subdomain: "cockpit"
   switch:

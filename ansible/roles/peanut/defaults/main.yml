@@ -1,0 +1,5 @@
+---
+peanut_memory_limit: "1g"
+
+# https://github.com/Brandawg93/PeaNUT
+peanut_image: "docker.io/brandawg93/peanut:6.0.0"

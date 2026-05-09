@@ -1,0 +1,35 @@
+[Unit]
+Description=PeaNUT
+Documentation=https://github.com/Brandawg93/PeaNUT/wiki
+
+Wants=network-online.target
+After=network-online.target
+
+RequiresMountsFor={{ stacks_path }}/peanut/config
+
+[Container]
+Image={{ peanut_image }}
+ContainerName=peanut
+Timezone={{ timezone }}
+Memory={{ peanut_memory_limit }}
+
+DropCapability=all
+NoNewPrivileges=true
+
+EnvironmentFile={{ stacks_path }}/peanut/peanut.env
+
+StopTimeout=20
+
+UserNS=keep-id:uid=1000,gid=1000
+
+Volume={{ stacks_path }}/peanut/config:/config:Z
+
+Network=peanut.network
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

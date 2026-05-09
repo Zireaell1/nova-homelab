@@ -1,0 +1,42 @@
+---
+- name: Verify directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ stacks_path }}/peanut"
+    - "{{ stacks_path }}/peanut/config"
+
+- name: Upload .network file
+  ansible.builtin.template:
+    src: "peanut.network.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/peanut.network"
+    mode: '0644'
+  notify: Restart peanut
+
+- name: Upload .env file
+  ansible.builtin.template:
+    src: "peanut.env.j2"
+    dest: "{{ stacks_path }}/peanut/peanut.env"
+    mode: '0600'
+  notify: Restart peanut
+
+- name: Upload settings.yml file
+  ansible.builtin.template:
+    src: "settings.yml.j2"
+    dest: "{{ stacks_path }}/peanut/config/settings.yml"
+    mode: '0644'
+  notify: Restart peanut
+
+- name: Upload .container file
+  ansible.builtin.template:
+    src: "peanut.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/peanut.container"
+    mode: '0644'
+  notify: Restart peanut
+
+- name: Download Podman images
+  containers.podman.podman_image:
+    name: "{{ peanut_image }}"
+    state: present
