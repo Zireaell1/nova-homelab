@@ -19,6 +19,8 @@ Memory={{ caddy_memory_limit }}
 
 EnvironmentFile={{ stacks_path }}/caddy/caddy.env
 
+StopTimeout=20
+
 Notify=true
 
 Volume={{ stacks_path }}/caddy/Caddyfile:/etc/caddy/Caddyfile:ro,Z
@@ -40,6 +42,8 @@ Network=grafana.network
 
 [Service]
 Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target
