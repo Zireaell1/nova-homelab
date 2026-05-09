@@ -200,7 +200,7 @@ http:// {
     }
 }
 
-{{ services['uptime-kuma']['subdomain'] }}.{{ vault_domain }} {
+{{ services['uptime_kuma']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }}

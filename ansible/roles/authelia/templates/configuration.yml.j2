@@ -141,7 +141,7 @@ access_control:
         - 'tailscale'
 
     # Uptime Kuma Bypass Webmanifest
-    - domain: '{{ services['uptime-kuma']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ services['uptime_kuma']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -151,7 +151,7 @@ access_control:
         - '^/icon-.*\.png$'
 
     # Uptime Kuma Two-factor Auth (Admin Only)
-    - domain: '{{ services['uptime-kuma']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ services['uptime_kuma']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
