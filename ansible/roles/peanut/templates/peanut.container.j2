@@ -5,6 +5,9 @@ Documentation=https://github.com/Brandawg93/PeaNUT/wiki
 Wants=network-online.target
 After=network-online.target
 
+Wants=nut.target
+After=nut.target
+
 RequiresMountsFor={{ stacks_path }}/peanut/config
 
 [Container]
