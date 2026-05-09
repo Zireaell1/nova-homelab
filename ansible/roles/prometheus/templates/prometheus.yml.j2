@@ -24,5 +24,6 @@ scrape_configs:
       - targets: ['caddy:9091']
 
   - job_name: 'peanut'
+    metrics_path: '/api/v1/metrics'
     static_configs:
       - targets: ['peanut:8080']
