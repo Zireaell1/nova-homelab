@@ -23,6 +23,8 @@ HealthTimeout=45s
 
 EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.env
 
+StopTimeout=20
+
 Exec=/start.sh
 
 UserNS=keep-id:uid=0,gid=0
@@ -33,6 +35,7 @@ Network=vaultwarden.network
 
 [Service]
 Restart=always
+TimeoutStartSec=900
 TimeoutStopSec=30
 
 [Install]
