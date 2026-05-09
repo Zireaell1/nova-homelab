@@ -43,8 +43,7 @@
     mode: '0640'
     backup: yes
     content: |
-      LISTEN 127.0.0.1
-      LISTEN {{ ip }}
+      LISTEN 0.0.0.0
   register: upsd_conf_result
 
 - name: Configure upsd.users (Server Credentials)
