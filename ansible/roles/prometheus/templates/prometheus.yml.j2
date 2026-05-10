@@ -27,3 +27,7 @@ scrape_configs:
     metrics_path: '/api/v1/metrics'
     static_configs:
       - targets: ['peanut:8080']
+
+  - job_name: 'authelia'
+    static_configs:
+      - targets: ['authelia:9959']

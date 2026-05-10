@@ -6,6 +6,11 @@ server:
     read: 16384
     write: 16384
 
+telemetry:
+  metrics:
+    enabled: true
+    address: 'tcp://:9959/metrics'
+
 authentication_backend:
   file:
     path: '/config/users_database.yml'
