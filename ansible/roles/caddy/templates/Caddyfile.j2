@@ -36,6 +36,17 @@
     }
 }
 
+(vault_headers) {
+    header {
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "0"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        -Server
+        -X-Powered-By
+        -Last-Modified
+    }
+}
+
 (gatekeeper) {
     @denied {
         not remote_ip {args[:]}
@@ -107,21 +118,18 @@ http:// {
 
 {{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }} {
     import standard
-    import secure_headers
+    import vault_headers
+
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle /admin* {
         import authelia_middleware_basic
 
-        reverse_proxy vaultwarden:8000 {
-            header_up X-Real-IP {remote_host}
-        }
+        reverse_proxy vaultwarden:8000
     }
 
     handle {
-        reverse_proxy vaultwarden:8000 {
-            header_up X-Real-IP {remote_host}
-        }
+        reverse_proxy vaultwarden:8000
     }
 }
 
