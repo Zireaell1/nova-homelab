@@ -140,6 +140,24 @@ access_control:
         - 'internal'
         - 'tailscale'
 
+    # Vaultwarden Two-factor Auth (Admin Only)
+    - domain: '{{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      resources:
+        - "^/admin.*"
+      subject:
+        - ['group:admin']
+
+    # Vaultwarden Bypass
+    - domain: '{{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'bypass'
+      networks:
+        - 'internal'
+        - 'tailscale'
+
     # Uptime Kuma Bypass Webmanifest
     - domain: '{{ services['uptime_kuma']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
