@@ -34,6 +34,7 @@
       #- cockpit-sosreport
       #- cockpit-files
       - rsync
+      - rclone
       - nut
       - prometheus-podman-exporter
     state: present
