@@ -23,9 +23,9 @@ services:
   authelia:
     subdomain: "auth"
   authelia_postgres:
-    quadlet_name: authelia-postgres.service
+    quadlet_name: "authelia-postgres.service"
   authelia_redis:
-    quadlet_name: authelia-redis.service
+    quadlet_name: "authelia-redis.service"
   frigate:
     subdomain: "frigate"
   grafana:
@@ -42,6 +42,13 @@ services:
     subdomain: "immich"
   vaultwarden:
     subdomain: "vault"
+    quadlet_name: "vaultwarden"
+    backup:
+      stop: true
+      paths:
+        - /home/{{ ansible_user }}/stacks/vaultwarden/data
+      excludes:
+        - /home/{{ ansible_user }}/stacks/vaultwarden/data/icon_cache
   go2rtc:
     subdomain: "go2rtc"
   zigbee2mqtt:
