@@ -6,10 +6,10 @@ zellij_version: "0.43.1"
 user_shell: "/usr/bin/fish"
 
 data_drives:
-  - uuid: "21610a79-4efa-4a83-a9e9-bd033321f5d2"
-    fstype: "ext4"
+  - uuid: "3ddf5ac7-b3a8-4ac2-8573-f38c02297c04"
+    fstype: "xfs"
     mountpoint: "/mnt/backup"
-    passno: "2"
+    passno: "0"
   - uuid: "cb64996e-45e2-4806-b8b1-f14635ecaa2f"
     fstype: "xfs"
     mountpoint: "/mnt/frigate"
