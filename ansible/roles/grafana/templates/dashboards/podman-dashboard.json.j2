@@ -5,8 +5,8 @@
     "name": "zinsxmz",
     "namespace": "default",
     "uid": "2970051c-64ce-49f9-9fac-602c80312a9f",
-    "resourceVersion": "1777726663659989",
-    "generation": 11,
+    "resourceVersion": "1778508281142000",
+    "generation": 17,
     "creationTimestamp": "2026-05-01T18:11:25Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "1139093707173888"
@@ -16,7 +16,7 @@
       "grafana.app/folder": "",
       "grafana.app/saved-from-ui": "Grafana v13.0.1 (a100054f)",
       "grafana.app/updatedBy": "user:ffk8t5pe2c8hsf",
-      "grafana.app/updatedTimestamp": "2026-05-02T12:57:43Z"
+      "grafana.app/updatedTimestamp": "2026-05-11T14:04:41Z"
     }
   },
   "spec": {
@@ -99,8 +99,8 @@
                 },
                 "tooltip": {
                   "hideZeros": false,
-                  "mode": "single",
-                  "sort": "none"
+                  "mode": "multi",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -236,7 +236,7 @@
                         "name": "{{ grafana_loki_datasource_name }}"
                       },
                       "spec": {
-                        "direction": "backward",
+                        "direction": "forward",
                         "editorMode": "code",
                         "expr": "{container=~\"$container\"}",
                         "queryType": "range"
@@ -261,11 +261,11 @@
                 "enableInfiniteScrolling": false,
                 "enableLogDetails": true,
                 "prettifyLogMessage": true,
-                "showControls": false,
+                "showControls": true,
                 "showFieldSelector": false,
                 "showLevel": true,
                 "showTime": false,
-                "sortOrder": "Descending",
+                "sortOrder": "Ascending",
                 "timestampResolution": "ms",
                 "unwrappedColumns": false,
                 "wrapLogMessage": true
@@ -333,8 +333,8 @@
                 },
                 "tooltip": {
                   "hideZeros": false,
-                  "mode": "single",
-                  "sort": "none"
+                  "mode": "multi",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -474,8 +474,8 @@
                 },
                 "tooltip": {
                   "hideZeros": false,
-                  "mode": "single",
-                  "sort": "none"
+                  "mode": "multi",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -633,8 +633,8 @@
                 },
                 "tooltip": {
                   "hideZeros": false,
-                  "mode": "single",
-                  "sort": "none"
+                  "mode": "multi",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -737,9 +737,11 @@
                       },
                       "spec": {
                         "editorMode": "code",
+                        "exemplar": false,
                         "expr": "count(podman_container_state{instance=~\"$host\"} == 2) or vector(0)",
+                        "instant": true,
                         "legendFormat": "Running",
-                        "range": true
+                        "range": false
                       }
                     },
                     "refId": "A",
@@ -802,7 +804,7 @@
         "kind": "Panel",
         "spec": {
           "id": 6,
-          "title": "Crashed Containers",
+          "title": "Crashed Containers (not working)",
           "description": "",
           "links": [],
           "data": {
@@ -821,9 +823,11 @@
                       },
                       "spec": {
                         "editorMode": "code",
+                        "exemplar": false,
                         "expr": "count(podman_container_exit_code{instance=~\"$host\"} > 0) or vector(0)",
+                        "instant": true,
                         "legendFormat": "Errors",
-                        "range": true
+                        "range": false
                       }
                     },
                     "refId": "A",
@@ -958,7 +962,7 @@
                     ]
                   },
                   "color": {
-                    "mode": "continuous-GrYlRd"
+                    "mode": "palette-classic"
                   }
                 },
                 "overrides": []
@@ -1043,7 +1047,7 @@
                     ]
                   },
                   "color": {
-                    "mode": "continuous-GrYlRd"
+                    "mode": "palette-classic"
                   }
                 },
                 "overrides": []
@@ -1606,7 +1610,7 @@
               "x": 0,
               "y": 38,
               "width": 24,
-              "height": 8,
+              "height": 18,
               "element": {
                 "kind": "ElementReference",
                 "name": "panel-11"

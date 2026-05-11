@@ -2,19 +2,21 @@
   "apiVersion": "dashboard.grafana.app/v2",
   "kind": "Dashboard",
   "metadata": {
-    "name": "zix8ktx",
+    "name": "zi54h8c",
     "namespace": "default",
-    "uid": "0733811d-f860-4e48-8b41-4b31e3f25c31",
-    "resourceVersion": "1777673620296000",
-    "generation": 1,
-    "creationTimestamp": "2026-05-01T22:13:40Z",
+    "uid": "14836438-6b28-43de-b848-1ad8808276db",
+    "resourceVersion": "1778508535740982",
+    "generation": 4,
+    "creationTimestamp": "2026-05-11T13:55:46Z",
     "labels": {
-      "grafana.app/deprecatedInternalID": "1200056296812544"
+      "grafana.app/deprecatedInternalID": "195035351908352"
     },
     "annotations": {
       "grafana.app/createdBy": "user:ffk8t5pe2c8hsf",
       "grafana.app/folder": "",
-      "grafana.app/saved-from-ui": "Grafana v13.0.1 (a100054f)"
+      "grafana.app/saved-from-ui": "Grafana v13.0.1 (a100054f)",
+      "grafana.app/updatedBy": "user:ffk8t5pe2c8hsf",
+      "grafana.app/updatedTimestamp": "2026-05-11T14:08:55Z"
     }
   },
   "spec": {
@@ -40,14 +42,13 @@
       }
     ],
     "cursorSync": "Off",
-    "description": "",
     "editable": true,
     "elements": {
       "panel-1": {
         "kind": "Panel",
         "spec": {
           "id": 1,
-          "title": "Detector Inference Speed",
+          "title": "Last Backup Status",
           "description": "",
           "links": [],
           "data": {
@@ -66,9 +67,11 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "avg(frigate_detector_inference_speed_seconds)",
-                        "legendFormat": "Inference Speed",
-                        "range": true
+                        "exemplar": false,
+                        "expr": "homelab_backup_success",
+                        "instant": true,
+                        "legendFormat": "Last Backup Status",
+                        "range": false
                       }
                     },
                     "refId": "A",
@@ -87,7 +90,7 @@
             "spec": {
               "options": {
                 "colorMode": "value",
-                "graphMode": "area",
+                "graphMode": "none",
                 "justifyMode": "auto",
                 "orientation": "auto",
                 "percentChangeColorMode": "standard",
@@ -104,21 +107,29 @@
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "s",
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "Error",
+                          "color": "red",
+                          "index": 0
+                        },
+                        "1": {
+                          "text": "Success",
+                          "color": "green",
+                          "index": 1
+                        }
+                      }
+                    }
+                  ],
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": 0,
                         "color": "green"
-                      },
-                      {
-                        "value": 0.05,
-                        "color": "yellow"
-                      },
-                      {
-                        "value": 0.1,
-                        "color": "red"
                       }
                     ]
                   },
@@ -136,7 +147,7 @@
         "kind": "Panel",
         "spec": {
           "id": 2,
-          "title": "Total Detection FPS",
+          "title": "Time from Last Backup",
           "description": "",
           "links": [],
           "data": {
@@ -155,9 +166,11 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum(frigate_detection_fps)",
-                        "legendFormat": "Total FPS",
-                        "range": true
+                        "exemplar": false,
+                        "expr": "time() - homelab_backup_last_run_timestamp_seconds",
+                        "instant": true,
+                        "legendFormat": "Time from Last Backup",
+                        "range": false
                       }
                     },
                     "refId": "A",
@@ -176,7 +189,7 @@
             "spec": {
               "options": {
                 "colorMode": "value",
-                "graphMode": "area",
+                "graphMode": "none",
                 "justifyMode": "auto",
                 "orientation": "auto",
                 "percentChangeColorMode": "standard",
@@ -193,7 +206,7 @@
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "fps",
+                  "unit": "dtdurations",
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -202,13 +215,13 @@
                         "color": "green"
                       },
                       {
-                        "value": 80,
-                        "color": "red"
+                        "value": 86400,
+                        "color": "orange"
                       }
                     ]
                   },
                   "color": {
-                    "mode": "palette-classic"
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -221,7 +234,7 @@
         "kind": "Panel",
         "spec": {
           "id": 3,
-          "title": "Storage Drive Usage",
+          "title": "Duration of Last Backup",
           "description": "",
           "links": [],
           "data": {
@@ -240,9 +253,11 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "avg(frigate_storage_used_bytes{storage=\"/media/frigate/recordings\"} / frigate_storage_total_bytes{storage=\"/media/frigate/recordings\"})",
-                        "legendFormat": "Storage Used",
-                        "range": true
+                        "exemplar": false,
+                        "expr": "homelab_backup_duration_seconds",
+                        "instant": true,
+                        "legendFormat": "Duration of Last Backup",
+                        "range": false
                       }
                     },
                     "refId": "A",
@@ -256,21 +271,15 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "gauge",
+            "group": "stat",
             "version": "13.0.1",
             "spec": {
               "options": {
-                "barShape": "flat",
-                "barWidthFactor": 0.3,
-                "effects": {
-                  "barGlow": false,
-                  "centerGlow": false,
-                  "gradient": true
-                },
-                "endpointMarker": "point",
-                "minVizHeight": 75,
-                "minVizWidth": 75,
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
                 "orientation": "auto",
+                "percentChangeColorMode": "standard",
                 "reduceOptions": {
                   "calcs": [
                     "lastNotNull"
@@ -278,32 +287,19 @@
                   "fields": "",
                   "values": false
                 },
-                "segmentCount": 1,
-                "segmentSpacing": 0.3,
-                "shape": "gauge",
-                "showThresholdLabels": false,
-                "showThresholdMarkers": false,
-                "sizing": "auto",
-                "sparkline": true,
-                "textMode": "auto"
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "percentunit",
+                  "unit": "dtdurations",
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": 0,
                         "color": "green"
-                      },
-                      {
-                        "value": 75,
-                        "color": "yellow"
-                      },
-                      {
-                        "value": 90,
-                        "color": "red"
                       }
                     ]
                   },
@@ -321,7 +317,7 @@
         "kind": "Panel",
         "spec": {
           "id": 4,
-          "title": "Camera Capture FPS",
+          "title": "New panel",
           "description": "",
           "links": [],
           "data": {
@@ -340,8 +336,120 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "frigate_camera_fps",
-                        "legendFormat": "{{camera_name}}",
+                        "expr": "homelab_backup_success",
+                        "legendFormat": "Backup Status",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "state-timeline",
+            "version": "13.0.1",
+            "spec": {
+              "options": {
+                "alignValue": "left",
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "mergeValues": true,
+                "rowHeight": 0.9,
+                "showValue": "auto",
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "0": {
+                          "text": "Error",
+                          "color": "red",
+                          "index": 1
+                        },
+                        "1": {
+                          "text": "Success",
+                          "color": "green",
+                          "index": 0
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "continuous-GrYlRd"
+                  },
+                  "custom": {
+                    "axisPlacement": "auto",
+                    "fillOpacity": 70,
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineWidth": 0,
+                    "spanNulls": false
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Backup Duration History",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "{{ grafana_prometheus_datasource_name }}"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "homelab_backup_duration_seconds",
+                        "legendFormat": "Backup Duration History",
                         "range": true
                       }
                     },
@@ -378,17 +486,13 @@
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "fps",
+                  "unit": "dtdurations",
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
                       {
                         "value": 0,
                         "color": "green"
-                      },
-                      {
-                        "value": 80,
-                        "color": "red"
                       }
                     ]
                   },
@@ -404,7 +508,7 @@
                     "barAlignment": 0,
                     "barWidthFactor": 0.6,
                     "drawStyle": "line",
-                    "fillOpacity": 15,
+                    "fillOpacity": 0,
                     "gradientMode": "none",
                     "hideFrom": {
                       "legend": false,
@@ -413,7 +517,7 @@
                     },
                     "insertNulls": false,
                     "lineInterpolation": "linear",
-                    "lineWidth": 2,
+                    "lineWidth": 1,
                     "pointSize": 5,
                     "scaleDistribution": {
                       "type": "linear"
@@ -436,173 +540,11 @@
           }
         }
       },
-      "panel-5": {
-        "kind": "Panel",
-        "spec": {
-          "id": 5,
-          "title": "Process vs Skipped FPS",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "{{ grafana_prometheus_datasource_name }}"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "sum by(camera_name) (frigate_process_fps)",
-                        "interval": "",
-                        "legendFormat": "Processed - {{camera_name}}",
-                        "range": true
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "{{ grafana_prometheus_datasource_name }}"
-                      },
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "sum by(camera_name) (frigate_skipped_fps)",
-                        "instant": false,
-                        "legendFormat": "Skipped - {{camera_name}}",
-                        "range": true
-                      }
-                    },
-                    "refId": "B",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "timeseries",
-            "version": "13.0.1",
-            "spec": {
-              "options": {
-                "annotations": {
-                  "clustering": -1,
-                  "multiLane": false
-                },
-                "legend": {
-                  "calcs": [],
-                  "displayMode": "list",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "tooltip": {
-                  "hideZeros": false,
-                  "mode": "single",
-                  "sort": "none"
-                }
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "fps",
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": 0,
-                        "color": "green"
-                      },
-                      {
-                        "value": 80,
-                        "color": "red"
-                      }
-                    ]
-                  },
-                  "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "axisBorderShow": false,
-                    "axisCenteredZero": false,
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "barWidthFactor": 0.6,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
-                    "gradientMode": "none",
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    },
-                    "insertNulls": false,
-                    "lineInterpolation": "linear",
-                    "lineWidth": 1,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                      "type": "linear"
-                    },
-                    "showPoints": "auto",
-                    "showValues": false,
-                    "spanNulls": false,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "off"
-                    }
-                  }
-                },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byFrameRefID",
-                      "options": "B"
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.drawStyle",
-                        "value": "bars"
-                      },
-                      {
-                        "id": "color",
-                        "value": {
-                          "fixedColor": "red",
-                          "mode": "fixed"
-                        }
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
-        }
-      },
       "panel-6": {
         "kind": "Panel",
         "spec": {
           "id": 6,
-          "title": "GPU",
+          "title": "Backup Script Logs",
           "description": "",
           "links": [],
           "data": {
@@ -614,16 +556,16 @@
                   "spec": {
                     "query": {
                       "kind": "DataQuery",
-                      "group": "prometheus",
+                      "group": "loki",
                       "version": "v0",
                       "datasource": {
-                        "name": "{{ grafana_prometheus_datasource_name }}"
+                        "name": "{{ grafana_loki_datasource_name }}"
                       },
                       "spec": {
-                        "editorMode": "code",
-                        "expr": "frigate_gpu_usage_percent",
-                        "legendFormat": "{{gpu_name}}",
-                        "range": true
+                        "direction": "forward",
+                        "editorMode": "builder",
+                        "expr": "{syslog_identifier=\"homelab-backup.sh\"} |= ``",
+                        "queryType": "range"
                       }
                     },
                     "refId": "A",
@@ -637,80 +579,25 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "timeseries",
+            "group": "logs",
             "version": "13.0.1",
             "spec": {
               "options": {
-                "annotations": {
-                  "clustering": -1,
-                  "multiLane": false
-                },
-                "legend": {
-                  "calcs": [],
-                  "displayMode": "list",
-                  "placement": "bottom",
-                  "showLegend": true
-                },
-                "tooltip": {
-                  "hideZeros": false,
-                  "mode": "single",
-                  "sort": "none"
-                }
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": false,
+                "enableLogDetails": true,
+                "prettifyLogMessage": true,
+                "showControls": true,
+                "showFieldSelector": false,
+                "showLevel": true,
+                "showTime": true,
+                "sortOrder": "Ascending",
+                "timestampResolution": "ms",
+                "unwrappedColumns": false,
+                "wrapLogMessage": false
               },
               "fieldConfig": {
-                "defaults": {
-                  "unit": "percent",
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": 0,
-                        "color": "green"
-                      },
-                      {
-                        "value": 80,
-                        "color": "red"
-                      }
-                    ]
-                  },
-                  "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "axisBorderShow": false,
-                    "axisCenteredZero": false,
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "barWidthFactor": 0.6,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
-                    "gradientMode": "none",
-                    "hideFrom": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": false
-                    },
-                    "insertNulls": false,
-                    "lineInterpolation": "linear",
-                    "lineWidth": 1,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                      "type": "linear"
-                    },
-                    "showPoints": "auto",
-                    "showValues": false,
-                    "spanNulls": false,
-                    "stacking": {
-                      "group": "A",
-                      "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                      "mode": "off"
-                    }
-                  }
-                },
+                "defaults": {},
                 "overrides": []
               }
             }
@@ -728,7 +615,7 @@
               "x": 0,
               "y": 0,
               "width": 8,
-              "height": 6,
+              "height": 5,
               "element": {
                 "kind": "ElementReference",
                 "name": "panel-1"
@@ -741,7 +628,7 @@
               "x": 8,
               "y": 0,
               "width": 8,
-              "height": 6,
+              "height": 5,
               "element": {
                 "kind": "ElementReference",
                 "name": "panel-2"
@@ -754,7 +641,7 @@
               "x": 16,
               "y": 0,
               "width": 8,
-              "height": 6,
+              "height": 5,
               "element": {
                 "kind": "ElementReference",
                 "name": "panel-3"
@@ -765,7 +652,7 @@
             "kind": "GridLayoutItem",
             "spec": {
               "x": 0,
-              "y": 6,
+              "y": 5,
               "width": 12,
               "height": 8,
               "element": {
@@ -778,7 +665,7 @@
             "kind": "GridLayoutItem",
             "spec": {
               "x": 12,
-              "y": 6,
+              "y": 5,
               "width": 12,
               "height": 8,
               "element": {
@@ -791,9 +678,9 @@
             "kind": "GridLayoutItem",
             "spec": {
               "x": 0,
-              "y": 14,
-              "width": 12,
-              "height": 8,
+              "y": 13,
+              "width": 24,
+              "height": 18,
               "element": {
                 "kind": "ElementReference",
                 "name": "panel-6"
@@ -809,7 +696,7 @@
     "tags": [],
     "timeSettings": {
       "timezone": "browser",
-      "from": "now-1h",
+      "from": "now-7d",
       "to": "now",
       "autoRefresh": "15s",
       "autoRefreshIntervals": [
@@ -828,7 +715,7 @@
       "hideTimepicker": false,
       "fiscalYearStartMonth": 0
     },
-    "title": "Frigate",
+    "title": "Backup",
     "variables": [],
     "preferences": {
       "layout": {

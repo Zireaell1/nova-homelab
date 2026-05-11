@@ -5,8 +5,8 @@
     "name": "zi6h8lz",
     "namespace": "default",
     "uid": "6eca55ba-33ab-45ba-a115-aa398bd1dcfe",
-    "resourceVersion": "1777747593284990",
-    "generation": 2,
+    "resourceVersion": "1778508310601990",
+    "generation": 6,
     "creationTimestamp": "2026-05-02T18:26:55Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "1505383265349632"
@@ -16,7 +16,7 @@
       "grafana.app/folder": "",
       "grafana.app/saved-from-ui": "Grafana v13.0.1 (a100054f)",
       "grafana.app/updatedBy": "user:ffk8t5pe2c8hsf",
-      "grafana.app/updatedTimestamp": "2026-05-02T18:46:33Z"
+      "grafana.app/updatedTimestamp": "2026-05-11T14:05:10Z"
     }
   },
   "spec": {
@@ -98,8 +98,8 @@
                   "showLegend": true
                 },
                 "tooltip": {
-                  "hideZeros": false,
-                  "mode": "single",
+                  "hideZeros": true,
+                  "mode": "multi",
                   "sort": "none"
                 }
               },
@@ -305,9 +305,11 @@
                       },
                       "spec": {
                         "editorMode": "code",
+                        "exemplar": false,
                         "expr": "sum by (code) (increase(caddy_http_request_duration_seconds_count[$__range]))",
+                        "instant": true,
                         "legendFormat": "{{code}}",
-                        "range": true
+                        "range": false
                       }
                     },
                     "refId": "A",
@@ -464,7 +466,7 @@
                       {
                         "id": "color",
                         "value": {
-                          "fixedColor": "light-blue",
+                          "fixedColor": "blue",
                           "mode": "fixed"
                         }
                       }
@@ -485,6 +487,166 @@
                         "id": "color",
                         "value": {
                           "fixedColor": "orange",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "206"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "206 (Partial Content)"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "green",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "425"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "425 (Too Early)"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "orange",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "500"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "500 (Internal Server Error)"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "red",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "502"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "502 (Bad Gateway)"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "dark-red",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "401"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "401 (Unauthorized)"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "orange",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "403"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "403 (Forbidden)"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "orange",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "404"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "404 (Not Found)"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "orange",
+                          "mode": "fixed"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "matcher": {
+                      "id": "byName",
+                      "scope": "series",
+                      "options": "303"
+                    },
+                    "properties": [
+                      {
+                        "id": "displayName",
+                        "value": "303 (See Other)"
+                      },
+                      {
+                        "id": "color",
+                        "value": {
+                          "fixedColor": "blue",
                           "mode": "fixed"
                         }
                       }
