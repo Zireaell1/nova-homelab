@@ -41,6 +41,17 @@
     mode: '0644'
   notify: Restart alloy
 
+- name: Ensure custom metrics directory exists
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "alloy"
+    mode: '0775'
+  loop:
+    - "/opt/alloy-metrics"
+  notify: Restart alloy
+
 - name: Ensure Alloy is enabled and running
   ansible.builtin.systemd:
     name: alloy.service
