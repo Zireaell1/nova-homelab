@@ -59,6 +59,7 @@
     - { path: "/home/{{ ansible_user }}/.config/containers/systemd", mode: "0755" }
     - { path: "/home/{{ ansible_user }}/.config/systemd/user", mode: "0755" }
     - { path: "{{ stacks_path }}", mode: "0755" }
+    - { path: "/home/{{ ansible_user }}/.local/bin", mode: "0700" }
 
 - name: Upload Fish config
   ansible.builtin.copy:
