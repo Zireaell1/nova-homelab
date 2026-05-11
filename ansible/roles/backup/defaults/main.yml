@@ -1,5 +1,5 @@
 ---
-backup_repo_critical: "/mnt/backup/homelab-critical"
+backup_repo_critical: "/mnt/backup/homelab"
 backup_repo_devices: "/mnt/backup/rest-server-data"
 
 backup_rclone_remote_name: "external"

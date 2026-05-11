@@ -6,13 +6,13 @@
     mode: '0700'
   loop:
     - "{{ backup_repo_critical }}"
-    - "{{ backup_repo_bulk }}"
 
 - name: Ensure rclone config directory exists
   ansible.builtin.file:
     path: "/home/{{ ansible_user }}/.config/rclone"
     state: directory
-    mode: '0700'
+    mode: '0755'
+  no_log: true
 
 - name: Generate rclone configuration file
   ansible.builtin.template:
@@ -23,7 +23,7 @@
 - name: Check if CRITICAL repository is already initialized
   ansible.builtin.command: restic snapshots
   environment:
-    RESTIC_PASSWORD: "{{ backup_restic_password }}"
+    RESTIC_PASSWORD: "{{ vault_backup_restic_password }}"
     RESTIC_REPOSITORY: "{{ backup_repo_critical }}"
   register: restic_critical_check
   failed_when: false
@@ -32,7 +32,7 @@
 - name: Initialize CRITICAL repository
   ansible.builtin.command: restic init
   environment:
-    RESTIC_PASSWORD: "{{ backup_restic_password }}"
+    RESTIC_PASSWORD: "{{ vault_backup_restic_password }}"
     RESTIC_REPOSITORY: "{{ backup_repo_critical }}"
   when: restic_critical_check.rc != 0
 
@@ -80,3 +80,4 @@
     enabled: yes
     state: started
     daemon_reload: yes
+  ignore_errors: "{{ ansible_check_mode }}"
