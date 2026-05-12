@@ -13,6 +13,9 @@ ContainerName=loki
 Timezone={{ timezone }}
 Memory={{ loki_memory_limit }}
 
+DropCapability=all
+NoNewPrivileges=true
+
 UserNS=keep-id:uid=10001,gid=10001
 
 PublishPort=127.0.0.1:3100:3100

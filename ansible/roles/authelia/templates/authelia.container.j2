@@ -16,6 +16,9 @@ ContainerName=authelia
 Timezone={{ timezone }}
 Memory={{ authelia_memory_limit }}
 
+DropCapability=all
+NoNewPrivileges=true
+
 EnvironmentFile={{ stacks_path }}/authelia/authelia.env
 
 Volume={{ stacks_path }}/authelia/config:/config:Z

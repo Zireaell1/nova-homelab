@@ -13,6 +13,9 @@ ContainerName=prometheus
 Timezone={{ timezone }}
 Memory={{ prometheus_memory_limit }}
 
+DropCapability=all
+NoNewPrivileges=true
+
 Exec=--config.file=/etc/prometheus/prometheus.yml \
      --storage.tsdb.path=/prometheus \
      --web.enable-remote-write-receiver

@@ -17,6 +17,9 @@ ContainerName=caddy
 Timezone={{ timezone }}
 Memory={{ caddy_memory_limit }}
 
+DropCapability=all
+NoNewPrivileges=true
+
 EnvironmentFile={{ stacks_path }}/caddy/caddy.env
 
 StopTimeout=20

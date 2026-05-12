@@ -13,6 +13,9 @@ ContainerName=grafana
 Timezone={{ timezone }}
 Memory={{ grafana_memory_limit }}
 
+DropCapability=all
+NoNewPrivileges=true
+
 UserNS=keep-id:uid=472,gid=472
 
 EnvironmentFile=/srv/monitoring/grafana/grafana.env
