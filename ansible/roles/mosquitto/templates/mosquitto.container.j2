@@ -15,6 +15,8 @@ Memory={{ mosquitto_memory_limit }}
 DropCapability=all
 NoNewPrivileges=true
 
+StopTimeout=20
+
 Volume={{ stacks_path }}/mosquitto/config:/mosquitto/config:Z
 Volume={{ stacks_path }}/mosquitto/data:/mosquitto/data:Z
 Volume={{ stacks_path }}/mosquitto/log:/mosquitto/log:Z
@@ -25,6 +27,8 @@ Network=home.network
 
 [Service]
 Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target

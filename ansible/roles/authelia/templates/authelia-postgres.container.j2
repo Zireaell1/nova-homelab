@@ -9,6 +9,8 @@ ContainerName=authelia-postgres
 Timezone={{ timezone }}
 Memory={{ authelia_postgres_memory_limit }}
 
+StopTimeout=20
+
 Environment=POSTGRES_USER=authelia
 Environment=POSTGRES_PASSWORD_FILE=/STORAGE_PASSWORD
 
@@ -19,6 +21,7 @@ Network=authelia-backend.network
 
 [Service]
 Restart=always
+TimeoutStartSec=900
 TimeoutStopSec=30
 
 [Install]

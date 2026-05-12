@@ -16,6 +16,8 @@ Memory={{ grafana_memory_limit }}
 DropCapability=all
 NoNewPrivileges=true
 
+StopTimeout=20
+
 UserNS=keep-id:uid=472,gid=472
 
 EnvironmentFile=/srv/monitoring/grafana/grafana.env
@@ -28,6 +30,7 @@ Network=monitoring-backend.network
 
 [Service]
 Restart=always
+TimeoutStartSec=900
 TimeoutStopSec=30
 
 [Install]

@@ -15,6 +15,8 @@ Memory={{ pihole_memory_limit }}
 
 EnvironmentFile={{ stacks_path }}/pihole/pihole.env
 
+StopTimeout=20
+
 PublishPort=53:53/tcp
 PublishPort=53:53/udp
 
@@ -24,6 +26,8 @@ Volume={{ stacks_path }}/pihole/etc-pihole:/etc/pihole:Z
 
 [Service]
 Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target

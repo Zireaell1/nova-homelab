@@ -19,6 +19,8 @@ Memory={{ authelia_memory_limit }}
 DropCapability=all
 NoNewPrivileges=true
 
+StopTimeout=20
+
 EnvironmentFile={{ stacks_path }}/authelia/authelia.env
 
 Volume={{ stacks_path }}/authelia/config:/config:Z
@@ -31,6 +33,7 @@ Network=authelia-backend.network
 
 [Service]
 Restart=always
+TimeoutStartSec=900
 TimeoutStopSec=30
 
 [Install]

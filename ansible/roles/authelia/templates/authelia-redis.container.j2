@@ -9,6 +9,8 @@ ContainerName=authelia-redis
 Timezone={{ timezone }}
 Memory={{ authelia_redis_memory_limit }}
 
+StopTimeout=20
+
 Exec=redis-server --requirepass {{ vault_authelia_redis_password }} --save 60 1 --loglevel warning
 
 Volume={{ stacks_path }}/authelia/redis:/data:Z
@@ -17,6 +19,7 @@ Network=authelia-backend.network
 
 [Service]
 Restart=always
+TimeoutStartSec=900
 TimeoutStopSec=30
 
 [Install]
