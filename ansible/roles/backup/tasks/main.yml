@@ -57,6 +57,9 @@
       StandardOutput=journal
       StandardError=journal
 
+      RuntimeMaxSec=1h
+      TimeoutStopSec=5m
+
 - name: Deploy Systemd Timer file
   ansible.builtin.copy:
     dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup.timer"
