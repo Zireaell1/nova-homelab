@@ -16,6 +16,13 @@
     msg: "WARNING: A reboot is required after the DNF update. Please restart the system manually."
   when: reboot_required.rc == 1
 
+- name: Stop and disable ModemManager
+  ansible.builtin.systemd:
+    name: ModemManager.service
+    state: stopped
+    enabled: no
+    masked: yes
+
 - name: Software install
   ansible.builtin.dnf:
     name:
