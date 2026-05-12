@@ -56,6 +56,10 @@ cleanup_and_start() {
     local exit_code=$?
     local script_end_time=$(date +%s)
     local duration=$((script_end_time - SCRIPT_START_TIME))
+    local repo_size_bytes=0
+    if [ -d "$REPO_CRITICAL" ]; then
+        repo_size_bytes=$(du -sb "$REPO_CRITICAL" | cut -f1)
+    fi
 
     echo "[INFO] Running final cleanup procedure (Trap)..."
     
@@ -91,6 +95,10 @@ homelab_backup_duration_seconds $duration
 # HELP homelab_backup_last_run_timestamp_seconds Timestamp of the last backup run
 # TYPE homelab_backup_last_run_timestamp_seconds gauge
 homelab_backup_last_run_timestamp_seconds $script_end_time
+
+# HELP homelab_backup_repo_size_bytes Size of the homelab backup repository in bytes
+# TYPE homelab_backup_repo_size_bytes gauge
+homelab_backup_repo_size_bytes $repo_size_bytes
 EOF
 
     if [ -d "$PROM_TARGET_DIR" ]; then
