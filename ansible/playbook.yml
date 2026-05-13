@@ -58,11 +58,3 @@
 
     - role: backup
       tags: ['backup']
-  post_tasks:
-    # TODO: not working, should be a service with timer
-    - name: Clear unused Podman images
-      containers.podman.podman_prune:
-        image: true
-        image_filters:
-          dangling_only: false
-          until: 24h
