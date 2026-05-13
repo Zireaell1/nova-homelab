@@ -70,3 +70,10 @@
     sysctl_set: yes
     state: present
     reload: yes
+
+- name: Load nct6683 module and make it persistent
+  community.general.modprobe:
+    name: nct6683
+    params: 'force=1'
+    state: present
+    persistent: present
