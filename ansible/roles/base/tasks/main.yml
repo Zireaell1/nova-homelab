@@ -71,6 +71,7 @@
     state: present
     reload: yes
 
+# https://docs.kernel.org/hwmon/nct6683.html
 - name: Load nct6683 module and make it persistent
   community.general.modprobe:
     name: nct6683
