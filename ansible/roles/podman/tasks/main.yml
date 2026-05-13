@@ -1,0 +1,41 @@
+---
+- name: Deploy Systemd Service file
+  ansible.builtin.copy:
+    dest: "/home/{{ podman_user }}/.config/systemd/user/podman-prune.service"
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Prune Unused Podman Images
+      Wants=network.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/podman image prune --all --force --filter until=24h
+      StandardOutput=journal
+      StandardError=journal
+
+      RuntimeMaxSec=300
+
+- name: Deploy Systemd Timer file
+  ansible.builtin.copy:
+    dest: "/home/{{ podman_user }}/.config/systemd/user/podman-prune.timer"
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Run Podman Prune Daily
+
+      [Timer]
+      OnCalendar=daily
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+
+- name: Enable and start the Timer
+  ansible.builtin.systemd:
+    name: podman-prune.timer
+    scope: user
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  ignore_errors: "{{ ansible_check_mode }}"

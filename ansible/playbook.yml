@@ -53,6 +53,9 @@
     - role: caddy
       tags: ['caddy']
 
+    - role: podman
+      tags: ['podman']
+
     - role: backup
       tags: ['backup']
   post_tasks:
