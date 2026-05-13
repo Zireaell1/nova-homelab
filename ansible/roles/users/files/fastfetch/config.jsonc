@@ -1,0 +1,23 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
+    "modules": [
+        "title",
+        "separator",
+        "os",
+        "kernel",
+        "uptime",
+        "packages",
+        {
+            "type": "cpu",
+            "key": "CPU",
+            "temp": true
+        },
+        "gpu",
+        "memory",
+        "swap",
+        "disk",
+        "localip",
+        "break",
+        "colors"
+    ]
+}
