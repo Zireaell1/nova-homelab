@@ -50,6 +50,7 @@
     content: |
       [Unit]
       Description=Restic & Rclone Homelab Backup
+      Wants=network.target
       
       [Service]
       Type=oneshot
@@ -76,7 +77,7 @@
       [Install]
       WantedBy=timers.target
 
-- name: Enable and start the Timer for user
+- name: Enable and start the Timer
   ansible.builtin.systemd:
     name: homelab-backup.timer
     scope: user
