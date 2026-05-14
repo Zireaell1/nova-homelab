@@ -8,4 +8,5 @@ pihole_memory_limit: "500m"
 pihole_main_network_interface_name: "enp129s0"
 
 # https://hub.docker.com/r/pihole/pihole
-pihole_image: "docker.io/pihole/pihole:2026.04.0"
+# https://github.com/pi-hole/docker-pi-hole
+pihole_image: "docker.io/pihole/pihole:2026.05.0"
