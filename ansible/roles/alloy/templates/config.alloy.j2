@@ -45,7 +45,7 @@ loki.relabel "journal" {
 
 prometheus.exporter.unix "host" {
     include_exporter_metrics = true
-    disable_collectors       = ["mdadm"]
+    disable_collectors       = ["mdadm", "xfs"] // TODO: xfs throws error on kernel 7.0
     enable_collectors        = ["systemd", "processes", "logind"]
 
     textfile {
