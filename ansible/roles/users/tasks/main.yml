@@ -56,7 +56,7 @@
     mode: "{{ item.mode }}"
   loop:
     - { path: "/home/{{ ansible_user }}/.config/fish", mode: "0700" }
-    - { path: "/home/{{ ansible_user }}/.config/fastfetch", mode: "0755" }
+    - { path: "/home/{{ ansible_user }}/.config/fastfetch", mode: "0744" }
     - { path: "/home/{{ ansible_user }}/.config/containers/systemd", mode: "0755" }
     - { path: "/home/{{ ansible_user }}/.config/systemd/user", mode: "0755" }
     - { path: "{{ stacks_path }}", mode: "0755" }
