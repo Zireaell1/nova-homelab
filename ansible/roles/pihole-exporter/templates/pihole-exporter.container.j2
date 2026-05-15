@@ -1,0 +1,29 @@
+[Unit]
+Description=Pi-Hole Exporter
+Documentation=https://github.com/eko/pihole-exporter
+
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image={{ pihole_exporter_image }}
+ContainerName=pihole-exporter
+Timezone={{ timezone }}
+Memory={{ pihole_exporter_memory_limit }}
+
+DropCapability=all
+NoNewPrivileges=true
+
+StopTimeout=20
+
+UserNS=keep-id:uid=65532,gid=65532
+
+Network=pihole-exporter.network
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

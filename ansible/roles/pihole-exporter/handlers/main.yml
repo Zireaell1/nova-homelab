@@ -1,0 +1,11 @@
+---
+- name: Restart pihole-exporter
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: pihole-exporter.service
+    state: restarted
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"

@@ -1,0 +1,5 @@
+---
+pihole_exporter_memory_limit: "1g"
+
+# https://hub.docker.com/r/ekofr/pihole-exporter
+pihole_exporter_image: "docker.io/ekofr/pihole-exporter:v1.2.0"
