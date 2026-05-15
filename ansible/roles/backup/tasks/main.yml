@@ -58,7 +58,7 @@
       StandardOutput=journal
       StandardError=journal
 
-      RuntimeMaxSec=1h
+      TimeoutStartSec=1h
       TimeoutStopSec=5m
 
 - name: Deploy Systemd Timer file

@@ -1,7 +1,7 @@
 ---
 - name: Deploy Systemd Service file
   ansible.builtin.copy:
-    dest: "/home/{{ podman_user }}/.config/systemd/user/podman-prune.service"
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/podman-prune.service"
     mode: '0644'
     content: |
       [Unit]
@@ -14,11 +14,11 @@
       StandardOutput=journal
       StandardError=journal
 
-      RuntimeMaxSec=300
+      TimeoutStartSec=300
 
 - name: Deploy Systemd Timer file
   ansible.builtin.copy:
-    dest: "/home/{{ podman_user }}/.config/systemd/user/podman-prune.timer"
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/podman-prune.timer"
     mode: '0644'
     content: |
       [Unit]
