@@ -3,3 +3,19 @@ NUT_SERVERS:
     PORT: 3493
     USERNAME: {{ ups_observer_user }}
     PASSWORD: {{ vault_ups_observer_password }}
+INFLUX_HOST: ''
+INFLUX_TOKEN: ''
+INFLUX_ORG: ''
+INFLUX_BUCKET: ''
+INFLUX_INTERVAL: 10
+DATE_FORMAT: DD/MM/YYYY
+TIME_FORMAT: 24-hour
+DASHBOARD_SECTIONS:
+  - key: KPIS
+    enabled: true
+  - key: CHARTS
+    enabled: true
+  - key: VARIABLES
+    enabled: true
+DISABLE_VERSION_CHECK: false
+TEMPERATURE_UNIT: celsius
