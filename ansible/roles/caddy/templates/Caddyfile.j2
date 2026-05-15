@@ -160,7 +160,7 @@ http:// {
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
-        import authelia_middleware_basic # TODO: prometheus does not support any forward auth?? - need to check
+        import authelia_middleware_basic
         reverse_proxy prometheus:9090
     }
 }
@@ -177,11 +177,15 @@ http:// {
 }
 
 {{ services['restic']['subdomain'] }}.{{ vault_domain }} {
-    # TODO: Probably doesn't make sense to compress data there, if sent data is already compressed
     import secure_headers
     import gatekeeper {{ network_home }}
 
+    handle /metrics {
+        abort 
+    }
+
     handle {
+        import authelia_middleware
         reverse_proxy restic:8000
     }
 }

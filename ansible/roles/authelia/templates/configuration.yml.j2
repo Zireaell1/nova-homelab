@@ -28,6 +28,15 @@ definitions:
 access_control:
   default_policy: 'deny'
   rules:
+    # Restic Rest Server One-factor Auth (All)
+    - domain: '{{ services['restic']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'one_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:backup']
+
     # Alloy Two-factor Auth (Admin Only)
     - domain: '{{ services['alloy']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
@@ -144,6 +153,8 @@ access_control:
       networks:
         - 'internal'
         - 'tailscale'
+      subject:
+        - ['group:user']
 
     # Vaultwarden Two-factor Auth (Admin Only)
     - domain: '{{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }}'

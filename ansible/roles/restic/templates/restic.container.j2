@@ -1,8 +1,11 @@
 [Unit]
-Description=Restic
+Description=Restic Rest Server
+Documentation=https://github.com/restic/rest-server
 
 Wants=network-online.target
 After=network-online.target
+
+RequiresMountsFor={{ restic_data_path }}
 
 [Container]
 Image={{ restic_image }}
@@ -10,15 +13,23 @@ ContainerName=restic
 Timezone={{ timezone }}
 Memory={{ restic_memory_limit }}
 
-Environment=OPTIONS=--private-repos
+DropCapability=all
+NoNewPrivileges=true
 
-# TODO: z, Z???
-Volume=/mnt/backup/restic-rest-repos:/data:Z
+StopTimeout=20
+
+UserNS=keep-id:uid=0,gid=0
+
+Environment=OPTIONS="--private-repos --prometheus --prometheus-no-auth --proxy-auth-username Remote-User"
+
+Volume={{ restic_data_path }}:/data:Z
 
 Network=restic.network
 
 [Service]
 Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target

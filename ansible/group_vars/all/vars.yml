@@ -37,7 +37,7 @@ services:
   loki:
     subdomain: "logs"
   restic:
-    subdomain: "restic"
+    subdomain: "backup"
   immich:
     subdomain: "immich"
   vaultwarden:
