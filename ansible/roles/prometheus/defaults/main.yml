@@ -2,4 +2,4 @@
 prometheus_memory_limit: "2g"
 
 # https://hub.docker.com/r/prom/prometheus
-prometheus_image: "docker.io/prom/prometheus:v3.11.2-distroless"
+prometheus_image: "docker.io/prom/prometheus:v3.11.3-distroless"
