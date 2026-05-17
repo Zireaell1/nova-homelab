@@ -53,3 +53,17 @@
   containers.podman.podman_image:
     name: "{{ zigbee2mqtt_image }}"
     state: present
+
+# TODO
+- name: Create directory for the Silabs Flasher tool
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user }}/tools/universal-silabs-flasher"
+    state: directory
+    mode: '0755'
+
+- name: Install universal-silabs-flasher inside a Python virtual environment
+  ansible.builtin.pip:
+    name: universal-silabs-flasher
+    virtualenv: "/home/{{ ansible_user }}/tools/universal-silabs-flasher/venv"
+    virtualenv_command: "python3 -m venv"
+    state: latest

@@ -55,6 +55,8 @@
     group: "{{ ansible_user }}"
     mode: "{{ item.mode }}"
   loop:
+  # TODO permissions
+    - { path: "/home/{{ ansible_user }}/tools", mode: "0755" }
     - { path: "/home/{{ ansible_user }}/.config/fish", mode: "0700" }
     - { path: "/home/{{ ansible_user }}/.config/fastfetch", mode: "0744" }
     - { path: "/home/{{ ansible_user }}/.config/containers/systemd", mode: "0755" }
