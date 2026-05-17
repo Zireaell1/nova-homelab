@@ -61,6 +61,7 @@
     state: directory
     mode: '0755'
 
+# https://github.com/NabuCasa/universal-silabs-flasher
 - name: Install universal-silabs-flasher inside a Python virtual environment
   ansible.builtin.pip:
     name: universal-silabs-flasher
