@@ -67,3 +67,36 @@
     ifname: "{{ secondary_network_interface_name }}"
     state: up
   when: secondary_network_interface.changed
+
+- name: Check Wi-Fi status
+  ansible.builtin.command: nmcli radio wifi
+  register: wifi_status
+  changed_when: false
+  check_mode: false
+
+- name: Disable Wi-Fi
+  ansible.builtin.command: nmcli radio wifi off
+  when: "'enabled' in wifi_status.stdout"
+
+# TODO: 
+- name: Configure fail2ban (jail.local for SSH)
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.local
+    content: |
+      [DEFAULT]
+      banaction = firewallcmd-rich-rules
+      bantime  = 1h
+      findtime  = 10m
+      maxretry = 3
+
+      [sshd]
+      enabled = true
+      mode    = normal
+    mode: '0644'
+  notify: Restart fail2ban
+
+- name: Ensure fail2ban is enabled and running
+  ansible.builtin.service:
+    name: fail2ban.service
+    state: started
+    enabled: yes
