@@ -1,6 +1,12 @@
 ---
 - name: Restart chronyd
   ansible.builtin.service:
-    name: chronyd
+    name: chronyd.service
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart fail2ban
+  ansible.builtin.service:
+    name: fail2ban.service
     state: restarted
   ignore_errors: "{{ ansible_check_mode }}"

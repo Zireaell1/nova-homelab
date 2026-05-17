@@ -44,6 +44,7 @@
       - rclone
       - nut
       - prometheus-podman-exporter
+      - fail2ban
     state: present
 
 - name: Upload lm_sensors config
