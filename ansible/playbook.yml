@@ -1,8 +1,7 @@
 ---
 - name: Nova Homelab configuration
-  hosts: homelab
+  hosts: nova
   become: false
-
   roles:
     - role: base
       become: true
