@@ -9,7 +9,6 @@
     gpgkey: https://rpm.grafana.com/gpg.key
     enabled: yes
     sslverify: yes
-    sslcacert: /etc/pki/tls/certs/ca-bundle.crt
 
 - name: Install Grafana Alloy
   ansible.builtin.dnf:
