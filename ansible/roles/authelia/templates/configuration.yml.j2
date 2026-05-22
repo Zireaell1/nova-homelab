@@ -55,6 +55,15 @@ access_control:
       subject:
         - ['group:admin']
 
+    # Prometheus Bypass Webmanifest
+    - domain: '{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'bypass'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      resources:
+        - '^/favicon\.svg$'
+
     # Prometheus Two-factor Auth (Admin Only)
     - domain: '{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
