@@ -83,6 +83,7 @@ network_homelab: "192.168.3.0/24"
 network_iot: "192.168.4.0/24"
 network_cctv: "10.10.10.0/24"
 
+main_network_interface_name: "enp129s0"
 secondary_network_interface_name: "enp2s0"
 
 dashboard_tablet_ip: "192.168.4.10"

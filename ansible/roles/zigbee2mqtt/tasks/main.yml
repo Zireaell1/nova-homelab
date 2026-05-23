@@ -54,7 +54,6 @@
     name: "{{ zigbee2mqtt_image }}"
     state: present
 
-# TODO
 - name: Create directory for the Silabs Flasher tool
   ansible.builtin.file:
     path: "/home/{{ ansible_user }}/tools/universal-silabs-flasher"
