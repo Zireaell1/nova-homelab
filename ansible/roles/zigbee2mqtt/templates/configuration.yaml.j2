@@ -7,9 +7,9 @@ mqtt:
   client_id: zigbee2mqtt
 serial:
   port: /dev/ttyACM0
-  adapter: ember
+  adapter: {{ zigbee2mqtt_adapter }}
 advanced:
-  channel: 11
+  channel: {{ zigbee2mqtt_channel }}
   network_key: '!secret.yaml network_key'
   pan_id: 26794
   ext_pan_id:
