@@ -24,38 +24,39 @@ proxy:
 go2rtc:
   streams:
     Front:
-      - ffmpeg:http://{FRIGATE_FRONT_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_FRONT_USER}&password={FRIGATE_FRONT_PASSWORD}
+      - ffmpeg:http://{FRIGATE_FRONT_ADDRESS}:80/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_FRONT_USER}&password={FRIGATE_FRONT_PASSWORD}
       - ffmpeg:Front#audio=opus
-      - rtsp://{FRIGATE_FRONT_USER}:{FRIGATE_FRONT_PASSWORD}@{FRIGATE_FRONT_RTSP_ADDRESS}/Preview_01_sub
+      - rtsp://{FRIGATE_FRONT_USER}:{FRIGATE_FRONT_PASSWORD}@{FRIGATE_FRONT_ADDRESS}:554/Preview_01_sub
     Front_sub:
-      - ffmpeg:http://{FRIGATE_FRONT_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_FRONT_USER}&password={FRIGATE_FRONT_PASSWORD}
-      - rtsp://{FRIGATE_FRONT_USER}:{FRIGATE_FRONT_PASSWORD}@{FRIGATE_FRONT_RTSP_ADDRESS}/Preview_01_sub
+      - ffmpeg:http://{FRIGATE_FRONT_ADDRESS}:80/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_FRONT_USER}&password={FRIGATE_FRONT_PASSWORD}
+      - rtsp://{FRIGATE_FRONT_USER}:{FRIGATE_FRONT_PASSWORD}@{FRIGATE_FRONT_ADDRESS}:554/Preview_01_sub
     Back:
-      - ffmpeg:http://{FRIGATE_BACK_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_BACK_USER}&password={FRIGATE_BACK_PASSWORD}
+      - ffmpeg:http://{FRIGATE_BACK_ADDRESS}:80/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_BACK_USER}&password={FRIGATE_BACK_PASSWORD}
       - ffmpeg:Back#audio=opus
-      - rtsp://{FRIGATE_BACK_USER}:{FRIGATE_BACK_PASSWORD}@{FRIGATE_BACK_RTSP_ADDRESS}/Preview_01_sub
+      - rtsp://{FRIGATE_BACK_USER}:{FRIGATE_BACK_PASSWORD}@{FRIGATE_BACK_ADDRESS}:554/Preview_01_sub
     Back_sub:
-      - ffmpeg:http://{FRIGATE_BACK_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_BACK_USER}&password={FRIGATE_BACK_PASSWORD}
-      - rtsp://{FRIGATE_BACK_USER}:{FRIGATE_BACK_PASSWORD}@{FRIGATE_BACK_RTSP_ADDRESS}/Preview_01_sub
+      - ffmpeg:http://{FRIGATE_BACK_ADDRESS}:80/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_BACK_USER}&password={FRIGATE_BACK_PASSWORD}
+      - rtsp://{FRIGATE_BACK_USER}:{FRIGATE_BACK_PASSWORD}@{FRIGATE_BACK_ADDRESS}:554/Preview_01_sub
     Entry:
-      - ffmpeg:http://{FRIGATE_ENTRY_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_ENTRY_USER}&password={FRIGATE_ENTRY_PASSWORD}
+      - ffmpeg:http://{FRIGATE_ENTRY_ADDRESS}:80/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_ENTRY_USER}&password={FRIGATE_ENTRY_PASSWORD}
       - ffmpeg:Entry#audio=opus
-      - rtsp://{FRIGATE_ENTRY_USER}:{FRIGATE_ENTRY_PASSWORD}@{FRIGATE_ENTRY_RTSP_ADDRESS}/Preview_01_sub
+      - rtsp://{FRIGATE_ENTRY_USER}:{FRIGATE_ENTRY_PASSWORD}@{FRIGATE_ENTRY_ADDRESS}:554/Preview_01_sub
     Entry_sub:
-      - ffmpeg:http://{FRIGATE_ENTRY_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_ENTRY_USER}&password={FRIGATE_ENTRY_PASSWORD}
-      - rtsp://{FRIGATE_ENTRY_USER}:{FRIGATE_ENTRY_PASSWORD}@{FRIGATE_ENTRY_RTSP_ADDRESS}/Preview_01_sub
+      - ffmpeg:http://{FRIGATE_ENTRY_ADDRESS}:80/flv?port=1935&app=bcs&stream=channel0_sub.bcs&user={FRIGATE_ENTRY_USER}&password={FRIGATE_ENTRY_PASSWORD}
+      - rtsp://{FRIGATE_ENTRY_USER}:{FRIGATE_ENTRY_PASSWORD}@{FRIGATE_ENTRY_ADDRESS}:554/Preview_01_sub
     Doorbell:
-      - ffmpeg:http://{FRIGATE_DOORBELL_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_DOORBELL_USER}&password={FRIGATE_DOORBELL_PASSWORD}
+      - ffmpeg:http://{FRIGATE_DOORBELL_ADDRESS}:80/flv?port=1935&app=bcs&stream=channel0_main.bcs&user={FRIGATE_DOORBELL_USER}&password={FRIGATE_DOORBELL_PASSWORD}
       - ffmpeg:Doorbell#audio=opus
-      - rtsp://{FRIGATE_DOORBELL_USER}:{FRIGATE_DOORBELL_PASSWORD}@{FRIGATE_DOORBELL_RTSP_ADDRESS}/Preview_01_sub
+      - rtsp://{FRIGATE_DOORBELL_USER}:{FRIGATE_DOORBELL_PASSWORD}@{FRIGATE_DOORBELL_ADDRESS}:554/Preview_01_sub
     Doorbell_sub:
-      - ffmpeg:http://{FRIGATE_DOORBELL_HTTP_ADDRESS}/flv?port=1935&app=bcs&stream=channel0_ext.bcs&user={FRIGATE_DOORBELL_USER}&password={FRIGATE_DOORBELL_PASSWORD}
-      - rtsp://{FRIGATE_DOORBELL_USER}:{FRIGATE_DOORBELL_PASSWORD}@{FRIGATE_DOORBELL_RTSP_ADDRESS}/Preview_01_sub
+      - ffmpeg:http://{FRIGATE_DOORBELL_ADDRESS}:80/flv?port=1935&app=bcs&stream=channel0_ext.bcs&user={FRIGATE_DOORBELL_USER}&password={FRIGATE_DOORBELL_PASSWORD}
+      - rtsp://{FRIGATE_DOORBELL_USER}:{FRIGATE_DOORBELL_PASSWORD}@{FRIGATE_DOORBELL_ADDRESS}:554/Preview_01_sub
   webrtc:
     filters:
       networks: [ udp4, tcp4 ]
     candidates:
-      - {{ ip }}:8555
+      - {{ primary_ip }}:8555
+      - {{ vault_tailscale_ip }}:8555
 
 ffmpeg:
   hwaccel_args: preset-intel-qsv-h264

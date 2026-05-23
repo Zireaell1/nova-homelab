@@ -197,7 +197,7 @@ http:// {
     import gatekeeper {{ network_home }} {{ network_tailscale }}
 
     handle {
-        reverse_proxy {{ printer_ip }}
+        reverse_proxy {{ printer_ip }}:4409
     }
 }
 
@@ -208,7 +208,7 @@ http:// {
 
     handle {
         import authelia_middleware_basic
-        reverse_proxy {{ switch_ip }}
+        reverse_proxy {{ switch_ip }}:80
     }
 }
 
@@ -315,7 +315,7 @@ http:// {
     import gatekeeper {{ network_home }}
 
     handle {
-        reverse_proxy {{ camera_doorbell_http_ip }} {
+        reverse_proxy {{ camera_doorbell_ip }}:80 {
             header_up -Via
         }
     }
@@ -327,7 +327,7 @@ http:// {
     import gatekeeper {{ network_home }}
 
     handle {
-        reverse_proxy {{ camera_front_http_ip }} {
+        reverse_proxy {{ camera_front_ip }}:80 {
             header_up -Via
         }
     }
@@ -339,7 +339,7 @@ http:// {
     import gatekeeper {{ network_home }}
 
     handle {
-        reverse_proxy {{ camera_back_http_ip }} {
+        reverse_proxy {{ camera_back_ip }}:80 {
             header_up -Via
         }
     }
@@ -351,7 +351,7 @@ http:// {
     import gatekeeper {{ network_home }}
 
     handle {
-        reverse_proxy {{ camera_entry_http_ip }} {
+        reverse_proxy {{ camera_entry_ip }}:80 {
             header_up -Via
         }
     }

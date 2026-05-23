@@ -111,8 +111,8 @@
 
 - name: Set host to use local Pi-hole for DNS
   community.general.nmcli:
-    conn_name: "{{ main_network_interface_name }}"
-    ifname: "{{ main_network_interface_name }}"
+    conn_name: "{{ primary_network_interface_name }}"
+    ifname: "{{ primary_network_interface_name }}"
     type: ethernet
     dns4:
       - "127.0.0.1"
@@ -124,8 +124,8 @@
 
 - name: Apply local DNS connection changes
   community.general.nmcli:
-    conn_name: "{{ main_network_interface_name }}"
-    ifname: "{{ main_network_interface_name }}"
+    conn_name: "{{ primary_network_interface_name }}"
+    ifname: "{{ primary_network_interface_name }}"
     state: up
   become: yes
   when: pihole_local_dns_result.changed

@@ -32,11 +32,11 @@
   failed_when: false
 
 - name: Authenticate and register node (First run only)
-  ansible.builtin.command: "tailscale up --authkey={{ vault_tailscale_auth_key }} --advertise-routes={{ ip }}/32 --advertise-tags=tag:homelab --accept-dns=false --reset"
+  ansible.builtin.command: "tailscale up --authkey={{ vault_tailscale_auth_key }} --advertise-routes={{ primary_ip }}/32 --advertise-tags=tag:homelab --accept-dns=false --reset"
   when: "'Logged out' in ts_status.stdout or ts_status.rc != 0"
 
 # - name: Re-apply configuration updates (Subsequent runs)
-#   ansible.builtin.command: "tailscale up --advertise-routes={{ ip }}/32 --advertise-tags=tag:homelab --accept-dns=false --reset"
+#   ansible.builtin.command: "tailscale up --advertise-routes={{ primary_ip }}/32 --advertise-tags=tag:homelab --accept-dns=false --reset"
 #   when: 
 #     - "'Logged out' not in ts_status.stdout"
 #     - ts_status.rc == 0

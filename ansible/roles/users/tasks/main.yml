@@ -8,14 +8,14 @@
 
 - name: Install Zellij from GitHub repo
   ansible.builtin.unarchive:
-    src: "{{ base_zellij_link }}"
+    src: "{{ users_zellij_link }}"
     dest: /usr/local/bin
     remote_src: yes
     creates: /usr/local/bin/zellij
     owner: root
     group: root
     mode: '0755'
-  when: zellij_cmd_output.rc != 0 or zellij_version not in zellij_cmd_output.stdout
+  when: zellij_cmd_output.rc != 0 or users_zellij_version not in zellij_cmd_output.stdout
 
 - name: Verify if group exists
   ansible.builtin.group:
@@ -45,7 +45,7 @@
 - name: Change default shell to Fish
   ansible.builtin.user:
     name: "{{ ansible_user }}"
-    shell: "{{ user_shell }}"
+    shell: "{{ users_shell }}"
 
 - name: Verify if config directories exist
   ansible.builtin.file:

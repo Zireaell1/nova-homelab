@@ -19,13 +19,14 @@
     - net.ipv6.conf.all.forwarding
 
 - name: Check current primary interface ethtool UDP GRO settings
-  ansible.builtin.command: "nmcli -g ethtool.feature-rx-udp-gro-forwarding connection show '{{ main_network_interface_name }}'"
+  ansible.builtin.command: "nmcli -g ethtool.feature-rx-udp-gro-forwarding connection show '{{ primary_network_interface_name }}'"
   register: primary_current_gro
   changed_when: false
+  check_mode: false
 
 - name: Modify primary interface connection to enable UDP GRO offloading
   ansible.builtin.command: >
-    nmcli connection modify "{{ main_network_interface_name }}" 
+    nmcli connection modify "{{ primary_network_interface_name }}" 
     ethtool.feature-rx-udp-gro-forwarding on 
     ethtool.feature-rx-gro-list off
   when: "'on' not in primary_current_gro.stdout"
@@ -35,6 +36,7 @@
   ansible.builtin.command: "nmcli -g ethtool.feature-rx-udp-gro-forwarding connection show '{{ secondary_network_interface_name }}'"
   register: secondary_current_gro
   changed_when: false
+  check_mode: false
 
 - name: Modify secondary interface connection to enable UDP GRO offloading
   ansible.builtin.command: >
@@ -93,7 +95,7 @@
     conn_name: "{{ secondary_network_interface_name }}"
     ifname: "{{ secondary_network_interface_name }}"
     type: ethernet
-    ip4: "{{ secondary_ip }}"
+    ip4: "{{ secondary_ip }}/24"
     method4: manual
     state: present
     conn_reload: true
@@ -101,8 +103,8 @@
 
 - name: Apply primary network interface changes
   community.general.nmcli:
-    conn_name: "{{ main_network_interface_name }}"
-    ifname: "{{ main_network_interface_name }}"
+    conn_name: "{{ primary_network_interface_name }}"
+    ifname: "{{ primary_network_interface_name }}"
     state: up
   when: primary_gro_modify.changed
 
