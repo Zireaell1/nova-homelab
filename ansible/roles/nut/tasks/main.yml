@@ -125,9 +125,14 @@
     state: started
     enabled: yes
   loop:
-    - nut-driver-enumerator.service
     - nut-driver-enumerator.path
     - nut-server.service
     - nut-monitor.service
     - nut.target
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Ensure NUT enumerator service is enabled
+  ansible.builtin.systemd:
+    name: nut-driver-enumerator.service
+    enabled: yes
   ignore_errors: "{{ ansible_check_mode }}"
