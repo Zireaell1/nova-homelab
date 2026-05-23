@@ -65,6 +65,10 @@ prometheus.scrape "host_metrics" {
                 job         = "podman",
                 __address__ = "127.0.0.1:9882",
             },
+            {
+                job         = "tailscale",
+                __address__ = "100.100.100.100",
+            },
         ],
     )
     forward_to = [prometheus.remote_write.local_prom.receiver]

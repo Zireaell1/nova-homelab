@@ -1,0 +1,44 @@
+---
+# https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+- name: Add Tailscale package repository
+  ansible.builtin.yum_repository:
+    name: tailscale-stable
+    description: Tailscale stable
+    file: tailscale
+    baseurl: https://pkgs.tailscale.com/stable/fedora/$basearch
+    gpgcheck: yes
+    repo_gpgcheck: yes
+    gpgkey: https://pkgs.tailscale.com/stable/fedora/repo.gpg
+    enabled: yes
+    sslverify: yes
+
+- name: Install Tailscale
+  ansible.builtin.dnf:
+    name: tailscale
+    state: present
+    update_cache: yes
+
+- name: Ensure tailscaled daemon is enabled and running
+  ansible.builtin.systemd:
+    name: tailscaled
+    state: started
+    enabled: yes
+
+- name: Check current Tailscale connection status
+  ansible.builtin.command: tailscale status
+  register: ts_status
+  changed_when: false
+  check_mode: false
+  failed_when: false
+
+- name: Authenticate and register node (First run only)
+  ansible.builtin.command: "tailscale up --authkey={{ vault_tailscale_auth_key }} --advertise-routes={{ ip }}/32 --advertise-tags=tag:homelab --accept-dns=false --reset"
+  when: "'Logged out' in ts_status.stdout or ts_status.rc != 0"
+
+# - name: Re-apply configuration updates (Subsequent runs)
+#   ansible.builtin.command: "tailscale up --advertise-routes={{ ip }}/32 --advertise-tags=tag:homelab --accept-dns=false --reset"
+#   when: 
+#     - "'Logged out' not in ts_status.stdout"
+#     - ts_status.rc == 0
+#   changed_when: true
+

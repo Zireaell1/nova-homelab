@@ -7,6 +7,43 @@
     state: present
     reload: yes
 
+- name: Enable IPv4 and IPv6 forwarding for routing
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+  loop:
+    - net.ipv4.ip_forward
+    - net.ipv6.conf.all.forwarding
+
+- name: Check current primary interface ethtool UDP GRO settings
+  ansible.builtin.command: "nmcli -g ethtool.feature-rx-udp-gro-forwarding connection show '{{ main_network_interface_name }}'"
+  register: primary_current_gro
+  changed_when: false
+
+- name: Modify primary interface connection to enable UDP GRO offloading
+  ansible.builtin.command: >
+    nmcli connection modify "{{ main_network_interface_name }}" 
+    ethtool.feature-rx-udp-gro-forwarding on 
+    ethtool.feature-rx-gro-list off
+  when: "'on' not in primary_current_gro.stdout"
+  register: primary_gro_modify
+
+- name: Check current secondary interface ethtool UDP GRO settings
+  ansible.builtin.command: "nmcli -g ethtool.feature-rx-udp-gro-forwarding connection show '{{ secondary_network_interface_name }}'"
+  register: secondary_current_gro
+  changed_when: false
+
+- name: Modify secondary interface connection to enable UDP GRO offloading
+  ansible.builtin.command: >
+    nmcli connection modify "{{ secondary_network_interface_name }}" 
+    ethtool.feature-rx-udp-gro-forwarding on 
+    ethtool.feature-rx-gro-list off
+  when: "'on' not in secondary_current_gro.stdout"
+  register: secondary_gro_modify
+
 # Default: #allow 192.168.0.0/16
 - name: Allow NTP queries for selected subnet
   ansible.builtin.lineinfile:
@@ -42,7 +79,8 @@
     - { service: "nut" }
     - { service: "ssh" }
     - { service: "dhcpv6-client" }
-    - { port: "443/udp"}
+    - { port: "443/udp" }
+    - { port: "41641/udp" }
 
 - name: Remove the default connection
   community.general.nmcli:
@@ -61,12 +99,19 @@
     conn_reload: true
   register: secondary_network_interface
 
+- name: Apply primary network interface changes
+  community.general.nmcli:
+    conn_name: "{{ main_network_interface_name }}"
+    ifname: "{{ main_network_interface_name }}"
+    state: up
+  when: primary_gro_modify.changed
+
 - name: Apply secondary network interface changes
   community.general.nmcli:
     conn_name: "{{ secondary_network_interface_name }}"
     ifname: "{{ secondary_network_interface_name }}"
     state: up
-  when: secondary_network_interface.changed
+  when: secondary_network_interface.changed or secondary_gro_modify.changed
 
 - name: Check Wi-Fi status
   ansible.builtin.command: nmcli radio wifi
@@ -78,8 +123,7 @@
   ansible.builtin.command: nmcli radio wifi off
   when: "'enabled' in wifi_status.stdout"
 
-# TODO: 
-- name: Configure fail2ban (jail.local for SSH)
+- name: Configure fail2ban
   ansible.builtin.copy:
     dest: /etc/fail2ban/jail.local
     content: |

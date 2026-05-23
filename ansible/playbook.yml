@@ -57,3 +57,8 @@
 
     - role: backup
       tags: ['backup']
+
+    - role: tailscale
+      become: true
+      tags: ['tailscale']
+
