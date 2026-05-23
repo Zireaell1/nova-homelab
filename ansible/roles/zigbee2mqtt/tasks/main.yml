@@ -66,4 +66,4 @@
     name: universal-silabs-flasher
     virtualenv: "/home/{{ ansible_user }}/tools/universal-silabs-flasher/venv"
     virtualenv_command: "python3 -m venv"
-    state: latest
+    state: present
