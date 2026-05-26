@@ -10,6 +10,7 @@ Requires=caddy.socket
 
 RequiresMountsFor={{ stacks_path }}/caddy/data
 RequiresMountsFor={{ stacks_path }}/caddy/config
+RequiresMountsFor={{ stacks_path }}/caddy/srv
 
 [Container]
 Image=localhost/custom-caddy:{{ caddy_version }}
@@ -30,6 +31,7 @@ Notify=true
 Volume={{ stacks_path }}/caddy/Caddyfile:/etc/caddy/Caddyfile:ro,Z
 Volume={{ stacks_path }}/caddy/data:/data:Z
 Volume={{ stacks_path }}/caddy/config:/config:Z
+Volume={{ stacks_path }}/caddy/srv:/srv:Z
 
 UserNS=keep-id
 

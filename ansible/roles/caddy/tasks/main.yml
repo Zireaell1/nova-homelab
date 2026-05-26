@@ -8,7 +8,18 @@
     - "{{ stacks_path }}/caddy"
     - "{{ stacks_path }}/caddy/data"
     - "{{ stacks_path }}/caddy/config"
+    - "{{ stacks_path }}/caddy/srv"
     - "{{ stacks_path }}/caddy/caddy-build"
+
+- name: Copy files to /srv
+  ansible.builtin.copy:
+    src: "srv/{{ item }}"
+    dest: "{{ stacks_path }}/caddy/srv/{{ item }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+  loop:
+    - "windows-device-critical-backup.cmd"
 
 - name: Upload .env file
   ansible.builtin.template:

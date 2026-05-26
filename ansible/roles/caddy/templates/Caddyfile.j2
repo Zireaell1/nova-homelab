@@ -356,3 +356,12 @@ http:// {
         }
     }
 }
+
+{{ services['files']['subdomain'] }}.{{ vault_domain }} {
+    import gatekeeper {{ network_home }} {{ network_tailscale }}
+
+    handle {
+        root /srv
+        file_server browse
+    }
+}
