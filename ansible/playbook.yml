@@ -62,3 +62,10 @@
       become: true
       tags: ['tailscale']
 
+- name: Orion RPI configuration
+  hosts: orion
+  become: false
+  roles:
+    - role: rpi-base
+      become: true
+      tags: ['rpi-base']
