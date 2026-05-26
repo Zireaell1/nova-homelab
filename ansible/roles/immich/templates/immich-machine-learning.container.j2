@@ -1,0 +1,38 @@
+[Unit]
+Description=Immich Machine Learning (OpenVINO)
+Documentation=https://docs.immich.app/
+
+Wants=network-online.target
+After=network-online.target
+
+RequiresMountsFor={{ stacks_path }}/immich/model-cache
+
+[Container]
+Image={{ immich_machine_learning_image }}
+ContainerName=immich-machine-learning
+Timezone={{ timezone }}
+Memory={{ immich_machine_learning_limit }}
+
+DropCapability=all
+NoNewPrivileges=true
+
+AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
+
+StopTimeout=20
+
+EnvironmentFile={{ stacks_path }}/immich/immich-machine-learning.env
+
+Volume={{ stacks_path }}/immich/model-cache:/cache:Z
+
+GroupAdd=keep-groups
+UserNS=keep-id:uid=0,gid=0
+
+Network=immich-backend.network
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,20 @@
+[Unit]
+Description=Immich Redis
+
+[Container]
+Image={{ immich_redis_image }}
+ContainerName=immich-redis
+Timezone={{ timezone }}
+Memory={{ immich_redis_memory_limit }}
+
+StopTimeout=20
+
+Network=immich-backend.network
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

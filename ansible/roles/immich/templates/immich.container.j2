@@ -1,0 +1,43 @@
+[Unit]
+Description=Immich
+Documentation=https://docs.immich.app/
+
+Wants=network-online.target
+After=network-online.target
+
+Requires=immich-postgres.service immich-redis.service
+After=immich-postgres.service immich-redis.service
+
+RequiresMountsFor={{ immich_storage_path }}/data
+
+[Container]
+Image={{ immich_image }}
+ContainerName=immich
+Timezone={{ timezone }}
+Memory={{ immich_memory_limit }}
+
+DropCapability=all
+NoNewPrivileges=true
+
+AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
+
+StopTimeout=20
+
+EnvironmentFile={{ immich_storage_path }}/immich.env
+
+Volume={{ immich_storage_path }}/data:/data:Z
+Volume={{ stacks_path }}/immich/immich-config.json:/usr/src/app/immich-config.json:Z
+
+GroupAdd=keep-groups
+UserNS=keep-id:uid=0,gid=0
+
+Network=immich.network
+Network=immich-backend.network
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

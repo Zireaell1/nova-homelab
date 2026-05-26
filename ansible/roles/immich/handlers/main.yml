@@ -1,0 +1,33 @@
+---
+- name: Restart immich
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: immich.service
+    state: restarted
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart immich-postgres
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: immich-postgres.service
+    state: restarted
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart immich-redis
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    name: immich-redis.service
+    state: restarted
+    enabled: yes
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"
