@@ -1,0 +1,22 @@
+---
+# firewall-cmd --get-services (list of available services)
+- name: Open required ports
+  ansible.posix.firewalld:
+    service: "{{ item.service | default(omit) }}"
+    port: "{{ item.port | default(omit) }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop:
+    - service: "cockpit" # TODO: remove when caddy will work as a proxy to cockpit
+    - service: "ntp"
+    - service: "dns"
+    - service: "http"
+    - service: "https"
+    - service: "nut"
+    - service: "ssh"
+    - service: "dhcpv6-client"
+    - port: "443/udp"
+    - port: "41641/udp"
+    - port: "8555/tcp"
+    - port: "8555/udp"
