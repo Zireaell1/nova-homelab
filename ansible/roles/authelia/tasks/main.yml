@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
   loop:
     - "{{ stacks_path }}/authelia"
     - "{{ stacks_path }}/authelia/config"
@@ -15,15 +15,29 @@
   ansible.builtin.copy:
     content: "{{ item.value }}"
     dest: "{{ stacks_path }}/authelia/secrets/{{ item.name }}"
-    mode: '0600'
+    mode: "0600"
   loop:
-    - { name: 'HMAC_SECRET', value: '{{ vault_authelia_hmac_secret }}' }
-    - { name: 'JWT_SECRET', value: '{{ vault_authelia_jwt_secret }}' }
-    - { name: 'REDIS_PASSWORD', value: '{{ vault_authelia_redis_password }}' }
-    - { name: 'SESSION_SECRET', value: '{{ vault_authelia_session_secret }}' }
-    - { name: 'STORAGE_ENCRYPTION_KEY', value: '{{ vault_authelia_storage_encryption_key }}' }
-    - { name: 'STORAGE_PASSWORD', value: '{{ vault_authelia_storage_password }}' }
-    - { name: 'rsa.2048.key', value: '{{ vault_authelia_rsa2048 }}' }
+    - name: "HMAC_SECRET"
+      value: "{{ vault_authelia_hmac_secret }}"
+
+    - name: "JWT_SECRET"
+      value: "{{ vault_authelia_jwt_secret }}"
+
+    - name: "REDIS_PASSWORD"
+      value: "{{ vault_authelia_redis_password }}"
+
+    - name: "SESSION_SECRET"
+      value: "{{ vault_authelia_session_secret }}"
+
+    - name: "STORAGE_ENCRYPTION_KEY"
+      value: "{{ vault_authelia_storage_encryption_key }}"
+
+    - name: "STORAGE_PASSWORD"
+      value: "{{ vault_authelia_storage_password }}"
+
+    - name: "rsa.2048.key"
+      value: "{{ vault_authelia_rsa2048 }}"
+
   no_log: true
   notify:
     - Restart authelia
@@ -33,7 +47,7 @@
   ansible.builtin.copy:
     content: "{{ vault_authelia_users_database }}"
     dest: "{{ stacks_path }}/authelia/config/users_database.yml"
-    mode: '0600'
+    mode: "0600"
   no_log: true
   notify: Restart authelia
 
@@ -41,21 +55,21 @@
   ansible.builtin.template:
     src: "configuration.yml.j2"
     dest: "{{ stacks_path }}/authelia/config/configuration.yml"
-    mode: '0644'
+    mode: "0644"
   notify: Restart authelia
 
 - name: Upload .env file
   ansible.builtin.template:
     src: "authelia.env.j2"
     dest: "{{ stacks_path }}/authelia/authelia.env"
-    mode: '0600'
+    mode: "0600"
   notify: Restart authelia
 
 - name: Upload .network file
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
-    mode: '0644'
+    mode: "0644"
   loop:
     - authelia.network
     - authelia-backend.network
@@ -68,14 +82,14 @@
   ansible.builtin.template:
     src: "authelia.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/authelia.container"
-    mode: '0644'
+    mode: "0644"
   notify: Restart authelia
 
 - name: Upload Postgres and Redis .container files
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
-    mode: '0644'
+    mode: "0644"
   loop:
     - authelia-postgres.container
     - authelia-redis.container

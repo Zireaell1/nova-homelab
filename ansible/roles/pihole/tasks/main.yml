@@ -13,8 +13,8 @@
   ansible.builtin.file:
     path: /etc/systemd/resolved.conf.d
     state: directory
-    mode: '0755'
-  become: yes
+    mode: "0755"
+  become: true
 
 - name: Disable DNSStubListener (free port 53)
   ansible.builtin.copy:
@@ -22,8 +22,8 @@
     content: |
       [Resolve]
       DNSStubListener=no
-    mode: '0644'
-  become: yes
+    mode: "0644"
+  become: true
   register: pihole_stub_disabled
 
 # Default: ../run/systemd/resolve/stub-resolv.conf
@@ -32,15 +32,15 @@
     src: /run/systemd/resolve/resolv.conf
     dest: /etc/resolv.conf
     state: link
-    force: yes
-  become: yes
+    force: true
+  become: true
 
 - name: Restart systemd-resolved
   ansible.builtin.systemd:
     name: systemd-resolved.service
     state: restarted
-  become: yes
-  when: pihole_stub_disabled.changed
+  become: true
+  when: pihole_stub_disabled.changed # noqa: no-handler
 
 - name: Verify that port 53 is free
   ansible.builtin.wait_for:
@@ -48,15 +48,15 @@
     state: stopped
     host: 127.0.0.1
     timeout: 10
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
-  when: pihole_stub_disabled.changed
+  when: pihole_stub_disabled.changed # noqa: no-handler
 
 - name: Verify base directory structure
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
   loop:
     - "{{ stacks_path }}/pihole"
 
@@ -71,7 +71,7 @@
   ansible.builtin.file:
     path: "{{ item.item }}"
     state: directory
-    mode: '0777'
+    mode: "0777"
   loop: "{{ pihole_dirs_stat.results }}"
   when: not item.stat.exists
 
@@ -79,7 +79,7 @@
   ansible.builtin.template:
     src: "pihole.env.j2"
     dest: "{{ stacks_path }}/pihole/pihole.env"
-    mode: '0600'
+    mode: "0600"
   no_log: true
   register: pihole_env_tpl
 
@@ -87,7 +87,7 @@
   ansible.builtin.template:
     src: "pihole.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/pihole.container"
-    mode: '0644'
+    mode: "0644"
   register: pihole_container_tpl
 
 - name: Start and enable Pi-hole service (with daemon-reload if needed)
@@ -95,7 +95,7 @@
     daemon_reload: "{{ pihole_container_tpl.changed }}"
     name: pihole.service
     state: "{{ 'restarted' if (pihole_env_tpl.changed or pihole_container_tpl.changed) else 'started' }}"
-    enabled: yes
+    enabled: true
     scope: user
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
@@ -106,7 +106,7 @@
     port: 53
     host: 127.0.0.1
     delay: 10
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Set host to use local Pi-hole for DNS
@@ -119,7 +119,7 @@
     dns4_ignore_auto: true
     state: present
     conn_reload: true
-  become: yes
+  become: true
   register: pihole_local_dns_result
 
 - name: Apply local DNS connection changes
@@ -127,5 +127,5 @@
     conn_name: "{{ primary_network_interface_name }}"
     ifname: "{{ primary_network_interface_name }}"
     state: up
-  become: yes
-  when: pihole_local_dns_result.changed
+  become: true
+  when: pihole_local_dns_result.changed # noqa: no-handler

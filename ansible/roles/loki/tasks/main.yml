@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
   loop:
     - "/srv/monitoring/loki"
     - "/srv/monitoring/loki/data"
@@ -12,21 +12,21 @@
   ansible.builtin.template:
     src: "loki.yaml.j2"
     dest: "/srv/monitoring/loki/loki.yaml"
-    mode: '0644'
+    mode: "0644"
   notify: Restart loki
 
 - name: Upload .network file
   ansible.builtin.template:
     src: "loki.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/loki.network"
-    mode: '0644'
+    mode: "0644"
   notify: Restart loki
 
 - name: Upload .container file
   ansible.builtin.template:
     src: "loki.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/loki.container"
-    mode: '0644'
+    mode: "0644"
   notify: Restart loki
 
 - name: Download Podman images

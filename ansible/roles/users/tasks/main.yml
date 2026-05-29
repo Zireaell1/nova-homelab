@@ -1,7 +1,7 @@
 ---
 - name: Check current version of Zellij
   ansible.builtin.command: zellij --version
-  register: zellij_cmd_output
+  register: users_zellij_cmd_output
   failed_when: false
   check_mode: false
   changed_when: false
@@ -10,12 +10,12 @@
   ansible.builtin.unarchive:
     src: "{{ users_zellij_link }}"
     dest: /usr/local/bin
-    remote_src: yes
+    remote_src: true
     creates: /usr/local/bin/zellij
     owner: root
     group: root
-    mode: '0755'
-  when: zellij_cmd_output.rc != 0 or users_zellij_version not in zellij_cmd_output.stdout
+    mode: "0755"
+  when: users_zellij_cmd_output.rc != 0 or users_zellij_version not in users_zellij_cmd_output.stdout
 
 - name: Verify if group exists
   ansible.builtin.group:
@@ -55,14 +55,27 @@
     group: "{{ ansible_user }}"
     mode: "{{ item.mode }}"
   loop:
-  # TODO permissions
-    - { path: "/home/{{ ansible_user }}/tools", mode: "0755" }
-    - { path: "/home/{{ ansible_user }}/.config/fish", mode: "0700" }
-    - { path: "/home/{{ ansible_user }}/.config/fastfetch", mode: "0744" }
-    - { path: "/home/{{ ansible_user }}/.config/containers/systemd", mode: "0755" }
-    - { path: "/home/{{ ansible_user }}/.config/systemd/user", mode: "0755" }
-    - { path: "{{ stacks_path }}", mode: "0755" }
-    - { path: "/home/{{ ansible_user }}/.local/bin", mode: "0700" }
+    # TODO permissions
+    - path: "/home/{{ ansible_user }}/tools"
+      mode: "0755"
+
+    - path: "/home/{{ ansible_user }}/.config/fish"
+      mode: "0700"
+
+    - path: "/home/{{ ansible_user }}/.config/fastfetch"
+      mode: "0744"
+
+    - path: "/home/{{ ansible_user }}/.config/containers/systemd"
+      mode: "0755"
+
+    - path: "/home/{{ ansible_user }}/.config/systemd/user"
+      mode: "0755"
+
+    - path: "{{ stacks_path }}"
+      mode: "0755"
+
+    - path: "/home/{{ ansible_user }}/.local/bin"
+      mode: "0700"
 
 - name: Upload Fish config
   ansible.builtin.copy:
@@ -70,7 +83,7 @@
     dest: "/home/{{ ansible_user }}/.config/fish/config.fish"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0644'
+    mode: "0644"
 
 - name: Upload Fastfetch config
   ansible.builtin.copy:
@@ -78,4 +91,4 @@
     dest: "/home/{{ ansible_user }}/.config/fastfetch/config.jsonc"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0644'
+    mode: "0644"

@@ -1,28 +1,14 @@
 ---
-- name: DNF Update
-  ansible.builtin.dnf:
-    name: "*"
-    state: latest
-
-- name: Check if reboot is required after update
-  ansible.builtin.command: "dnf needs-restarting -r"
-  register: reboot_required
-  failed_when: false
-  check_mode: false
-  changed_when: false
-
-- name: Notify that a reboot is required after update
-  ansible.builtin.debug:
-    msg: "WARNING: A reboot is required after the DNF update. Please restart the system manually."
-  when: reboot_required.rc == 1
-
 - name: Stop and disable ModemManager
   ansible.builtin.systemd:
     name: ModemManager.service
     state: stopped
-    enabled: no
-    masked: yes
+    enabled: false
+    masked: true
 
+# TODO
+# cockpit-sosreport
+# cockpit-files
 - name: Software install
   ansible.builtin.dnf:
     name:
@@ -38,8 +24,6 @@
       - cockpit-networkmanager
       - cockpit-podman
       - cockpit-selinux
-      #- cockpit-sosreport
-      #- cockpit-files
       - rsync
       - rclone
       - nut
@@ -54,7 +38,7 @@
     dest: "/etc/sysconfig/lm_sensors"
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Restart lm_sensors
 
 # Default: false
@@ -68,15 +52,15 @@
 - name: Allow unpriviledged users to read hardware performance counters
   ansible.posix.sysctl:
     name: kernel.perf_event_paranoid
-    value: '0'
-    sysctl_set: yes
+    value: "0"
+    sysctl_set: true
     state: present
-    reload: yes
+    reload: true
 
 # https://docs.kernel.org/hwmon/nct6683.html
 - name: Load nct6683 module and make it persistent
   community.general.modprobe:
     name: nct6683
-    params: 'force=1'
+    params: "force=1"
     state: present
     persistent: present

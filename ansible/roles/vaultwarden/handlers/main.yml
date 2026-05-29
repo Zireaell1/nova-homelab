@@ -1,10 +1,10 @@
 ---
 - name: Restart vaultwarden
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
     name: vaultwarden.service
     state: restarted
-    enabled: yes
+    enabled: true
     scope: user
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"

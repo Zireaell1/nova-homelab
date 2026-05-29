@@ -4,8 +4,8 @@
     dest: "/etc/ups/nut.conf"
     owner: "root"
     group: "nut"
-    mode: '0640'
-    backup: yes
+    mode: "0640"
+    backup: true
     content: |
       MODE={{ nut_mode }}
   register: nut_conf_result
@@ -15,64 +15,64 @@
     dest: "/etc/ups/ups.conf"
     owner: "root"
     group: "nut"
-    mode: '0640'
-    backup: yes
+    mode: "0640"
+    backup: true
     content: |
       maxretry = 3
 
-      [{{ ups_name }}]
-          driver = {{ ups_driver }}
-          desc = "{{ ups_description }}"
-          port = {{ ups_port }}
+      [{{ nut_ups_name }}]
+          driver = {{ nut_ups_driver }}
+          desc = "{{ nut_ups_description }}"
+          port = {{ nut_ups_port }}
 
-          vendorid = {{ ups_vendorid }}
-          productid = {{ ups_productid }}
+          vendorid = {{ nut_ups_vendorid }}
+          productid = {{ nut_ups_productid }}
 
-          waitbeforereconnect = {{ ups_waitbeforereconnect }}
+          waitbeforereconnect = {{ nut_ups_waitbeforereconnect }}
 
-          lowbatt = {{ ups_lowbatt }}
-          offdelay = {{ ups_offdelay }}
-          ondelay = {{ ups_ondelay }}
-  register: ups_conf_result
+          lowbatt = {{ nut_ups_lowbatt }}
+          offdelay = {{ nut_ups_offdelay }}
+          ondelay = {{ nut_ups_ondelay }}
+  register: nut_ups_conf_result
 
 - name: Configure upsd.conf (Server Listener)
   ansible.builtin.copy:
     dest: "/etc/ups/upsd.conf"
     owner: "root"
     group: "nut"
-    mode: '0640'
-    backup: yes
+    mode: "0640"
+    backup: true
     content: |
       LISTEN 0.0.0.0
-  register: upsd_conf_result
+  register: nut_upsd_conf_result
 
 - name: Configure upsd.users (Server Credentials)
   ansible.builtin.copy:
     dest: "/etc/ups/upsd.users"
     owner: "root"
     group: "nut"
-    mode: '0640'
-    backup: yes
+    mode: "0640"
+    backup: true
     content: |
-      [{{ ups_admin_user }}]
-          password = {{ vault_ups_admin_password }}
+      [{{ nut_ups_admin_user }}]
+          password = {{ vault_nut_ups_admin_password }}
           actions = set
           actions = fsd
           instcmds = all
           upsmon primary
 
-      [{{ ups_observer_user }}]
-          password = {{ vault_ups_observer_password }}
+      [{{ nut_ups_observer_user }}]
+          password = {{ vault_nut_ups_observer_password }}
           upsmon secondary
-  register: users_conf_result
+  register: nut_users_conf_result
 
 - name: Configure upsmon.conf (Monitor and Shutdown Trigger)
   ansible.builtin.copy:
     dest: "/etc/ups/upsmon.conf"
     owner: "root"
     group: "nut"
-    mode: '0640'
-    backup: yes
+    mode: "0640"
+    backup: true
     content: |
       MINSUPPLIES 1
       SHUTDOWNCMD "/sbin/shutdown -h +0"
@@ -88,21 +88,21 @@
       FINALDELAY 5
       ALARMCRITICAL 1
 
-      MONITOR {{ ups_name }}@localhost 1 {{ ups_admin_user }} {{ vault_ups_admin_password }} primary
-  register: upsmon_conf_result
+      MONITOR {{ nut_ups_name }}@localhost 1 {{ nut_ups_admin_user }} {{ vault_nut_ups_admin_password }} primary
+  register: nut_upsmon_conf_result
 
 - name: Rebuild NUT Drivers (Enumerator)
   ansible.builtin.systemd:
     name: nut-driver-enumerator.service
     state: restarted
-    daemon_reload: yes
+    daemon_reload: true
   ignore_errors: "{{ ansible_check_mode }}"
   when: >
     nut_conf_result.changed or
-    ups_conf_result.changed or
-    upsd_conf_result.changed or
-    users_conf_result.changed or
-    upsmon_conf_result.changed
+    nut_ups_conf_result.changed or
+    nut_upsd_conf_result.changed or
+    nut_users_conf_result.changed or
+    nut_upsmon_conf_result.changed
 
 - name: Restart NUT
   ansible.builtin.systemd:
@@ -114,16 +114,16 @@
   ignore_errors: "{{ ansible_check_mode }}"
   when: >
     nut_conf_result.changed or
-    ups_conf_result.changed or
-    upsd_conf_result.changed or
-    users_conf_result.changed or
-    upsmon_conf_result.changed
+    nut_ups_conf_result.changed or
+    nut_upsd_conf_result.changed or
+    nut_users_conf_result.changed or
+    nut_upsmon_conf_result.changed
 
 - name: Ensure that all service are running
   ansible.builtin.systemd:
     name: "{{ item }}"
     state: started
-    enabled: yes
+    enabled: true
   loop:
     - nut-driver-enumerator.path
     - nut-server.service
@@ -134,5 +134,5 @@
 - name: Ensure NUT enumerator service is enabled
   ansible.builtin.systemd:
     name: nut-driver-enumerator.service
-    enabled: yes
+    enabled: true
   ignore_errors: "{{ ansible_check_mode }}"

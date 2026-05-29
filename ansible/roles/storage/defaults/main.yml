@@ -1,5 +1,5 @@
 ---
-data_drives:
+storage_data_drives:
   - uuid: "3ddf5ac7-b3a8-4ac2-8573-f38c02297c04"
     fstype: "xfs"
     mountpoint: "/mnt/backup"
@@ -9,7 +9,7 @@ data_drives:
     mountpoint: "/mnt/frigate"
     passno: "0"
 
-target_lvs:
+storage_target_lvs:
   - name: root
     size: 15g
     manage_fs_and_mount: false
@@ -26,4 +26,4 @@ target_lvs:
     mount_path: /srv/immich
     manage_fs_and_mount: true
 
-vg_name: "fedora_nova-2"
+storage_vg_name: "fedora_nova-2"

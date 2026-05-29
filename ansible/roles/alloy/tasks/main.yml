@@ -4,23 +4,23 @@
     name: grafana
     description: grafana
     baseurl: https://rpm.grafana.com
-    gpgcheck: yes
-    repo_gpgcheck: yes
+    gpgcheck: true
+    repo_gpgcheck: true
     gpgkey: https://rpm.grafana.com/gpg.key
-    enabled: yes
-    sslverify: yes
+    enabled: true
+    sslverify: true
 
 - name: Install Grafana Alloy
   ansible.builtin.dnf:
     name: alloy
     state: present
-    update_cache: yes
+    update_cache: true
 
 - name: Add alloy user to systemd-journal group
   ansible.builtin.user:
     name: alloy
     groups: systemd-journal
-    append: yes
+    append: true
   notify: Restart alloy
 
 - name: Configure Alloy environment variables
@@ -37,7 +37,7 @@
     dest: /etc/alloy/config.alloy
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Restart alloy
 
 - name: Ensure custom metrics directory exists
@@ -46,7 +46,7 @@
     state: directory
     owner: "{{ ansible_user }}"
     group: "alloy"
-    mode: '0775'
+    mode: "0775"
   loop:
     - "/opt/alloy-metrics"
   notify: Restart alloy
@@ -55,4 +55,4 @@
   ansible.builtin.systemd:
     name: alloy.service
     state: started
-    enabled: yes
+    enabled: true

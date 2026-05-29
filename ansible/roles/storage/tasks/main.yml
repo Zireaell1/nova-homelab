@@ -1,27 +1,27 @@
 ---
 - name: Ensure Logical Volumes exist and are sized correctly
   community.general.lvol:
-    vg: "{{ vg_name }}"
+    vg: "{{ storage_vg_name }}"
     lv: "{{ item.name }}"
     size: "{{ item.size }}"
     resizefs: true
-  loop: "{{ target_lvs }}"
+  loop: "{{ storage_target_lvs }}"
 
 - name: Ensure XFS filesystem is formatted on required LVs
   community.general.filesystem:
     fstype: xfs
-    dev: "/dev/{{ vg_name }}/{{ item.name }}"
-  loop: "{{ target_lvs }}"
+    dev: "/dev/{{ storage_vg_name }}/{{ item.name }}"
+  loop: "{{ storage_target_lvs }}"
   when: item.manage_fs_and_mount | bool
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Ensure required LVs are in fstab and mounted
   ansible.posix.mount:
     path: "{{ item.mount_path }}"
-    src: "/dev/{{ vg_name }}/{{ item.name }}"
+    src: "/dev/{{ storage_vg_name }}/{{ item.name }}"
     fstype: xfs
     state: mounted
-  loop: "{{ target_lvs }}"
+  loop: "{{ storage_target_lvs }}"
   when: item.manage_fs_and_mount | bool
 
 - name: Hand over /srv/monitoring to the rootless user
@@ -30,7 +30,7 @@
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0755'
+    mode: "0755"
 
 - name: Check if mountpoints exists
   ansible.builtin.file:
@@ -38,8 +38,8 @@
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0755'
-  loop: "{{ data_drives }}"
+    mode: "0755"
+  loop: "{{ storage_data_drives }}"
 
 - name: Mount drives and add to fstab
   ansible.posix.mount:
@@ -50,7 +50,7 @@
     passno: "{{ item.passno }}"
     opts: defaults,nofail
     state: mounted
-  loop: "{{ data_drives }}"
+  loop: "{{ storage_data_drives }}"
 
 - name: Ensure correct permissions on mounted drives
   ansible.builtin.file:
@@ -58,5 +58,5 @@
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0755'
-  loop: "{{ data_drives }}"
+    mode: "0755"
+  loop: "{{ storage_data_drives }}"

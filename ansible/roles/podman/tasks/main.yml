@@ -2,7 +2,7 @@
 - name: Deploy Systemd Service file
   ansible.builtin.copy:
     dest: "/home/{{ ansible_user }}/.config/systemd/user/podman-prune.service"
-    mode: '0644'
+    mode: "0644"
     content: |
       [Unit]
       Description=Prune Unused Podman Images
@@ -19,7 +19,7 @@
 - name: Deploy Systemd Timer file
   ansible.builtin.copy:
     dest: "/home/{{ ansible_user }}/.config/systemd/user/podman-prune.timer"
-    mode: '0644'
+    mode: "0644"
     content: |
       [Unit]
       Description=Run Podman Prune Daily
@@ -35,7 +35,7 @@
   ansible.builtin.systemd:
     name: podman-prune.timer
     scope: user
-    enabled: yes
+    enabled: true
     state: started
-    daemon_reload: yes
+    daemon_reload: true
   ignore_errors: "{{ ansible_check_mode }}"

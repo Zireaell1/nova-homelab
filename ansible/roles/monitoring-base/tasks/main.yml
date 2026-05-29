@@ -3,11 +3,11 @@
   ansible.builtin.template:
     src: "monitoring-backend.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/monitoring-backend.network"
-    mode: '0644'
+    mode: "0644"
 
 - name: Enable and start Podman Exporter for the rootless user
   ansible.builtin.systemd:
     name: prometheus-podman-exporter
     state: started
-    enabled: yes
+    enabled: true
     scope: user

@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
   loop:
     - "/srv/monitoring/grafana"
     - "/srv/monitoring/grafana/provisioning"
@@ -11,18 +11,18 @@
     - "/srv/monitoring/grafana/provisioning/dashboards"
     - "/srv/monitoring/grafana/data"
 
-- name:  Upload .network file
+- name: Upload .network file
   ansible.builtin.template:
     src: "grafana.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/grafana.network"
-    mode: '0644'
+    mode: "0644"
   notify: Restart grafana
 
 - name: Upload .env file
   ansible.builtin.template:
     src: "grafana.env.j2"
     dest: "/srv/monitoring/grafana/grafana.env"
-    mode: '0600'
+    mode: "0600"
   no_log: true
   notify: Restart grafana
 
@@ -30,28 +30,28 @@
   ansible.builtin.template:
     src: "datasources.yml.j2"
     dest: "/srv/monitoring/grafana/provisioning/datasources/datasources.yml"
-    mode: '0644'
+    mode: "0644"
   notify: Restart grafana
 
 - name: Upload provisioning/alerting/alerting.yml file
   ansible.builtin.template:
     src: "alerting.yml.j2"
     dest: "/srv/monitoring/grafana/provisioning/alerting/alerting.yml"
-    mode: '0644'
+    mode: "0644"
   notify: Restart grafana
 
 - name: Upload provisioning/dashboards/dashboards.yml file
   ansible.builtin.template:
     src: "dashboards.yml.j2"
     dest: "/srv/monitoring/grafana/provisioning/dashboards/dashboards.yml"
-    mode: '0644'
+    mode: "0644"
   notify: Restart grafana
 
 - name: Upload dashboard files
   ansible.builtin.template:
     src: "dashboards/{{ item }}.j2"
     dest: "/srv/monitoring/grafana/provisioning/dashboards/{{ item }}"
-    mode: '0644'
+    mode: "0644"
   loop:
     - "frigate-dashboard.json"
     - "podman-dashboard.json"
@@ -62,7 +62,7 @@
   ansible.builtin.template:
     src: "grafana.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/grafana.container"
-    mode: '0644'
+    mode: "0644"
   notify: Restart grafana
 
 - name: Download Podman images

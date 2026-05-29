@@ -1,10 +1,10 @@
 ---
 - name: Restart caddy
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
     name: caddy.service
     state: restarted
-    enabled: yes
+    enabled: true
     scope: user
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"

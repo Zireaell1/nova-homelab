@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
   loop:
     - "{{ stacks_path }}/vaultwarden"
     - "{{ stacks_path }}/vaultwarden/data"
@@ -12,14 +12,14 @@
   ansible.builtin.template:
     src: "vaultwarden.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/vaultwarden.network"
-    mode: '0644'
+    mode: "0644"
   notify: Restart vaultwarden
 
 - name: Upload .env file
   ansible.builtin.template:
     src: "vaultwarden.env.j2"
     dest: "{{ stacks_path }}/vaultwarden/vaultwarden.env"
-    mode: '0600'
+    mode: "0600"
   no_log: true
   notify: Restart vaultwarden
 
@@ -27,7 +27,7 @@
   ansible.builtin.template:
     src: "vaultwarden.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/vaultwarden.container"
-    mode: '0644'
+    mode: "0644"
   notify: Restart vaultwarden
 
 - name: Download Podman images

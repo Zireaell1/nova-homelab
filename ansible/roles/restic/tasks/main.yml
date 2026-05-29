@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
   loop:
     - "{{ restic_data_path }}"
 
@@ -11,14 +11,14 @@
   ansible.builtin.template:
     src: "restic.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/restic.network"
-    mode: '0644'
+    mode: "0644"
   notify: Restart restic
 
 - name: Upload .container file
   ansible.builtin.template:
     src: "restic.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/restic.container"
-    mode: '0644'
+    mode: "0644"
   notify: Restart restic
 
 - name: Download Podman images
