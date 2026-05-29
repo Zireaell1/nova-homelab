@@ -1,0 +1,22 @@
+---
+- name: System Maintenance and Updates
+  hosts: nova
+  become: true
+  tasks:
+    - name: DNF Update
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+      # noqa: package-latest
+
+    - name: Check if reboot is required after update
+      ansible.builtin.command: "dnf needs-restarting -r"
+      register: reboot_required
+      failed_when: false
+      check_mode: false
+      changed_when: false
+
+    - name: Notify that a reboot is required after update
+      ansible.builtin.debug:
+        msg: "WARNING: A reboot is required after the DNF update. Please restart the system manually."
+      when: reboot_required.rc == 1
