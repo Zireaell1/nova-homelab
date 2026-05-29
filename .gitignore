@@ -8,5 +8,7 @@ README.md
 # Ansible
 ansible/group_vars/all/vault.yml
 ansible/inventory.ini
+ansible/.vault_pass
+.ansible
 
 .DS_Store
