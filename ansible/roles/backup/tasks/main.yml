@@ -45,38 +45,16 @@
     validate: "bash -n %s"
 
 - name: Deploy Systemd Service file
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: "homelab-backup.service.j2"
     dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup.service"
     mode: "0644"
-    content: |
-      [Unit]
-      Description=Restic & Rclone Homelab Backup
-      Wants=network.target
-
-      [Service]
-      Type=oneshot
-      ExecStart=/home/{{ ansible_user }}/.local/bin/homelab-backup.sh
-      StandardOutput=journal
-      StandardError=journal
-
-      TimeoutStartSec=1h
-      TimeoutStopSec=5m
 
 - name: Deploy Systemd Timer file
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: "homelab-backup.timer.j2"
     dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup.timer"
     mode: "0644"
-    content: |
-      [Unit]
-      Description=Daily homelab backup (Restic)
-
-      [Timer]
-      OnCalendar=*-*-* 02:00:00
-      Persistent=true
-      RandomizedDelaySec=5m
-
-      [Install]
-      WantedBy=timers.target
 
 - name: Enable and start the Timer
   ansible.builtin.systemd:
