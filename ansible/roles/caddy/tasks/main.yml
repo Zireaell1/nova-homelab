@@ -47,7 +47,7 @@
 - name: Build image with Cloudflare plugin
   containers.podman.podman_image:
     name: custom-caddy
-    tag: "{{ caddy_version }}"
+    tag: "{{ version_caddy }}"
     path: "{{ stacks_path }}/caddy/caddy-build"
     force: "{{ caddy_containerfile.changed }}"
   register: caddy_image_result

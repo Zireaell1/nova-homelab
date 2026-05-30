@@ -32,5 +32,5 @@
 
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ vaultwarden_image }}"
+    name: "{{ vaultwarden_image }}:{{ version_vaultwarden }}"
     state: present
