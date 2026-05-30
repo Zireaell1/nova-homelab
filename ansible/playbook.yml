@@ -5,67 +5,67 @@
   roles:
     - role: base
       become: true
-      tags: ['base']
+      tags: ["base"]
 
     - role: storage
       become: true
-      tags: ['storage']
+      tags: ["storage"]
     - role: users
       become: true
-      tags: ['users']
+      tags: ["users"]
     - role: network
       become: true
-      tags: ['network']
+      tags: ["network"]
     - role: nut
       become: true
-      tags: ['nut']
+      tags: ["nut"]
 
-    - role: monitoring-base
-      tags: ['monitoring-base', 'monitoring']
+    - role: monitoring_base
+      tags: ["monitoring_base", "monitoring"]
     - role: prometheus
-      tags: ['prometheus', 'monitoring']
+      tags: ["prometheus", "monitoring"]
     - role: loki
-      tags: ['loki', 'monitoring']
+      tags: ["loki", "monitoring"]
     - role: alloy
       become: true
-      tags: ['alloy', 'monitoring']
+      tags: ["alloy", "monitoring"]
     - role: grafana
-      tags: ['grafana', 'monitoring']
+      tags: ["grafana", "monitoring"]
 
     - role: pihole
-      tags: ['pihole']
+      tags: ["pihole"]
     - role: authelia
-      tags: ['authelia']
+      tags: ["authelia"]
     - role: mosquitto
-      tags: ['mosquitto', 'home']
+      tags: ["mosquitto", "home"]
     - role: restic
-      tags: ['restic']
+      tags: ["restic"]
     - role: frigate
-      tags: ['frigate', 'home']
+      tags: ["frigate", "home"]
     - role: vaultwarden
-      tags: ['vaultwarden']
+      tags: ["vaultwarden"]
     - role: zigbee2mqtt
-      tags: ['zigbee2mqtt', 'home']
+      tags: ["zigbee2mqtt", "home"]
     - role: peanut
-      tags: ['peanut']
+      tags: ["peanut"]
 
     - role: caddy
-      tags: ['caddy']
+      tags: ["caddy"]
 
     - role: podman
-      tags: ['podman']
+      tags: ["podman"]
 
     - role: backup
-      tags: ['backup']
+      tags: ["backup"]
 
     - role: tailscale
       become: true
-      tags: ['tailscale']
+      tags: ["tailscale"]
 
 - name: Orion RPI configuration
   hosts: orion
   become: false
   roles:
-    - role: rpi-base
+    - role: rpi_base
       become: true
-      tags: ['rpi-base']
+      tags: ["rpi_base"]
