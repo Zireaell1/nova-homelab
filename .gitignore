@@ -1,14 +1,13 @@
 *.log
 *.tmp
-
-tmp
-
-README.md
+tmp/
 
 # Ansible
-ansible/group_vars/all/vault.yml
+ansible/group_vars/**/vault.yml
 ansible/inventory.ini
 ansible/.vault_pass
+
+.collections
 .ansible
 
 .DS_Store
