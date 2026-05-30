@@ -25,8 +25,7 @@ jobs:
           cp examples/vault.yml.example ansible/group_vars/all/vault.yml
 
       - name: Build collections
-        run: ansible-galaxy collection install -r requirements.yml -p ./collections --force
-        working-directory: ansible
+        run: ansible-galaxy collection install -r ansible/requirements.yml -p ./.collections --force
 
       - name: Run ansible-lint
         uses: ansible/ansible-lint@v26
@@ -34,4 +33,4 @@ jobs:
           working_directory: "ansible"
         env:
           ANSIBLE_CONFIG: "ansible-ci.cfg"
-          ANSIBLE_COLLECTIONS_PATH: "${{ github.workspace }}/ansible/collections"
+          ANSIBLE_COLLECTIONS_PATH: "${{ github.workspace }}/.collections"
