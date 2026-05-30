@@ -3,4 +3,4 @@ restic_memory_limit: "2g"
 restic_data_path: "/mnt/backup/rest-server-data"
 
 # https://hub.docker.com/r/restic/rest-server
-restic_image: "docker.io/restic/rest-server:0.14.0"
+restic_image: "docker.io/restic/rest-server"

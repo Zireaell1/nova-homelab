@@ -13,7 +13,7 @@ RequiresMountsFor={{ stacks_path }}/caddy/config
 RequiresMountsFor={{ stacks_path }}/caddy/srv
 
 [Container]
-Image=localhost/custom-caddy:{{ caddy_version }}
+Image={{ caddy_local_image }}:{{ version_caddy }}
 ContainerName=caddy
 Timezone={{ timezone }}
 Memory={{ caddy_memory_limit }}

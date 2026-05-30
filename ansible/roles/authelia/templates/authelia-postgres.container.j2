@@ -4,7 +4,7 @@ Description=Authelia PostgreSQL
 RequiresMountsFor={{ stacks_path }}/authelia/postgres
 
 [Container]
-Image={{ authelia_postgres_image }}
+Image={{ authelia_postgres_image }}:{{ version_authelia_postgres }}
 ContainerName=authelia-postgres
 Timezone={{ timezone }}
 Memory={{ authelia_postgres_memory_limit }}

@@ -8,7 +8,7 @@ After=network-online.target
 RequiresMountsFor={{ stacks_path }}/pihole/etc-pihole
 
 [Container]
-Image={{ pihole_image }}
+Image={{ pihole_image }}:{{ version_pihole }}
 ContainerName=pihole
 Timezone={{ timezone }}
 Memory={{ pihole_memory_limit }}

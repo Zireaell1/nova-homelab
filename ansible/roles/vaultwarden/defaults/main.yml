@@ -2,4 +2,4 @@
 vaultwarden_memory_limit: "500m"
 
 # https://github.com/dani-garcia/vaultwarden
-vaultwarden_image: "ghcr.io/dani-garcia/vaultwarden:1.36.0"
+vaultwarden_image: "ghcr.io/dani-garcia/vaultwarden"

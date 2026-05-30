@@ -8,7 +8,7 @@ After=network-online.target
 RequiresMountsFor={{ restic_data_path }}
 
 [Container]
-Image={{ restic_image }}
+Image={{ restic_image }}:{{ version_restic }}
 ContainerName=restic
 Timezone={{ timezone }}
 Memory={{ restic_memory_limit }}

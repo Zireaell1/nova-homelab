@@ -8,7 +8,7 @@ After=network-online.target
 RequiresMountsFor=/srv/monitoring/grafana/data
 
 [Container]
-Image={{ grafana_image }}
+Image={{ grafana_image }}:{{ version_grafana }}
 ContainerName=grafana
 Timezone={{ timezone }}
 Memory={{ grafana_memory_limit }}

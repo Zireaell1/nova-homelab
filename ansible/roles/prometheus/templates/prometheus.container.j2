@@ -8,7 +8,7 @@ After=network-online.target
 RequiresMountsFor=/srv/monitoring/prometheus/data
 
 [Container]
-Image={{ prometheus_image }}
+Image={{ prometheus_image }}:{{ version_prometheus }}
 ContainerName=prometheus
 Timezone={{ timezone }}
 Memory={{ prometheus_memory_limit }}

@@ -4,7 +4,7 @@ Description=Immich PostgreSQL
 RequiresMountsFor={{ stacks_path }}/immich/postgres
 
 [Container]
-Image={{ immich_postgres_image }}
+Image={{ immich_postgres_image }}:{{ version_immich_postgres }}
 ContainerName=immich-postgres
 Timezone={{ timezone }}
 Memory={{ immich_postgres_memory_limit }}

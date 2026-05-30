@@ -10,7 +10,7 @@ RequiresMountsFor={{ stacks_path }}/mosquitto/data
 RequiresMountsFor={{ stacks_path }}/mosquitto/log
 
 [Container]
-Image={{ mosquitto_image }}
+Image={{ mosquitto_image }}:{{ version_mosquitto }}
 ContainerName=mosquitto
 Timezone={{ timezone }}
 Memory={{ mosquitto_memory_limit }}

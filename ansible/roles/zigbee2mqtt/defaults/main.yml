@@ -2,7 +2,7 @@
 zigbee2mqtt_memory_limit: "1g"
 
 # https://github.com/Koenkk/zigbee2mqtt
-zigbee2mqtt_image: "ghcr.io/koenkk/zigbee2mqtt:2.10.1"
+zigbee2mqtt_image: "ghcr.io/koenkk/zigbee2mqtt"
 
 zigbee2mqtt_channel: 11
 zigbee2mqtt_adapter: "ember"

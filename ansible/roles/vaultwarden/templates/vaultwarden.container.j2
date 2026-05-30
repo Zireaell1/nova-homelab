@@ -8,7 +8,7 @@ After=network-online.target
 RequiresMountsFor={{ stacks_path }}/vaultwarden/data
 
 [Container]
-Image={{ vaultwarden_image }}
+Image={{ vaultwarden_image }}:{{ version_vaultwarden }}
 ContainerName=vaultwarden
 Timezone={{ timezone }}
 Memory={{ vaultwarden_memory_limit }}

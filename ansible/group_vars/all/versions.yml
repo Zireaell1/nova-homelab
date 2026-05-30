@@ -1,0 +1,59 @@
+# Authelia
+
+version_authelia: "4.39.19"
+
+version_authelia_redis: "8.6.3"
+
+version_authelia_postgres: "18.3"
+
+# Caddy
+
+version_caddy: "2.11.3"
+
+# Frigate
+
+version_frigate: "0.17.1"
+
+# Grafana
+
+version_grafana: "13.0.1"
+
+# Immich
+
+version_immich: "v2.7.5"
+
+version_immich_redis: "9@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9"
+
+version_immich_postgres: "14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23"
+
+# Loki
+
+version_loki: "3.7.1"
+
+# Mosquitto
+
+version_mosquitto: "2.1.2-alpine"
+
+# Peanut
+
+version_peanut: "6.0.0"
+
+# Pi-Hole
+
+version_pihole: "2026.05.0"
+
+# Prometheus
+
+version_prometheus: "v3.11.3-distroless"
+
+# Restic (Rest server)
+
+version_restic: "0.14.0"
+
+# Vaultwarden
+
+version_vaultwarden: "1.36.0"
+
+# Zigbee2MQTT
+
+version_zigbee2mqtt: "2.10.1"

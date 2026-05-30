@@ -1,8 +1,8 @@
-FROM docker.io/library/caddy:{{ caddy_version }}-builder AS builder
+FROM {{ caddy_image }}:{{ version_caddy }}-builder AS builder
 
 RUN xcaddy build \
     --with github.com/caddy-dns/cloudflare
 
-FROM docker.io/library/caddy:{{ caddy_version }}
+FROM {{ caddy_image }}:{{ version_caddy }}
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy

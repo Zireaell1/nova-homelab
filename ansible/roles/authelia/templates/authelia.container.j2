@@ -11,7 +11,7 @@ After=authelia-postgres.service authelia-redis.service
 RequiresMountsFor={{ stacks_path }}/authelia/config
 
 [Container]
-Image={{ authelia_image }}
+Image={{ authelia_image }}:{{ version_authelia }}
 ContainerName=authelia
 Timezone={{ timezone }}
 Memory={{ authelia_memory_limit }}

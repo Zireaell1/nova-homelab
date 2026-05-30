@@ -7,4 +7,4 @@ pihole_memory_limit: "500m"
 
 # https://hub.docker.com/r/pihole/pihole
 # https://github.com/pi-hole/docker-pi-hole
-pihole_image: "docker.io/pihole/pihole:2026.05.0"
+pihole_image: "docker.io/pihole/pihole"

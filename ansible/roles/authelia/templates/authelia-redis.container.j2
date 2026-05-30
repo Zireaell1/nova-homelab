@@ -4,7 +4,7 @@ Description=Authelia Redis
 RequiresMountsFor={{ stacks_path }}/authelia/redis
 
 [Container]
-Image={{ authelia_redis_image }}
+Image={{ authelia_redis_image }}:{{ version_authelia_redis }}
 ContainerName=authelia-redis
 Timezone={{ timezone }}
 Memory={{ authelia_redis_memory_limit }}

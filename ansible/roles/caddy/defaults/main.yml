@@ -1,3 +1,5 @@
 ---
-caddy_version: "2.11.3" # TODO: versioning should be similar to other roles
+caddy_image: "docker.io/library/caddy"
+caddy_local_image: "localhost/custom-caddy"
+
 caddy_memory_limit: 500m

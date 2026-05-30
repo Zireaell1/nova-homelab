@@ -9,7 +9,7 @@ RequiresMountsFor={{ stacks_path }}/zigbee2mqtt/data
 RequiresMountsFor={{ stacks_path }}/zigbee2mqtt/config
 
 [Container]
-Image={{ zigbee2mqtt_image }}
+Image={{ zigbee2mqtt_image }}:{{ version_zigbee2mqtt }}
 ContainerName=zigbee2mqtt
 Timezone={{ timezone }}
 Memory={{ zigbee2mqtt_memory_limit }}

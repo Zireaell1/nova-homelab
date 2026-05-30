@@ -11,7 +11,7 @@ After=immich-postgres.service immich-redis.service
 RequiresMountsFor={{ immich_storage_path }}/data
 
 [Container]
-Image={{ immich_image }}
+Image={{ immich_image }}:{{ version_immich }}
 ContainerName=immich
 Timezone={{ timezone }}
 Memory={{ immich_memory_limit }}

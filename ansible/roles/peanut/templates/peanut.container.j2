@@ -11,7 +11,7 @@ After=nut.target
 RequiresMountsFor={{ stacks_path }}/peanut/config
 
 [Container]
-Image={{ peanut_image }}
+Image={{ peanut_image }}:{{ version_peanut }}
 ContainerName=peanut
 Timezone={{ timezone }}
 Memory={{ peanut_memory_limit }}
