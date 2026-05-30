@@ -1,8 +1,38 @@
 ---
 vault_domain: ''
-
 # Format: 'Town, Country'
 vault_location: ''
+vault_admin_username: ''
+
+# Tailscale
+
+vault_tailscale_auth_key: ''
+vault_tailscale_node_name: ''
+vault_tailscale_ip: ''
+
+# Backup
+
+vault_backup_restic_password: ''
+
+vault_backup_rclone_bucket_name: ''
+vault_backup_rclone_b2_key_id: ''
+vault_backup_rclone_b2_app_key: ''
+
+# Vaultwarden
+
+# podman run --rm -it ghcr.io/dani-garcia/vaultwarden:1.36.0 /vaultwarden hash
+vault_vaultwarden_admin_token: ''
+
+# Zigbee2MQTT
+vault_zigbee2mqtt_network_key: []
+
+# Grafana
+vault_grafana_admin_password: ''
+
+# NUT
+
+vault_nut_ups_admin_password: ''
+vault_nut_ups_observer_password: ''
 
 # Caddy
 
@@ -16,9 +46,6 @@ vault_caddy_frigate_auth_secret: ''
 
 # Format: 'DNS1;DNS2'
 vault_pihole_dns_upstreams: ''
-
-# Local DNS entries. Format: 'IP DOMAIN; IP DOMAIN;...'
-vault_pihole_dns_hosts: ''
 
 # Password for web UI
 vault_pihole_webserver_api_password: ''
@@ -51,8 +78,7 @@ vault_mosquitto_frigate_password: ''
 vault_mosquitto_homeassistant_user: ''
 vault_mosquitto_homeassistant_password: ''
 
-vault_mosquitto_pwfile_content: |
-  ...
+vault_mosquitto_pwfile_content: ''
 
 # Authelia
 
@@ -66,8 +92,6 @@ vault_authelia_storage_password: ''
 vault_authelia_paperless_client_id: ''
 vault_authelia_paperless_client_secret: ''
 
-vault_authelia_users_database: |
-  ...
+vault_authelia_users_database: ''
 
-vault_authelia_rsa2048: |
-  ...
+vault_authelia_rsa2048: ''

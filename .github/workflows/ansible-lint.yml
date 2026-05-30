@@ -20,8 +20,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Mock Vault and Passphrase File
+        run: |
+          cp examples/vault.yml.example ansible/group_vars/all/vault.yml
+          touch ansible/.vault_pass
+
       - name: Run ansible-lint
         uses: ansible/ansible-lint@v26
         with:
           working_directory: "ansible"
-          requirements_file: "requirements.yml"
+          requirements_file: "ansible/requirements.yml"
