@@ -15,19 +15,23 @@ permissions:
 jobs:
   lint:
     name: Ansible Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Mock Vault and Passphrase File
+      - name: Mock Vault File
         run: |
           cp examples/vault.yml.example ansible/group_vars/all/vault.yml
+
+      - name: Build collections
+        run: ansible-galaxy collection install -r requirements.yml -p ./collections --force
+        working-directory: ansible
 
       - name: Run ansible-lint
         uses: ansible/ansible-lint@v26
         with:
           working_directory: "ansible"
-          requirements_file: "requirements.yml"
         env:
           ANSIBLE_CONFIG: "ansible-ci.cfg"
+          ANSIBLE_COLLECTIONS_PATH: "${{ github.workspace }}/ansible/collections"
