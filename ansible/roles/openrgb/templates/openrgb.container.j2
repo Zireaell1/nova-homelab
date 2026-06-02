@@ -1,0 +1,32 @@
+[Unit]
+Description=OpenRGB
+Documentation=https://github.com/CalcProgrammer1/OpenRGB/
+
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+Image={{ openrgb_local_image }}:latest
+ContainerName=openrgb
+Timezone={{ timezone }}
+Memory={{ openrgb_memory_limit }}
+
+DropCapability=all
+NoNewPrivileges=true
+
+StopTimeout=20
+
+AddDevice=/dev/bus/usb
+
+GroupAdd=keep-groups
+UserNS=keep-id:uid=0,gid=0
+
+Network=openrgb.network
+
+[Service]
+# Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

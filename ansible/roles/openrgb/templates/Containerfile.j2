@@ -1,0 +1,50 @@
+FROM debian:13-slim AS builder
+
+# HASH: {{ openrgb_upstream_commit }}
+
+WORKDIR /src
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        git \
+        build-essential \
+        qtbase5-dev \
+        qtchooser \
+        qt5-qmake \
+        qtbase5-dev-tools \
+        qttools5-dev-tools \
+        libusb-1.0-0-dev \
+        libhidapi-dev \
+        libmbedtls-dev \
+        pkgconf \
+        ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN git clone --branch {{ openrgb_branch }} --depth 1 {{ openrgb_repo }} . && \
+    mkdir build && \
+    cd build && \
+    qmake ../OpenRGB.pro && \
+    make -j$(nproc)
+
+FROM debian:13-slim AS runtime
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libusb-1.0-0 \
+        libhidapi-hidraw0 \
+        libmbedtls21 \
+        libmbedcrypto16 \
+        libqt5core5t64 \
+        libqt5gui5t64 \
+        libqt5widgets5t64 \
+        libqt5dbus5t64 \
+        init-system-helpers && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /src/build/openrgb /app/openrgb
+
+EXPOSE 6742
+
+CMD [ "/app/openrgb", "--server", "--server-port", "6742" ]

@@ -1,0 +1,3 @@
+# Rule for ASRock LED Controller
+# Managed by Ansible
+SUBSYSTEMS=="usb|hidraw", ATTRS{idVendor}=="26ce", ATTRS{idProduct}=="01a2", GROUP="rgb", MODE="0660"

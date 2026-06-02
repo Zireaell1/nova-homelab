@@ -20,6 +20,9 @@
       become: true
       tags: ["nut"]
 
+    - role: openrgb
+      tags: ["openrgb"]
+
     - role: monitoring_base
       tags: ["monitoring_base", "monitoring"]
     - role: prometheus

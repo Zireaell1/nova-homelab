@@ -24,6 +24,7 @@
   loop:
     - render
     - dialout
+    - rgb
 
 - name: Assign user to groups
   ansible.builtin.user:
@@ -33,6 +34,7 @@
   loop:
     - render
     - dialout
+    - rgb
 
 - name: Reset SSH connection to apply group changes
   ansible.builtin.meta: reset_connection

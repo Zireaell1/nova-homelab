@@ -1,0 +1,46 @@
+---
+- name: Verify directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ stacks_path }}/openrgb"
+    - "{{ stacks_path }}/openrgb/openrgb-build"
+
+- name: Upload .network file
+  ansible.builtin.template:
+    src: "openrgb.network.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/openrgb.network"
+    mode: "0644"
+  notify: Restart openrgb
+
+- name: Upload .container file
+  ansible.builtin.template:
+    src: "openrgb.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/openrgb.container"
+    mode: "0644"
+  notify: Restart openrgb
+
+- name: Upload Containerfile
+  ansible.builtin.template:
+    src: "Containerfile.j2"
+    dest: "{{ stacks_path }}/openrgb/openrgb-build/Containerfile"
+    mode: "0644"
+  register: openrgb_containerfile
+
+- name: Build image
+  containers.podman.podman_image:
+    name: custom-openrgb
+    tag: "latest"
+    path: "{{ stacks_path }}/openrgb/openrgb-build"
+    force: "{{ openrgb_containerfile.changed or openrgb_force_rebuild | default(false) }}"
+  notify: Restart openrgb
+
+- name: Upload custom Udev rules for ASRock RGB
+  ansible.builtin.template:
+    src: "asrock-rgb.rules.j2"
+    dest: "/etc/udev/rules.d/99-asrock-rgb.rules"
+    mode: "0644"
+  become: true
+  notify: Reload Udev rules
