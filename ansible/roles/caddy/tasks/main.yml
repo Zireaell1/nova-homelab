@@ -50,7 +50,6 @@
     tag: "{{ version_caddy }}"
     path: "{{ stacks_path }}/caddy/caddy-build"
     force: "{{ caddy_containerfile.changed }}"
-  register: caddy_image_result
   notify: Restart caddy
 
 - name: Upload .socket file
