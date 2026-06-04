@@ -28,5 +28,8 @@ Network=openrgb.network
 TimeoutStartSec=900
 TimeoutStopSec=30
 
+ExecStartPost=/bin/sleep 10
+ExecStartPost=/usr/bin/podman exec openrgb /app/openrgb --noautoconnect --nodetect --client 127.0.0.1:6742 -d 0 -z 0 -m Static -c FF0000
+
 [Install]
 WantedBy=default.target
