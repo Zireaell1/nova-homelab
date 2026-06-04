@@ -20,6 +20,7 @@ StopTimeout=20
 
 Exec=--config.file=/etc/prometheus/prometheus.yml \
      --storage.tsdb.path=/prometheus \
+     --storage.tsdb.retention.time=30d \
      --web.enable-remote-write-receiver
 
 UserNS=keep-id:uid=65532,gid=65532
