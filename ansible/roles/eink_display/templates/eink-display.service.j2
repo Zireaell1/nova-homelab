@@ -1,0 +1,21 @@
+[Unit]
+Description=Nova eink display
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User={{ ansible_user }}
+Group={{ ansible_user }}
+
+WorkingDirectory=/home/{{ ansible_user }}/eink-display
+
+Environment="PATH=/home/{{ ansible_user }}/eink-display/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+EnvironmentFile=/home/{{ ansible_user }}/eink-display/eink-display.env
+
+ExecStart=/home/{{ ansible_user }}/eink-display/venv/bin/python src/main.py
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

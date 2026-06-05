@@ -1,0 +1,6 @@
+---
+- name: Restart eink-display
+  ansible.builtin.systemd:
+    name: eink-display.service
+    state: restarted
+    daemon_reload: true

@@ -1,0 +1,64 @@
+---
+- name: Enable SPI interface on Raspberry Pi
+  ansible.builtin.lineinfile:
+    path: /boot/firmware/config.txt
+    regexp: "^#?dtparam=spi="
+    line: "dtparam=spi=on"
+    state: present
+  register: eink_display_spi_config
+
+- name: Abort playbook if SPI was just enabled (manual reboot required)
+  ansible.builtin.fail:
+    msg: >
+      SPI was just enabled in /boot/firmware/config.txt!
+      The Raspberry Pi requires a full system reboot to load the spidev hardware drivers.
+      Please reboot the Pi manually ('sudo reboot') and re-run this playbook.
+  when: eink_display_spi_config.changed # noqa: no-handler
+
+- name: Create application directory
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user }}/eink-display"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+
+- name: Pull latest E-Ink Dashboard app from GitHub
+  ansible.builtin.git:
+    repo: "{{ eink_display_repo }}"
+    dest: /home/{{ ansible_user }}/eink-display
+    version: main
+    force: true
+  notify: Restart eink-display
+
+- name: Install Python dependencies in venv
+  ansible.builtin.pip:
+    requirements: "/home/{{ ansible_user }}/eink-display/requirements-pi.txt"
+    virtualenv: "/home/{{ ansible_user }}/eink-display/venv"
+    virtualenv_command: /usr/bin/python3 -m venv
+  notify: Restart eink-display
+
+- name: Deploy environment variables
+  ansible.builtin.template:
+    src: eink-display.env.j2
+    dest: "/home/{{ ansible_user }}/eink-display/eink-display.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0600"
+  notify: Restart eink-display
+
+- name: Deploy systemd service file
+  ansible.builtin.template:
+    src: eink-display.service.j2
+    dest: /etc/systemd/system/eink-display.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart eink-display
+
+- name: Enable and start systemd service
+  ansible.builtin.systemd:
+    name: "eink-display.service"
+    enabled: true
+    state: started
+    daemon_reload: true
