@@ -72,6 +72,13 @@ access_control:
         - 'tailscale'
       subject:
         - ['group:admin']
+
+    # Prometheus One-factor Auth (eink display)
+    - domain: '{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'one_factor'
+      networks:
+        - 'internal'
+      subject:
         - ['group:screen-controller-group']
 
     # go2rtc Two-factor Auth (Admin Only)
