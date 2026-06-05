@@ -72,6 +72,7 @@ access_control:
         - 'tailscale'
       subject:
         - ['group:admin']
+        - ['group:screen-controller-group']
 
     # go2rtc Two-factor Auth (Admin Only)
     - domain: '{{ services['go2rtc']['subdomain'] }}.{{ vault_domain }}'
