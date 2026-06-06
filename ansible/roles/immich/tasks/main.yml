@@ -1,0 +1,95 @@
+---
+- name: Verify directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ stacks_path }}/immich"
+    - "{{ stacks_path }}/immich/model-cache"
+    - "{{ stacks_path }}/immich/secrets"
+    - "{{ stacks_path }}/immich/postgres"
+    - "{{ immich_storage_path }}"
+    - "{{ immich_storage_path }}/data"
+
+- name: Upload secret files
+  ansible.builtin.copy:
+    content: "{{ item.value }}"
+    dest: "{{ stacks_path }}/immich/secrets/{{ item.name }}"
+    mode: "0600"
+  loop:
+    - name: "STORAGE_PASSWORD"
+      value: "{{ vault_immich_storage_password }}"
+  no_log: true
+  notify:
+    - Restart immich
+    - Restart immich-postgres
+
+- name: Upload immich-config.json file
+  ansible.builtin.template:
+    src: "immich-config.json.j2"
+    dest: "{{ stacks_path }}/immich/immich-config.json"
+    mode: "0644"
+  notify: Restart immich
+
+- name: Upload .env files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ stacks_path }}/immich/{{ item }}"
+    mode: "0600"
+  loop:
+    - immich.env
+    - immich-machine-learning.env
+  notify:
+    - Restart immich
+    - Restart immich-machine-learning
+
+- name: Upload .network files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
+    mode: "0644"
+  loop:
+    - immich.network
+    - immich-backend.network
+  notify:
+    - Restart immich
+    - Restart immich-machine-learning
+    - Restart immich-postgres
+    - Restart immich-redis
+
+- name: Upload Immich .container file
+  ansible.builtin.template:
+    src: "immich.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/immich.container"
+    mode: "0644"
+  notify: Restart immich
+
+- name: Upload Immich Machine Learning .container file
+  ansible.builtin.template:
+    src: "immich-machine-learning.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/immich-machine-learning.container"
+    mode: "0644"
+  notify: Restart immich-machine-learning
+
+- name: Upload Postgres and Redis .container files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
+    mode: "0644"
+  loop:
+    - immich-postgres.container
+    - immich-redis.container
+  notify:
+    - Restart immich-postgres
+    - Restart immich-redis
+
+- name: Download Podman images
+  containers.podman.podman_image:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "{{ immich_image }}:{{ version_immich }}"
+    - "{{ immich_machine_learning_image }}:{{ version_immich_machine_learning }}"
+    - "{{ immich_redis_image }}:{{ version_immich_redis }}"
+    - "{{ immich_postgres_image }}:{{ version_immich_postgres }}"
