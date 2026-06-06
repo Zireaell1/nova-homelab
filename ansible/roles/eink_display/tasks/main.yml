@@ -1,9 +1,14 @@
 ---
 - name: Create application directory
   ansible.builtin.file:
-    path: "/home/{{ ansible_user }}/eink-display"
+    path: "{{ item }}"
     state: directory
     mode: "0755"
+  loop:
+    - /home/{{ ansible_user }}/eink-display
+    - /home/{{ ansible_user }}/eink-display/assets
+    - /home/{{ ansible_user }}/eink-display/assets/fonts
+    - /home/{{ ansible_user }}/eink-display/assets/images
 
 - name: Pull latest E-Ink Dashboard app from GitHub
   ansible.builtin.git:
@@ -18,6 +23,20 @@
     requirements: "/home/{{ ansible_user }}/eink-display/requirements-pi.txt"
     virtualenv: "/home/{{ ansible_user }}/eink-display/venv"
     virtualenv_command: /usr/bin/python3 -m venv
+  notify: Restart eink-display
+
+- name: Sync all images
+  ansible.builtin.copy:
+    src: "images/"
+    dest: /home/{{ ansible_user }}/eink-display/assets/images/
+    mode: '0644'
+  notify: Restart eink-display
+
+- name: Sync all fonts
+  ansible.builtin.copy:
+    src: "fonts/"
+    dest: /home/{{ ansible_user }}/eink-display/assets/fonts/
+    mode: '0644'
   notify: Restart eink-display
 
 - name: Deploy environment variables
