@@ -8,30 +8,38 @@ After=network-online.target
 RequiresMountsFor={{ stacks_path }}/vaultwarden/data
 
 [Container]
+# --- Image / Exec ---
 Image={{ vaultwarden_image }}:{{ version_vaultwarden }}
 ContainerName=vaultwarden
-Timezone={{ timezone }}
-Memory={{ vaultwarden_memory_limit }}
+StopTimeout=20
 
+Exec=/start.sh
+
+# --- Identity / Namespaces ---
+UserNS=keep-id:uid=0,gid=0
+
+# --- Security / Capabilities ---
 DropCapability=all
 NoNewPrivileges=true
+
+# --- Resource Limits ---
+Memory={{ vaultwarden_memory_limit }}
+
+# --- Storage ---
+Volume={{ stacks_path }}/vaultwarden/data:/data:Z
+
+# --- Networking ---
+Network=vaultwarden.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.env
 
 HealthCmd=/healthcheck.sh
 HealthInterval=120s
 HealthRetries=10
 HealthTimeout=45s
-
-EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.env
-
-StopTimeout=20
-
-Exec=/start.sh
-
-UserNS=keep-id:uid=0,gid=0
-
-Volume={{ stacks_path }}/vaultwarden/data:/data:Z
-
-Network=vaultwarden.network
 
 [Service]
 Restart=always

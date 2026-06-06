@@ -8,23 +8,31 @@ After=network-online.target
 RequiresMountsFor={{ restic_data_path }}
 
 [Container]
+# --- Image / Exec ---
 Image={{ restic_image }}:{{ version_restic }}
 ContainerName=restic
-Timezone={{ timezone }}
-Memory={{ restic_memory_limit }}
+StopTimeout=20
 
+# --- Identity / Namespaces ---
+UserNS=keep-id:uid=0,gid=0
+
+# --- Security / Capabilities ---
 DropCapability=all
 NoNewPrivileges=true
 
-StopTimeout=20
+# --- Resource Limits ---
+Memory={{ restic_memory_limit }}
 
-UserNS=keep-id:uid=0,gid=0
-
-Environment=OPTIONS="--private-repos --prometheus --prometheus-no-auth --proxy-auth-username Remote-User"
-
+# --- Storage ---
 Volume={{ restic_data_path }}:/data:Z
 
+# --- Networking ---
 Network=restic.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+Environment=OPTIONS="--private-repos --prometheus --prometheus-no-auth --proxy-auth-username Remote-User"
 
 [Service]
 Restart=always

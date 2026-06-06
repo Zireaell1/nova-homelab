@@ -8,21 +8,26 @@ After=network-online.target
 RequiresMountsFor={{ stacks_path }}/pihole/etc-pihole
 
 [Container]
+# --- Image / Exec ---
 Image={{ pihole_image }}:{{ version_pihole }}
 ContainerName=pihole
-Timezone={{ timezone }}
-Memory={{ pihole_memory_limit }}
-
-EnvironmentFile={{ stacks_path }}/pihole/pihole.env
-
 StopTimeout=20
 
+# --- Resource Limits ---
+Memory={{ pihole_memory_limit }}
+
+# --- Storage ---
+Volume={{ stacks_path }}/pihole/etc-pihole:/etc/pihole:Z
+
+# --- Networking ---
 PublishPort=53:53/tcp
 PublishPort=53:53/udp
-
 PublishPort=8080:80
 
-Volume={{ stacks_path }}/pihole/etc-pihole:/etc/pihole:Z
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/pihole/pihole.env
 
 [Service]
 Restart=always

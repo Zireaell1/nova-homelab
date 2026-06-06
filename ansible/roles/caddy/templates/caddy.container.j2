@@ -13,29 +13,31 @@ RequiresMountsFor={{ stacks_path }}/caddy/config
 RequiresMountsFor={{ stacks_path }}/caddy/srv
 
 [Container]
+# --- Image / Exec ---
 Image={{ caddy_local_image }}:{{ version_caddy }}
 ContainerName=caddy
-Timezone={{ timezone }}
-Memory={{ caddy_memory_limit }}
-
-DropCapability=all
-NoNewPrivileges=true
-AddCapability=NET_BIND_SERVICE
-
-EnvironmentFile={{ stacks_path }}/caddy/caddy.env
-
 StopTimeout=20
 
 Notify=true
 
+# --- Identity / Namespaces ---
+UserNS=keep-id
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+AddCapability=NET_BIND_SERVICE
+
+# --- Resource Limits ---
+Memory={{ caddy_memory_limit }}
+
+# --- Storage ---
 Volume={{ stacks_path }}/caddy/Caddyfile:/etc/caddy/Caddyfile:ro,Z
 Volume={{ stacks_path }}/caddy/data:/data:Z
 Volume={{ stacks_path }}/caddy/config:/config:Z
 Volume={{ stacks_path }}/caddy/srv:/srv:Z
 
-UserNS=keep-id
-
-# TODO: maybe it could be better if other containers would join proxy network with some "isolated" option on network config 
+# --- Networking ---
 Network=authelia.network
 
 Network=frigate.network
@@ -47,6 +49,11 @@ Network=restic.network
 Network=prometheus.network
 Network=loki.network
 Network=grafana.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/caddy/caddy.env
 
 [Service]
 Restart=always

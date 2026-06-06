@@ -11,23 +11,31 @@ After=nut.target
 RequiresMountsFor={{ stacks_path }}/peanut/config
 
 [Container]
+# --- Image / Exec ---
 Image={{ peanut_image }}:{{ version_peanut }}
 ContainerName=peanut
-Timezone={{ timezone }}
-Memory={{ peanut_memory_limit }}
+StopTimeout=20
 
+# --- Identity / Namespaces ---
+UserNS=keep-id:uid=1000,gid=1000
+
+# --- Security / Capabilities ---
 DropCapability=all
 NoNewPrivileges=true
 
-EnvironmentFile={{ stacks_path }}/peanut/peanut.env
+# --- Resource Limits ---
+Memory={{ peanut_memory_limit }}
 
-StopTimeout=20
-
-UserNS=keep-id:uid=1000,gid=1000
-
+# --- Storage ---
 Volume={{ stacks_path }}/peanut/config:/config:Z
 
+# --- Networking ---
 Network=peanut.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/peanut/peanut.env
 
 [Service]
 Restart=always

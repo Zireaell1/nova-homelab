@@ -9,37 +9,45 @@ RequiresMountsFor={{ stacks_path }}/frigate/config
 RequiresMountsFor={{ frigate_storage_path }}
 
 [Container]
+# --- Image / Exec ---
 Image={{ frigate_image }}:{{ version_frigate }}
 ContainerName=frigate
-Timezone={{ timezone }}
-Memory={{ frigate_memory_limit }}
-
 StopTimeout=120
 
-ShmSize=1g
+# --- Identity / Namespaces ---
+GroupAdd=keep-groups
+UserNS=keep-id:uid=0,gid=0
 
-Tmpfs=/tmp/cache:rw,size=1g,mode=1777
-
-AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
-AddDevice=/dev/accel/accel0:/dev/accel/accel0
-
+# --- Security / Capabilities ---
 AddCapability=CAP_PERFMON
 SeccompProfile=unconfined
 SecurityLabelDisable=true
 
-GroupAdd=keep-groups
-UserNS=keep-id:uid=0,gid=0
+# --- Resource Limits ---
+ShmSize=1g
+Memory={{ frigate_memory_limit }}
 
-EnvironmentFile={{ stacks_path }}/frigate/frigate.env
+# --- Devices ---
+AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
+AddDevice=/dev/accel/accel0:/dev/accel/accel0
 
-PublishPort=8555:8555/tcp
-PublishPort=8555:8555/udp
-
+# --- Storage ---
 Volume={{ stacks_path }}/frigate/config:/config:Z
 Volume={{ frigate_storage_path }}:/media/frigate:Z
 
+Tmpfs=/tmp/cache:rw,size=1g,mode=1777
+
+# --- Networking ---
+PublishPort=8555:8555/tcp
+PublishPort=8555:8555/udp
+
 Network=frigate.network
 Network=home.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/frigate/frigate.env
 
 [Service]
 Restart=always

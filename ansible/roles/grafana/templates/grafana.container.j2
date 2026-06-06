@@ -8,25 +8,33 @@ After=network-online.target
 RequiresMountsFor=/srv/monitoring/grafana/data
 
 [Container]
+# --- Image / Exec ---
 Image={{ grafana_image }}:{{ version_grafana }}
 ContainerName=grafana
-Timezone={{ timezone }}
-Memory={{ grafana_memory_limit }}
+StopTimeout=20
 
+# --- Identity / Namespaces ---
+UserNS=keep-id:uid=472,gid=472
+
+# --- Security / Capabilities ---
 DropCapability=all
 NoNewPrivileges=true
 
-StopTimeout=20
+# --- Resource Limits ---
+Memory={{ grafana_memory_limit }}
 
-UserNS=keep-id:uid=472,gid=472
-
-EnvironmentFile=/srv/monitoring/grafana/grafana.env
-
+# --- Storage ---
 Volume=/srv/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro,Z
 Volume=/srv/monitoring/grafana/data:/var/lib/grafana:Z
 
+# --- Networking ---
 Network=grafana.network
 Network=monitoring-backend.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile=/srv/monitoring/grafana/grafana.env
 
 [Service]
 Restart=always

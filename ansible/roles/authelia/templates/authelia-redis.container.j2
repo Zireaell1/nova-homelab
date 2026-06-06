@@ -4,18 +4,24 @@ Description=Authelia Redis
 RequiresMountsFor={{ stacks_path }}/authelia/redis
 
 [Container]
+# --- Image / Exec ---
 Image={{ authelia_redis_image }}:{{ version_authelia_redis }}
 ContainerName=authelia-redis
-Timezone={{ timezone }}
-Memory={{ authelia_redis_memory_limit }}
-
 StopTimeout=20
 
 Exec=redis-server --requirepass {{ vault_authelia_redis_password }} --save 60 1 --loglevel warning
 
+# --- Resource Limits ---
+Memory={{ authelia_redis_memory_limit }}
+
+# --- Storage ---
 Volume={{ stacks_path }}/authelia/redis:/data:Z
 
+# --- Networking ---
 Network=authelia-backend.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
 
 [Service]
 Restart=always

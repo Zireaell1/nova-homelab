@@ -9,31 +9,40 @@ RequiresMountsFor={{ stacks_path }}/zigbee2mqtt/data
 RequiresMountsFor={{ stacks_path }}/zigbee2mqtt/config
 
 [Container]
+# --- Image / Exec ---
 Image={{ zigbee2mqtt_image }}:{{ version_zigbee2mqtt }}
 ContainerName=zigbee2mqtt
-Timezone={{ timezone }}
-Memory={{ zigbee2mqtt_memory_limit }}
-
-DropCapability=all
-NoNewPrivileges=true
-
-EnvironmentFile={{ stacks_path }}/zigbee2mqtt/zigbee2mqtt.env
-
 StopTimeout=20
 
-AddDevice=/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_348e0dcf501fef11abc857d0639e525b-if00-port0:/dev/ttyACM0
-
+# --- Identity / Namespaces ---
 GroupAdd=keep-groups
 UserNS=keep-id:uid=0,gid=0
 
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+
+# --- Resource Limits ---
+Memory={{ zigbee2mqtt_memory_limit }}
+
+# --- Devices ---
+AddDevice={{ zigbee2mqtt_adapter_path }}:/dev/ttyACM0
+
+# --- Storage ---
 Volume={{ stacks_path }}/zigbee2mqtt/data:/app/data:Z
 Volume={{ stacks_path }}/zigbee2mqtt/config/configuration.yaml:/app/data/configuration.yaml:Z
 Volume={{ stacks_path }}/zigbee2mqtt/config/secret.yaml:/app/data/secret.yaml:Z
 Volume={{ stacks_path }}/zigbee2mqtt/config/devices.yaml:/app/data/devices.yaml:Z
 Volume={{ stacks_path }}/zigbee2mqtt/config/groups.yaml:/app/data/groups.yaml:Z
 
+# --- Networking ---
 Network=zigbee2mqtt.network
 Network=home.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/zigbee2mqtt/zigbee2mqtt.env
 
 [Service]
 Restart=always

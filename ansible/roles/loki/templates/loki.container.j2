@@ -8,25 +8,33 @@ After=network-online.target
 RequiresMountsFor=/srv/monitoring/loki/data
 
 [Container]
+# --- Image / Exec ---
 Image={{ loki_image }}:{{ version_loki }}
 ContainerName=loki
-Timezone={{ timezone }}
-Memory={{ loki_memory_limit }}
+StopTimeout=20
 
+# --- Identity / Namespaces ---
+UserNS=keep-id:uid=10001,gid=10001
+
+# --- Security / Capabilities ---
 DropCapability=all
 NoNewPrivileges=true
 
-StopTimeout=20
+# --- Resource Limits ---
+Memory={{ loki_memory_limit }}
 
-UserNS=keep-id:uid=10001,gid=10001
-
-PublishPort=127.0.0.1:3100:3100
-
+# --- Storage ---
 Volume=/srv/monitoring/loki/loki.yaml:/etc/loki/local-config.yaml:ro,Z
 Volume=/srv/monitoring/loki/data:/loki:Z
 
+# --- Networking ---
 Network=loki.network
 Network=monitoring-backend.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+PublishPort=127.0.0.1:3100:3100
 
 # HealthCmd=/usr/bin/loki -health -health.url=http://127.0.0.1:3100/ready
 # HealthInterval=15s

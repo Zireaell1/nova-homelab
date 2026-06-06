@@ -4,20 +4,26 @@ Description=Authelia PostgreSQL
 RequiresMountsFor={{ stacks_path }}/authelia/postgres
 
 [Container]
+# --- Image / Exec ---
 Image={{ authelia_postgres_image }}:{{ version_authelia_postgres }}
 ContainerName=authelia-postgres
-Timezone={{ timezone }}
-Memory={{ authelia_postgres_memory_limit }}
-
 StopTimeout=20
 
-Environment=POSTGRES_USER=authelia
-Environment=POSTGRES_PASSWORD_FILE=/STORAGE_PASSWORD
+# --- Resource Limits ---
+Memory={{ authelia_postgres_memory_limit }}
 
+# --- Storage ---
 Volume={{ stacks_path }}/authelia/postgres:/var/lib/postgresql:Z
 Volume={{ stacks_path }}/authelia/secrets/STORAGE_PASSWORD:/STORAGE_PASSWORD:ro,z
 
+# --- Networking ---
 Network=authelia-backend.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+Environment=POSTGRES_USER=authelia
+Environment=POSTGRES_PASSWORD_FILE=/STORAGE_PASSWORD
 
 [Service]
 Restart=always

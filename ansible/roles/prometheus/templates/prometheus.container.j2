@@ -8,14 +8,9 @@ After=network-online.target
 RequiresMountsFor=/srv/monitoring/prometheus/data
 
 [Container]
+# --- Image / Exec ---
 Image={{ prometheus_image }}:{{ version_prometheus }}
 ContainerName=prometheus
-Timezone={{ timezone }}
-Memory={{ prometheus_memory_limit }}
-
-DropCapability=all
-NoNewPrivileges=true
-
 StopTimeout=20
 
 Exec=--config.file=/etc/prometheus/prometheus.yml \
@@ -23,12 +18,22 @@ Exec=--config.file=/etc/prometheus/prometheus.yml \
      --storage.tsdb.retention.time=30d \
      --web.enable-remote-write-receiver
 
+# --- Identity / Namespaces ---
 UserNS=keep-id:uid=65532,gid=65532
 
-PublishPort=127.0.0.1:9080:9090
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
 
+# --- Resource Limits ---
+Memory={{ prometheus_memory_limit }}
+
+# --- Storage ---
 Volume=/srv/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
 Volume=/srv/monitoring/prometheus/data:/prometheus:Z
+
+# --- Networking ---
+PublishPort=127.0.0.1:9080:9090
 
 Network=prometheus.network
 Network=monitoring-backend.network
@@ -37,6 +42,9 @@ Network=home.network
 Network=peanut.network
 Network=authelia.network
 Network=restic.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
 
 [Service]
 Restart=always
