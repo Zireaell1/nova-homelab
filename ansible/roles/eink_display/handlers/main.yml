@@ -1,6 +1,11 @@
 ---
 - name: Restart eink-display
   ansible.builtin.systemd:
-    name: eink-display.service
+    name: "eink-display.service"
+    scope: user
+    enabled: true
     state: restarted
     daemon_reload: true
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"

@@ -72,3 +72,5 @@
     - role: rpi_base
       become: true
       tags: ["rpi_base"]
+    - role: eink_display
+      tags: ["eink_display"]

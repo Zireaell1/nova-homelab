@@ -7,3 +7,35 @@
       - python3-dev
     state: present
     update_cache: true
+
+- name: Verify if config directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - path: "/home/{{ ansible_user }}/.config/systemd/user"
+      mode: "0755"
+
+- name: Enable lingering for current user
+  ansible.builtin.command: "loginctl enable-linger {{ ansible_user }}"
+  args:
+    creates: "/var/lib/systemd/linger/{{ ansible_user }}"
+
+- name: Enable SPI interface
+  ansible.builtin.lineinfile:
+    path: /boot/firmware/config.txt
+    regexp: "^#?dtparam=spi="
+    line: "dtparam=spi=on"
+    state: present
+  register: rpi_base_spi_config
+
+- name: Abort playbook if SPI was just enabled (manual reboot required)
+  ansible.builtin.fail:
+    msg: >
+      SPI was just enabled in /boot/firmware/config.txt!
+      The Raspberry Pi requires a full system reboot to load the spidev hardware drivers.
+      Please reboot the Pi manually ('sudo reboot') and re-run this playbook.
+  when: rpi_base_spi_config.changed # noqa: no-handler
