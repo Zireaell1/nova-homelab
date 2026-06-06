@@ -2,14 +2,19 @@
 Description=Immich Redis
 
 [Container]
+# --- Image / Exec ---
 Image={{ immich_redis_image }}:{{ version_immich_redis }}
 ContainerName=immich-redis
-Timezone={{ timezone }}
-Memory={{ immich_redis_memory_limit }}
-
 StopTimeout=20
 
+# --- Resource Limits ---
+Memory={{ immich_redis_memory_limit }}
+
+# --- Networking ---
 Network=immich-backend.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
 
 [Service]
 Restart=always

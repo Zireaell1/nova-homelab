@@ -8,26 +8,35 @@ After=network-online.target
 RequiresMountsFor={{ stacks_path }}/immich/model-cache
 
 [Container]
+# --- Image / Exec ---
 Image={{ immich_machine_learning_image }}:{{ version_immich_machine_learning }}
 ContainerName=immich-machine-learning
-Timezone={{ timezone }}
-Memory={{ immich_machine_learning_limit }}
-
-DropCapability=all
-NoNewPrivileges=true
-
-AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
-
 StopTimeout=20
 
-EnvironmentFile={{ stacks_path }}/immich/immich-machine-learning.env
-
-Volume={{ stacks_path }}/immich/model-cache:/cache:Z
-
+# --- Identity / Namespaces ---
 GroupAdd=keep-groups
 UserNS=keep-id:uid=0,gid=0
 
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+
+# --- Resource Limits ---
+Memory={{ immich_machine_learning_limit }}
+
+# --- Devices ---
+AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
+
+# --- Storage ---
+Volume={{ stacks_path }}/immich/model-cache:/cache:Z
+
+# --- Networking ---
 Network=immich-backend.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/immich/immich-machine-learning.env
 
 [Service]
 Restart=always
