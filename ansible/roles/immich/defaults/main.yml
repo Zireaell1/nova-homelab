@@ -1,5 +1,6 @@
 ---
 immich_memory_limit: "6g"
+immich_machine_learning_memory_limit: "6g"
 immich_redis_memory_limit: "500m"
 immich_postgres_memory_limit: "500m"
 

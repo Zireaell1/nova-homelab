@@ -51,6 +51,8 @@
       tags: ["zigbee2mqtt", "home"]
     - role: peanut
       tags: ["peanut"]
+    - role: immich
+      tags: ["immich"]
 
     - role: caddy
       tags: ["caddy"]
