@@ -37,6 +37,7 @@
     src: "{{ item }}.j2"
     dest: "{{ stacks_path }}/immich/{{ item }}"
     mode: "0600"
+  no_log: true
   loop:
     - immich.env
     - immich-machine-learning.env
