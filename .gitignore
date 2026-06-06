@@ -11,3 +11,6 @@ ansible/.vault_pass
 .ansible
 
 .DS_Store
+
+ansible/roles/eink_display/files/images/
+ansible/roles/eink_display/files/fonts/
