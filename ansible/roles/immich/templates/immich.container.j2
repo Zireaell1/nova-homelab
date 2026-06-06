@@ -23,7 +23,7 @@ AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
 
 StopTimeout=20
 
-EnvironmentFile={{ immich_storage_path }}/immich.env
+EnvironmentFile={{ stacks_path }}/immich/immich.env
 
 Volume={{ immich_storage_path }}/data:/data:Z
 Volume={{ stacks_path }}/immich/immich-config.json:/usr/src/app/immich-config.json:Z
