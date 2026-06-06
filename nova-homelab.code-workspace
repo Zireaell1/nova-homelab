@@ -15,7 +15,8 @@
 			"*.container.j2": "ini",
 			"*.network.j2": "ini",
 			"*.env.j2": "ini",
-			"*.service.j2": "ini"
+			"*.service.j2": "ini",
+			"*.timer.j2": "ini"
 		},
 		"[yaml]": {
 			"editor.insertSpaces": true,
