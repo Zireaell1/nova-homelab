@@ -22,6 +22,8 @@ version_grafana: "13.0.1"
 
 version_immich: "v2.7.5"
 
+version_immich_machine_learning: "v2.7.5"
+
 version_immich_redis: "9@sha256:3b55fbaa0cd93cf0d9d961f405e4dfcc70efe325e2d84da207a0a8e6d8fde4f9"
 
 version_immich_postgres: "14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23"

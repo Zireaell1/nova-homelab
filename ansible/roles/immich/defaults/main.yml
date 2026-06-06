@@ -8,6 +8,8 @@ immich_storage_path: "/srv/immich"
 # https://github.com/immich-app/immich
 immich_image: "ghcr.io/immich-app/immich-server"
 
+immich_machine_learning_image: "ghcr.io/immich-app/immich-machine-learning"
+
 immich_redis_image: "docker.io/valkey/valkey"
 
 immich_postgres_image: "ghcr.io/immich-app/postgres"
