@@ -42,6 +42,7 @@
   notify:
     - Restart authelia
     - Restart authelia-postgres
+    - Restart authelia-redis
 
 - name: Upload users_database.yml file
   ansible.builtin.copy:
