@@ -7,5 +7,47 @@
 			"path": "ansible"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"editor.formatOnSave": true,
+		"files.trimTrailingWhitespace": true,
+		"files.insertFinalNewline": true,
+		"files.associations": {
+			"*.container.j2": "ini",
+			"*.network.j2": "ini",
+			"*.env.j2": "ini"
+		},
+		"[yaml]": {
+			"editor.insertSpaces": true,
+			"editor.tabSize": 2,
+			"editor.autoIndent": "keep",
+			"diffEditor.ignoreTrimWhitespace": false,
+			"editor.defaultColorDecorators": "never",
+			"editor.quickSuggestions": {
+				"strings": true,
+				"other": true,
+				"comments": false
+			},
+			"editor.defaultFormatter": "redhat.vscode-yaml"
+		},
+		"[ansible]": {
+			"editor.autoIndent": "advanced",
+			"editor.detectIndentation": true,
+			"editor.insertSpaces": true,
+			"editor.quickSuggestions": {
+				"comments": true,
+				"other": true,
+				"strings": true
+			},
+			"editor.tabSize": 2,
+			"editor.defaultFormatter": "redhat.ansible"
+		},
+		"yaml.format.enable": true,
+		"ansible.validation.lint.enabled": true
+	},
+	"extensions": {
+		"recommendations": [
+			"redhat.ansible",
+			"github.vscode-github-actions"
+		]
+	}
 }
