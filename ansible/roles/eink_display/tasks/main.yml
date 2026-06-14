@@ -25,17 +25,29 @@
     - /home/{{ ansible_user }}/eink-display/assets/images
 
 - name: Sync all images
-  ansible.builtin.copy:
-    src: "images/"
-    dest: /home/{{ ansible_user }}/eink-display/assets/images/
-    mode: '0644'
+  ansible.posix.synchronize:
+    src: "files/images/"
+    dest: "/home/{{ ansible_user }}/eink-display/assets/images/"
+    delete: true
+    archive: true
+    owner: false
+    group: false
+    rsync_opts:
+      - "--chmod=D0755,F0644"
+      - "--chown={{ ansible_user }}:{{ ansible_user }}"
   notify: Restart eink-display
 
 - name: Sync all fonts
-  ansible.builtin.copy:
-    src: "fonts/"
-    dest: /home/{{ ansible_user }}/eink-display/assets/fonts/
-    mode: '0644'
+  ansible.posix.synchronize:
+    src: "files/fonts/"
+    dest: "/home/{{ ansible_user }}/eink-display/assets/fonts/"
+    delete: true
+    archive: true
+    owner: false
+    group: false
+    rsync_opts:
+      - "--chmod=D0755,F0644"
+      - "--chown={{ ansible_user }}:{{ ansible_user }}"
   notify: Restart eink-display
 
 - name: Deploy environment variables
