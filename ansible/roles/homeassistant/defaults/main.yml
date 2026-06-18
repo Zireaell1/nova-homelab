@@ -1,0 +1,5 @@
+---
+homeassistant_memory_limit: "6g"
+
+# https://github.com/home-assistant/core
+homeassistant_image: "ghcr.io/home-assistant/home-assistant"

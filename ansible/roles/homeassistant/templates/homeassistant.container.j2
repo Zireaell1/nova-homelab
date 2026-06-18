@@ -1,0 +1,43 @@
+[Unit]
+Description=HomeAssistant
+Documentation=https://www.home-assistant.io/
+
+Wants=network-online.target
+After=network-online.target
+
+RequiresMountsFor={{ stacks_path }}/homeassistant/config
+
+[Container]
+# --- Image / Exec ---
+Image={{ homeassistant_image }}:{{ version_homeassistant }}
+ContainerName=homeassistant
+StopTimeout=120
+
+# --- Identity / Namespaces ---
+UserNS=keep-id:uid=0,gid=0
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+
+# --- Resource Limits ---
+Memory={{ homeassistant_memory_limit }}
+
+# --- Storage ---
+Volume={{ stacks_path }}/homeassistant/config:/config:Z
+
+# --- Networking ---
+Network=homeassistant.network
+Network=home.network
+Network=openrgb.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=130
+
+[Install]
+WantedBy=default.target

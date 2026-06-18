@@ -59,3 +59,10 @@ version_vaultwarden: "1.36.0"
 # Zigbee2MQTT
 
 version_zigbee2mqtt: "2.10.1"
+
+# HomeAssistant
+
+version_homeassistant: "2026.6.3"
+
+version_hacs: "2.0.5"
+

@@ -53,6 +53,8 @@
       tags: ["peanut"]
     - role: immich
       tags: ["immich"]
+    - role: homeassistant
+      tags: ["homeassistant"]
 
     - role: caddy
       tags: ["caddy"]
