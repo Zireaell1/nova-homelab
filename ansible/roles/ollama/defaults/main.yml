@@ -1,0 +1,5 @@
+---
+ollama_memory_limit: "16g"
+
+#
+ollama_image: ""

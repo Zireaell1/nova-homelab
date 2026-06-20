@@ -66,3 +66,6 @@ version_homeassistant: "2026.6.3"
 
 version_hacs: "2.0.5"
 
+# Ollama
+
+version_ollama: ""

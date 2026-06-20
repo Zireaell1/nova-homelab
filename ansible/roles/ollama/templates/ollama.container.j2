@@ -1,0 +1,40 @@
+[Unit]
+Description=Ollama
+Documentation=
+
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+# --- Image / Exec ---
+Image={{ ollama_image }}:{{ version_ollama }}
+ContainerName=ollama
+StopTimeout=120
+
+# --- Identity / Namespaces ---
+# UserNS=keep-id:uid=0,gid=0
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+
+# --- Resource Limits ---
+Memory={{ ollama_memory_limit }}
+
+# --- Storage ---
+
+# --- Networking ---
+Network=ollama.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/ollama/ollama.env
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=130
+
+[Install]
+WantedBy=default.target
