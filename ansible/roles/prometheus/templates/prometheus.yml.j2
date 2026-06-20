@@ -36,6 +36,11 @@ scrape_configs:
     static_configs:
       - targets: ['restic:8000']
 
+  - job_name: 'homeassistant'
+    metrics_path: /api/prometheus
+    static_configs:
+      - targets: ['homeassistant:8123']
+
 #  - job_name: immich_api
 #    static_configs:
 #      - targets: ['immich:8081']
