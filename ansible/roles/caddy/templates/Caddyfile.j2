@@ -52,7 +52,51 @@
         not remote_ip {args[:]}
     }
     handle @denied {
-        respond "Access Denied by Gatekeeper" 403
+        respond `
+        <!DOCTYPE html>
+        <html>
+
+        <head>
+            <title>Access Denied | Nova</title>
+            <style>
+                body {
+                    font-family: sans-serif;
+                    text-align: center;
+                    padding: 10%;
+                    background: #121212;
+                    color: #e0e0e0;
+                }
+
+                h1 {
+                    color: #ff5252;
+                }
+
+                .homelab-badge {
+                    margin-top: 50px;
+                    font-size: 0.85em;
+                    color: #757575;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                    border-top: 1px solid #333;
+                    padding-top: 20px;
+                    display: inline-block;
+                }
+            </style>
+        </head>
+
+        <body>
+            <h1>403 - Forbidden</h1>
+            <p>Access Denied by Gatekeeper. Your IP is not authorized.</p>
+
+            <div class="homelab-badge">
+                Nova
+            </div>
+        </body>
+
+        </html>
+        ` 403 {
+            header Content-Type text/html
+        }
     }
 }
 
@@ -76,7 +120,7 @@ http:// {
 		protocols h1
 	}
 	redir https://{host}{uri}
-	log # TODO: 
+	log # TODO:
 }
 
 :9091 {
@@ -181,7 +225,7 @@ http:// {
     import gatekeeper {{ network_home }}
 
     handle /metrics {
-        abort 
+        abort
     }
 
     handle {
