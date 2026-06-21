@@ -41,8 +41,18 @@ services:
     subdomain: "go2rtc"
   zigbee2mqtt:
     subdomain: "z2m"
+    quadlet_name: "zigbee2mqtt"
+    backup:
+      stop: true
+      paths:
+        - /home/{{ ansible_user }}/stacks/zigbee2mqtt/data
   homeassistant:
     subdomain: "ha"
+    quadlet_name: "homeassistant"
+    backup:
+      stop: true
+      paths:
+        - /home/{{ ansible_user }}/stacks/homeassistant/config/backups
   uptime_kuma:
     subdomain: "kuma"
   peanut:
