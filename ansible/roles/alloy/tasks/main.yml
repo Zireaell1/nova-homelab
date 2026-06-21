@@ -9,6 +9,7 @@
     gpgkey: https://rpm.grafana.com/gpg.key
     enabled: true
     sslverify: true
+    priority: '10'
 
 - name: Install Grafana Alloy
   ansible.builtin.dnf:

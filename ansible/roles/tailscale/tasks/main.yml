@@ -11,6 +11,7 @@
     gpgkey: https://pkgs.tailscale.com/stable/fedora/repo.gpg
     enabled: true
     sslverify: true
+    priority: '10'
 
 - name: Install Tailscale
   ansible.builtin.dnf:
