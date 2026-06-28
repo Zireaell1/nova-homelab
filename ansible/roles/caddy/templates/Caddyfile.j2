@@ -337,6 +337,10 @@ http:// {
     import secure_headers
     import gatekeeper {{ network_home }} {{ network_tailscale }} {{ dashboard_tablet_ip }}
 
+    handle /api/prometheus {
+        abort
+    }
+
     handle {
         reverse_proxy homeassistant:8123
     }
