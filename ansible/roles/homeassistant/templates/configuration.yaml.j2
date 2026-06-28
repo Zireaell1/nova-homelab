@@ -1,0 +1,159 @@
+default_config:
+
+homeassistant:
+  name: Home
+  unit_system: metric
+  temperature_unit: C
+  time_zone: {{ timezone }}
+  currency: PLN
+
+  external_url: https://{{ services['homeassistant']['subdomain'] }}.{{ vault_domain }}
+  internal_url: https://{{ services['homeassistant']['subdomain'] }}.{{ vault_domain }}
+
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+automation manual: !include_dir_merge_list automations_ansible/
+
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 10.89.0.0/16
+  ip_ban_enabled: true
+  login_attempts_threshold: 3
+
+recorder:
+  purge_keep_days: 7
+  auto_purge: true
+
+prometheus:
+  requires_auth: false
+  namespace: homeassistant
+
+  component_config_glob:
+    sensor.*_temperature:
+      override_metric: temperature_c
+    sensor.*_humidity:
+      override_metric: humidity_percent
+    sensor.*_power:
+      override_metric: power_watts
+    sensor.*_energy:
+      override_metric: energy_kwh
+
+  filter:
+    include_entities:
+      - binary_sensor.frontdoor_sensor_contact_contact
+      - binary_sensor.boilerroom_sensor_contact_contact
+      - binary_sensor.livingroom_contact_sensor_contact
+      - sensor.bedroom_plug_1_power
+      - sensor.room1_plug_pc_power
+      - sensor.hallway_sensor_climate_temperature
+      - sensor.hallway_sensor_climate_humidity
+
+input_boolean:
+  doorbell_calling:
+    name: Doorbell Calling
+    icon: mdi:bell-ring
+    initial: off
+
+schedule:
+  doorbell_do_not_disturb:
+    name: "Doorbell Do Not Disturb"
+    icon: "mdi:bell-sleep"
+    monday:
+      - from: "00:00:00"
+        to: "05:00:00"
+      - from: "22:00:00"
+        to: "24:00:00"
+    tuesday:
+      - from: "00:00:00"
+        to: "05:00:00"
+      - from: "22:00:00"
+        to: "24:00:00"
+    wednesday:
+      - from: "00:00:00"
+        to: "05:00:00"
+      - from: "22:00:00"
+        to: "24:00:00"
+    thursday:
+      - from: "00:00:00"
+        to: "05:00:00"
+      - from: "22:00:00"
+        to: "24:00:00"
+    friday:
+      - from: "00:00:00"
+        to: "05:00:00"
+      - from: "22:00:00"
+        to: "24:00:00"
+    saturday:
+      - from: "00:00:00"
+        to: "05:00:00"
+      - from: "22:00:00"
+        to: "24:00:00"
+    sunday:
+      - from: "00:00:00"
+        to: "05:00:00"
+      - from: "22:00:00"
+        to: "24:00:00"
+
+{% raw %}
+template:
+  - sensor:
+      - name: "Dashboard Greeting"
+        unique_id: dashboard_greeting
+        state: >
+          {% set time = now().hour %}
+          {% if time < 5 %} Dobranoc 😴
+          {% elif time < 12 %} Dzień dobry ☀️
+          {% elif time < 18 %} Miłego popołudnia 🌤
+          {% elif time < 22 %} Dobry wieczór 🌙
+          {% else %} Spokojnego wieczoru 🌌
+          {% endif %}
+
+      - name: "Polish Date"
+        unique_id: polish_date
+        state: >
+          {% set days = {'Monday': 'poniedziałek', 'Tuesday': 'wtorek', 'Wednesday': 'środa', 'Thursday': 'czwartek', 'Friday': 'piątek', 'Saturday': 'sobota', 'Sunday': 'niedziela'} %}
+          {% set months = {'January': 'stycznia', 'February': 'lutego', 'March': 'marca', 'April': 'kwietnia', 'May': 'maja', 'June': 'czerwca', 'July': 'lipca', 'August': 'sierpnia', 'September': 'września', 'October': 'października', 'November': 'listopada', 'December': 'grudnia'} %}
+          {% set now = now() %}
+          {{ days[now.strftime('%A')] }}, {{ now.day }} {{ months[now.strftime('%B')] }} {{ now.strftime('%H:%M') }}
+
+  - binary_sensor:
+      - name: "Perimeter Open"
+        unique_id: perimeter_open
+        state: >
+          {{ is_state('binary_sensor.boilerroom_sensor_contact_contact', 'on') or
+            is_state('binary_sensor.livingroom_contact_sensor_contact', 'on') or
+            is_state('binary_sensor.frontdoor_sensor_contact_contact', 'on') }}
+            # is_state('sensor.front_main_gate_state_classification', 'Open') }}
+
+  - switch:
+      - name: "Cameras Alarm"
+        unique_id: cameras_alarm
+        icon: mdi:alarm-light
+        state: >
+          {{ is_state('siren.back_siren', 'on') or
+            is_state('siren.front_siren', 'on') or
+            is_state('siren.doorbell_siren', 'on') or
+            is_state('siren.entry_siren', 'on') }}
+        turn_on:
+          action: siren.turn_on
+          target:
+            entity_id:
+              - siren.back_siren
+              - siren.front_siren
+              - siren.doorbell_siren
+              - siren.entry_siren
+        turn_off:
+          action: siren.turn_off
+          target:
+            entity_id:
+              - siren.back_siren
+              - siren.front_siren
+              - siren.doorbell_siren
+              - siren.entry_siren
+{% endraw %}
