@@ -52,6 +52,9 @@
         not remote_ip {args[:]}
     }
     handle @denied {
+
+        header Content-Type text/html
+
         respond `
         <!DOCTYPE html>
         <html>
@@ -94,9 +97,7 @@
         </body>
 
         </html>
-        ` 403 {
-            header Content-Type text/html
-        }
+        ` 403
     }
 }
 
