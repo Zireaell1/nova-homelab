@@ -6,12 +6,16 @@ set -uo pipefail
 # 1. CONFIGURATION
 # ==========================================
 SCRIPT_START_TIME=$(date +%s)
-export RESTIC_PASSWORD='{{ vault_backup_restic_password }}'
+
+export RESTIC_PASSWORD_FILE="{{ backup_restic_password_file }}"
 export XDG_CONFIG_HOME="/home/{{ ansible_user }}/.config"
 
 REPO_CRITICAL="{{ backup_repo_critical }}"
 REPO_DEVICES="{{ backup_repo_devices }}"
 RCLONE_TARGET="{{ backup_rclone_target }}"
+
+GLOBAL_SUCCESS=1
+RCLONE_SUCCESS=1
 
 # ==========================================
 # 2. GENERATE DYNAMIC PATH LISTS
@@ -50,19 +54,25 @@ SERVICES_TO_STOP=(
 )
 
 # ==========================================
-# 3. TRAP CLEANUP
+# 3. TRAP CLEANUP & METRICS
 # ==========================================
 cleanup_and_start() {
-    local exit_code=$?
     local script_end_time=$(date +%s)
     local duration=$((script_end_time - SCRIPT_START_TIME))
+
     local repo_size_bytes=0
     if [ -d "$REPO_CRITICAL" ]; then
         repo_size_bytes=$(du -sb "$REPO_CRITICAL" | cut -f1)
     fi
 
+    local snapshot_count=0
+    if [ -d "$REPO_CRITICAL" ]; then
+        export RESTIC_REPOSITORY="$REPO_CRITICAL"
+        snapshot_count=$(restic snapshots --json 2>/dev/null | jq length 2>/dev/null || echo 0)
+    fi
+
     echo "[INFO] Running final cleanup procedure (Trap)..."
-    
+
     if [ {% raw %}${#SERVICES_TO_STOP[@]}{% endraw %} -gt 0 ]; then
         echo "[INFO] Restarting systemd services..."
         for service in "${SERVICES_TO_STOP[@]}"; do
@@ -72,21 +82,23 @@ cleanup_and_start() {
 
     rm -f "$INCLUDE_FILE" "$EXCLUDE_FILE"
 
-    local prom_success=0
-    if [ $exit_code -eq 0 ]; then
-        prom_success=1
+    if [ $GLOBAL_SUCCESS -eq 1 ]; then
         echo "[SUCCESS] Backup routine completed successfully in ${duration}s."
     else
-        echo "[CRITICAL] Script failed with exit code: $exit_code after ${duration}s."
+        echo "[CRITICAL] Script encountered errors. Check logs. Duration: ${duration}s."
     fi
 
     local PROM_TMP_FILE="/tmp/homelab_backup.prom"
     local PROM_TARGET_DIR="/opt/alloy-metrics"
 
     cat <<EOF > "$PROM_TMP_FILE"
-# HELP homelab_backup_success Whether the backup succeeded (1) or failed (0)
+# HELP homelab_backup_success Whether the local Restic backup succeeded (1) or failed (0)
 # TYPE homelab_backup_success gauge
-homelab_backup_success $prom_success
+homelab_backup_success $GLOBAL_SUCCESS
+
+# HELP homelab_backup_cloud_sync_success Whether the Rclone cloud sync succeeded (1) or failed (0)
+# TYPE homelab_backup_cloud_sync_success gauge
+homelab_backup_cloud_sync_success $RCLONE_SUCCESS
 
 # HELP homelab_backup_duration_seconds Time taken for the backup script to run
 # TYPE homelab_backup_duration_seconds gauge
@@ -99,6 +111,10 @@ homelab_backup_last_run_timestamp_seconds $script_end_time
 # HELP homelab_backup_repo_size_bytes Size of the homelab backup repository in bytes
 # TYPE homelab_backup_repo_size_bytes gauge
 homelab_backup_repo_size_bytes $repo_size_bytes
+
+# HELP homelab_backup_snapshot_count Total number of snapshots in the critical repository
+# TYPE homelab_backup_snapshot_count gauge
+homelab_backup_snapshot_count $snapshot_count
 EOF
 
     if [ -d "$PROM_TARGET_DIR" ]; then
@@ -107,7 +123,11 @@ EOF
         echo "[WARNING] Prometheus textfile directory $PROM_TARGET_DIR does not exist. Metrics not saved."
     fi
 
-    exit $exit_code
+    if [ $GLOBAL_SUCCESS -eq 0 ] || [ $RCLONE_SUCCESS -eq 0 ]; then
+        exit 1
+    else
+        exit 0
+    fi
 }
 
 trap cleanup_and_start EXIT INT TERM
@@ -121,6 +141,7 @@ if [ -s "$INCLUDE_FILE" ]; then
     export RESTIC_REPOSITORY="$REPO_CRITICAL"
     if ! restic snapshots >/dev/null 2>&1; then
         echo >&2 "[ERROR] Repository $REPO_CRITICAL does not exist, is corrupted, or password is incorrect!"
+        GLOBAL_SUCCESS=0
         exit 1
     fi
 else
@@ -148,10 +169,13 @@ restic backup \
     --files-from "$INCLUDE_FILE" \
     --exclude-file "$EXCLUDE_FILE" \
     --compression max \
-    --verbose=1
+    --verbose=1 || GLOBAL_SUCCESS=0
 
 echo "[INFO] Verifying repository integrity..."
-restic check --read-data-subset=10% || { echo "[ERROR] Repository is corrupted!"; exit 1; }
+restic check --read-data-subset=10% || {
+    echo "[ERROR] Repository check failed!"
+    GLOBAL_SUCCESS=0
+}
 
 if [ {% raw %}${#SERVICES_TO_STOP[@]}{% endraw %} -gt 0 ]; then
     echo "[INFO] Local backups finished. Fast restarting services..."
@@ -166,11 +190,11 @@ fi
 # ==========================================
 echo "[INFO] Syncing local repositories to the cloud..."
 
-rclone sync "$REPO_CRITICAL" "${RCLONE_TARGET}/homelab" --fast-list --transfers 8
+rclone sync "$REPO_CRITICAL" "${RCLONE_TARGET}/homelab" --fast-list --transfers 8 || RCLONE_SUCCESS=0
 
 if [ -d "$REPO_DEVICES" ]; then
     echo "[INFO] Syncing external device repositories..."
-    rclone sync "$REPO_DEVICES" "${RCLONE_TARGET}/devices" --fast-list --transfers 8
+    rclone sync "$REPO_DEVICES" "${RCLONE_TARGET}/devices" --fast-list --transfers 8 || RCLONE_SUCCESS=0
 fi
 
 # ==========================================
@@ -178,4 +202,4 @@ fi
 # ==========================================
 echo "[INFO] Running retention policy (Prune)..."
 export RESTIC_REPOSITORY="$REPO_CRITICAL"
-restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 6
+restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 6 || GLOBAL_SUCCESS=0

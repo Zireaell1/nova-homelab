@@ -4,3 +4,5 @@ backup_repo_devices: "/mnt/backup/rest-server-data"
 
 backup_rclone_remote_name: "external"
 backup_rclone_target: "{{ backup_rclone_remote_name }}:{{ vault_backup_rclone_bucket_name }}"
+
+backup_restic_password_file: "/home/{{ ansible_user }}/.config/restic/.repo_pass"
