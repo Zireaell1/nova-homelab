@@ -22,6 +22,9 @@ advanced:
     - 136
     - 240
   last_seen: ISO_8601
+  log_level: info
+  log_namespaced_levels:
+      z2m:mqtt: warning
 frontend:
   enabled: true
   url: https://{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}

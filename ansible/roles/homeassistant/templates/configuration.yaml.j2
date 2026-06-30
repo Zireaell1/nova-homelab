@@ -19,6 +19,9 @@ automation manual: !include_dir_merge_list automations_ansible/
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
+logger:
+  default: warning
+
 http:
   use_x_forwarded_for: true
   trusted_proxies:
