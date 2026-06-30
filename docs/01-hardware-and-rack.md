@@ -35,7 +35,12 @@ For the materials, I used **Fiberlogy** filaments in a two-tone color scheme:
 ### Community Models & Custom Modifications
 I didn't design every piece from scratch. For almost all of the bays, I used existing models from the amazing communities over at Printables.com and Makerworld.com.
 
-However, to make the rack look clean and professional, I imported these models into **Blender** before printing them. I adjusted them to ensure they all shared a common width and thickness, and I modified the screw holes so that every single 1U plate perfectly uses two screws on each side.
+However, to make the rack look clean and professional, I imported these models into **Blender** before printing them. I adjusted them to ensure they all shared common, standardized front-plate dimensions:
+* **Width:** `254.24mm`
+* **Thickness:** `5mm`
+* **Height:** 1U = `44.45mm`
+
+I also modified the screw holes so that every single 1U plate perfectly uses two screws on each side.
 
 Because I heavily rely on and respect the work of the original creators, here is exactly what I used and where you can find the original files:
 
