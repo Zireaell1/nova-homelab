@@ -37,9 +37,10 @@ Timezone={{ timezone }}
 EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.env
 
 HealthCmd=/healthcheck.sh
-HealthInterval=120s
-HealthRetries=10
-HealthTimeout=45s
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
 
 [Service]
 Restart=always

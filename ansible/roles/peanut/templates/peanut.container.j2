@@ -37,6 +37,12 @@ Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/peanut/peanut.env
 
+HealthCmd=node healthcheck.mjs
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
 [Service]
 Restart=always
 TimeoutStartSec=900
