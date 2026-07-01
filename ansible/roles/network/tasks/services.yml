@@ -15,7 +15,20 @@
     state: started
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Configure fail2ban
+- name: Ensure filter.d directory exists
+  ansible.builtin.file:
+    path: /etc/fail2ban/filter.d
+    state: directory
+    mode: "0755"
+
+- name: Deploy Vaultwarden filter
+  ansible.builtin.template:
+    src: vaultwarden.local.j2
+    dest: /etc/fail2ban/filter.d/vaultwarden.local
+    mode: "0644"
+  notify: Restart fail2ban
+
+- name: Configure jail.local
   ansible.builtin.template:
     src: jail.local.j2
     dest: /etc/fail2ban/jail.local
