@@ -6,6 +6,11 @@
         "os",
         "kernel",
         "uptime",
+        {
+            "type": "command",
+            "key": "OS Age",
+            "text": "birth_install=$(stat -c %W /); current=$(date +%s); total_difference=$((current - birth_install)); years=$((total_difference / (365 * 86400))); remaining_days=$((total_difference % (365 * 86400) / 86400)); months=$((remaining_days / 30)); echo \"$years Years and $months Months\""
+        },
         "packages",
         {
             "type": "cpu",
