@@ -1,3 +1,7 @@
+# ===============================================================================
+# Snippets
+# ===============================================================================
+
 # Cloudflare DNS-01
 (cloudflare_tls) {
     tls {
@@ -13,7 +17,7 @@
     }
 }
 
-# Authelia Forward Auth Basic (without passing headers)
+# Authelia Forward Auth (without passing headers)
 (authelia_middleware_basic) {
     forward_auth authelia:9091 {
         uri /api/authz/forward-auth
@@ -47,59 +51,9 @@
     }
 }
 
-(gatekeeper) {
-    @denied {
-        not remote_ip {args[:]}
-    }
-    handle @denied {
-
-        header Content-Type text/html
-
-        respond `
-        <!DOCTYPE html>
-        <html>
-
-        <head>
-            <title>Access Denied | Nova</title>
-            <style>
-                body {
-                    font-family: sans-serif;
-                    text-align: center;
-                    padding: 10%;
-                    background: #121212;
-                    color: #e0e0e0;
-                }
-
-                h1 {
-                    color: #ff5252;
-                }
-
-                .homelab-badge {
-                    margin-top: 50px;
-                    font-size: 0.85em;
-                    color: #757575;
-                    text-transform: uppercase;
-                    letter-spacing: 2px;
-                    border-top: 1px solid #333;
-                    padding-top: 20px;
-                    display: inline-block;
-                }
-            </style>
-        </head>
-
-        <body>
-            <h1>403 - Forbidden</h1>
-            <p>Access Denied by Gatekeeper. Your IP is not authorized.</p>
-
-            <div class="homelab-badge">
-                Nova
-            </div>
-        </body>
-
-        </html>
-        ` 403
-    }
-}
+# ===============================================================================
+# Global
+# ===============================================================================
 
 {
 	default_bind fd/4 {
@@ -124,106 +78,92 @@ http:// {
 	log # TODO:
 }
 
+# ===============================================================================
+# Metrics
+# ===============================================================================
+
 :9091 {
     bind 0.0.0.0
 
     metrics
 }
 
-# Wildcard controller
+# ===============================================================================
+# Wildcard
+# ===============================================================================
+
 *.{{ vault_domain }} {
     import cloudflare_tls
 
     respond "Service not found" 404
 }
 
-# Root Domain
+# ===============================================================================
+# Root
+# ===============================================================================
+
 {{ vault_domain }} {
     import cloudflare_tls
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        reverse_proxy glance:8080
-    }
+    import authelia_middleware
+    reverse_proxy glance:8080
 }
 
+# ===============================================================================
 # Subdomains
+# ===============================================================================
+
+{{ services['authelia']['subdomain'] }}.{{ vault_domain }} {
+    import standard
+    import secure_headers
+
+    reverse_proxy authelia:9091
+}
+
 {{ services['alloy']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        import authelia_middleware_basic
-        reverse_proxy host.containers.internal:12345
-    }
+    import authelia_middleware_basic
+    reverse_proxy host.containers.internal:12345
 }
 
 {{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import vault_headers
 
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
-
-    handle /admin* {
-        import authelia_middleware_basic
-
-        reverse_proxy vaultwarden:8000
-    }
-
-    handle {
-        reverse_proxy vaultwarden:8000
-    }
-}
-
-{{ services['authelia']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
-
-    handle {
-        reverse_proxy authelia:9091
-    }
+    import authelia_middleware_basic
+    reverse_proxy vaultwarden:8000
 }
 
 {{ services['loki']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        # TODO: auth
-        reverse_proxy loki:3100
-    }
+    # TODO: import authelia_middleware_basic
+    reverse_proxy loki:3100
 }
 
 {{ services['prometheus']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        import authelia_middleware_basic
-        reverse_proxy prometheus:9090
-    }
+    import authelia_middleware_basic
+    reverse_proxy prometheus:9090
 }
 
 {{ services['grafana']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        import authelia_middleware
-        reverse_proxy grafana:3000
-    }
+    import authelia_middleware
+    reverse_proxy grafana:3000
 }
 
 {{ services['restic']['subdomain'] }}.{{ vault_domain }} {
     import secure_headers
-    import gatekeeper {{ network_home }}
 
     handle /metrics {
         abort
@@ -235,66 +175,43 @@ http:// {
     }
 }
 
-# TODO: add basic auth so it should work with orca slicer / service account for orca slicer and forward auth for user
 {{ services['mainsail']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        reverse_proxy {{ printer_ip }}:4409
-    }
+    # TODO: import authelia_middleware_basic
+    reverse_proxy {{ printer_ip }}:4409
 }
 
 {{ services['switch']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }}
 
-    handle {
-        import authelia_middleware_basic
-        reverse_proxy {{ switch_ip }}:80
-    }
-}
-
-{{ services['uptime_kuma']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
-
-    handle {
-        import authelia_middleware_basic
-        reverse_proxy uptime-kuma:3001
-    }
+    import authelia_middleware_basic
+    reverse_proxy {{ switch_ip }}:80
 }
 
 {{ services['go2rtc']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        import authelia_middleware_basic
-        reverse_proxy frigate:1984
-    }
+    import authelia_middleware_basic
+    reverse_proxy frigate:1984
 }
 
 {{ services['frigate']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        import authelia_middleware
-        reverse_proxy frigate:8971 {
-            header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
+    import authelia_middleware
+    reverse_proxy frigate:8971 {
+        header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
 
-            flush_interval -1
+        flush_interval -1
 
-            transport http {
-                versions 1.1
-                compression off
-            }
+        transport http {
+            versions 1.1
+            compression off
         }
     }
 }
@@ -302,113 +219,87 @@ http:// {
 {{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        import authelia_middleware_basic
-        reverse_proxy zigbee2mqtt:8080
-    }
+    import authelia_middleware_basic
+    reverse_proxy zigbee2mqtt:8080
 }
 
 {{ services['pihole']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        import authelia_middleware_basic
-        reverse_proxy host.containers.internal:8080
-    }
+    import authelia_middleware_basic
+    redir / /admin 302
+    reverse_proxy host.containers.internal:8080
 }
 
 {{ services['peanut']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
 
-    handle {
-        import authelia_middleware_basic
-        reverse_proxy peanut:8080
-    }
+    import authelia_middleware_basic
+    reverse_proxy peanut:8080
 }
 
 {{ services['homeassistant']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }} {{ dashboard_tablet_ip }}
 
     handle /api/prometheus {
         abort
     }
 
     handle {
+        import authelia_middleware_basic
         reverse_proxy homeassistant:8123
-    }
-}
-
-# TODO: need to verify if it works and later remove its port from firewall
-{{ services['cockpit']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
-
-    handle {
-        # TODO: probably should proxy to http port or specify that it is https, because then it goes into redirect loop
-        reverse_proxy host.containers.internal:9090
     }
 }
 
 {{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }}
 
-    handle {
-        reverse_proxy {{ camera_doorbell_ip }}:80 {
-            header_up -Via
-        }
+    import authelia_middleware_basic
+    reverse_proxy {{ camera_doorbell_ip }}:80 {
+        header_up -Via
     }
 }
 
 {{ services['camera_front']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }}
 
-    handle {
-        reverse_proxy {{ camera_front_ip }}:80 {
-            header_up -Via
-        }
+    import authelia_middleware_basic
+    reverse_proxy {{ camera_front_ip }}:80 {
+        header_up -Via
     }
 }
 
 {{ services['camera_back']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }}
 
-    handle {
-        reverse_proxy {{ camera_back_ip }}:80 {
-            header_up -Via
-        }
+    import authelia_middleware_basic
+    reverse_proxy {{ camera_back_ip }}:80 {
+        header_up -Via
     }
 }
 
 {{ services['camera_entry']['subdomain'] }}.{{ vault_domain }} {
     import standard
     import secure_headers
-    import gatekeeper {{ network_home }}
 
-    handle {
-        reverse_proxy {{ camera_entry_ip }}:80 {
-            header_up -Via
-        }
+    import authelia_middleware_basic
+    reverse_proxy {{ camera_entry_ip }}:80 {
+        header_up -Via
     }
 }
 
 {{ services['files']['subdomain'] }}.{{ vault_domain }} {
-    import gatekeeper {{ network_home }} {{ network_tailscale }}
+    import standard
+    import secure_headers
 
+    import authelia_middleware
     handle {
         root /srv
         file_server browse
