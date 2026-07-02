@@ -21,12 +21,6 @@ Keep reading below if you want to know more about the hardware, the services I'm
 
 ---
 
-## Installation
-
-**Work in progress**
-
----
-
 ## Repository Structure
 Currently, the repository is split into three main areas:
 * **`ansible/`** - The actual playbooks, inventory, and roles.
@@ -38,4 +32,5 @@ Currently, the repository is split into three main areas:
 ## Docs
 If you want to see exactly how this was built, check out the docs:
 1. [The Hardware & 3D Printing](docs/01-hardware-and-rack.md)
-2. [Networking](docs/02-networking.md)
+2. [OS & Installation](docs/02-os-and-installation.md)
+3. [Ansible](docs/03-ansible.md)
