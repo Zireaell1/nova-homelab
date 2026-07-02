@@ -1,9 +1,10 @@
+set -gx EDITOR micro
+
 if status is-interactive
-    # Commands to run in interactive sessions can go here
+    abbr -a up "sudo dnf upgrade --refresh"
+    abbr -a upclean "sudo dnf upgrade --refresh && sudo dnf autoremove"
 end
 
 function fish_greeting
     fastfetch
 end
-
-set -gx EDITOR micro
