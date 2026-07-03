@@ -34,3 +34,4 @@ If you want to see exactly how this was built, check out the docs:
 1. [The Hardware & 3D Printing](docs/01-hardware-and-rack.md)
 2. [OS & Installation](docs/02-os-and-installation.md)
 3. [Ansible](docs/03-ansible.md)
+4. [Services](docs/04-services.md)
