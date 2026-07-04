@@ -118,7 +118,9 @@ access_control:
     # ===============================================================================
     # User Services
     # ===============================================================================
-    - domain: '{{ services['frigate']['subdomain'] }}.{{ vault_domain }}'
+    - domain:
+        - '{{ services['frigate']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
