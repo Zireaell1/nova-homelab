@@ -4,6 +4,8 @@ stacks_path: "/home/{{ ansible_user }}/stacks"
 timezone: "Europe/Warsaw"
 
 services:
+  homepage:
+    subdomain: ""
   files:
     subdomain: "files"
   alloy:
