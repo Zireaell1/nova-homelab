@@ -1,0 +1,25 @@
+---
+- Repositories:
+      - GitHub Nova:
+            icon: github.svg
+            href: https://github.com/Zireaell1/nova-homelab
+      - Github Nova eink display:
+            icon: github.svg
+            href: https://github.com/Zireaell1/nova-eink-display
+
+- Homelab Hardware:
+      - Switch:
+            abbr: SW
+            href: https://{{ services['switch']['subdomain'] }}.{{ vault_domain }}/
+      - Front Camera:
+            abbr: CM
+            href: https://{{ services['camera_front']['subdomain'] }}.{{ vault_domain }}/
+      - Entry Camera:
+            abbr: CM
+            href: https://{{ services['camera_entry']['subdomain'] }}.{{ vault_domain }}/
+      - Back Camera:
+            abbr: CM
+            href: https://{{ services['camera_back']['subdomain'] }}.{{ vault_domain }}/
+      - Doorbell Camera:
+            abbr: CM
+            href: https://{{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }}/

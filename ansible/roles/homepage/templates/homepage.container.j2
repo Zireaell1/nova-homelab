@@ -1,0 +1,47 @@
+[Unit]
+Description=Homepage
+Documentation=https://gethomepage.dev/
+
+Wants=network-online.target
+After=network-online.target
+
+RequiresMountsFor={{ stacks_path }}/homepage/config
+
+[Container]
+# --- Image / Exec ---
+Image={{ homepage_image }}:{{ version_homepage }}
+ContainerName=homepage
+StopTimeout=120
+
+# --- Identity / Namespaces ---
+UserNS=keep-id:uid=0,gid=0
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+
+# --- Resource Limits ---
+Memory={{ homepage_memory_limit }}
+
+# --- Storage ---
+Volume={{ stacks_path }}/homepage/config:/app/config:Z
+Volume={{ stacks_path }}/homepage/assets:/app/public/images:Z,ro
+
+Volume=/mnt/frigate/homepage_monitoring:/mnt/frigate:Z,ro
+Volume=/mnt/backup/homepage_monitoring:/mnt/backup:Z,ro
+
+# --- Networking ---
+Network=homepage.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/homepage/homepage.env
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+TimeoutStopSec=130
+
+[Install]
+WantedBy=default.target

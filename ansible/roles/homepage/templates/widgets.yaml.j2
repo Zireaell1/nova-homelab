@@ -1,0 +1,25 @@
+---
+- resources:
+      label: System
+      cpu: true
+      cputemp: true
+      memory: true
+      uptime: true
+
+- resources:
+      label: Home
+      disk: /
+
+- resources:
+      label: Frigate
+      disk: /mnt/frigate
+
+- resources:
+      label: Backup
+      disk: /mnt/backup
+
+- datetime:
+      text_size: xl
+      format:
+          timeStyle: short
+          dateStyle: short

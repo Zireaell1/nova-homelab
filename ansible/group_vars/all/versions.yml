@@ -65,3 +65,7 @@ version_zigbee2mqtt: "2.10.1"
 version_homeassistant: "2026.6.3"
 
 version_hacs: "2.0.5"
+
+# Homepage
+
+version_homepage: "v1.13.2"

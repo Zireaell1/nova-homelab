@@ -1,0 +1,63 @@
+---
+- name: Verify directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ stacks_path }}/homepage"
+    - "{{ stacks_path }}/homepage/config"
+    - "{{ stacks_path }}/homepage/assets"
+    - /mnt/frigate/homepage_monitoring
+    - /mnt/backup/homepage_monitoring
+
+- name: Upload .network file
+  ansible.builtin.template:
+    src: "homepage.network.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/homepage.network"
+    mode: "0644"
+  notify: Restart homepage
+
+- name: Upload .env file
+  ansible.builtin.template:
+    src: "homepage.env.j2"
+    dest: "{{ stacks_path }}/homepage/homepage.env"
+    mode: "0600"
+  notify: Restart homepage
+
+- name: Upload Homepage files
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ stacks_path }}/homepage/config/{{ item }}"
+    mode: "0644"
+  loop:
+    - bookmarks.yaml
+    - services.yaml
+    - settings.yaml
+    - widgets.yaml
+  notify: Restart homepage
+
+- name: Sync all assets
+  ansible.posix.synchronize:
+    src: "files/"
+    dest: "{{ stacks_path }}/homepage/assets/"
+    delete: true
+    archive: true
+    owner: false
+    group: false
+    rsync_opts:
+      - "--chmod=D0755,F0644"
+      - "--chown={{ ansible_user }}:{{ ansible_user }}"
+  notify: Restart homepage
+
+- name: Upload .container file
+  ansible.builtin.template:
+    src: "homepage.container.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/homepage.container"
+    mode: "0644"
+  notify: Restart homepage
+
+- name: Download Podman images
+  containers.podman.podman_image:
+    name: "{{ homepage_image }}:{{ version_homepage }}"
+    state: present

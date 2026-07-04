@@ -1,0 +1,44 @@
+---
+- Home:
+      - Frigate:
+            icon: /images/frigate.svg
+            href: https://{{ services['frigate']['subdomain'] }}.{{ vault_domain }}/
+            description: CCTV
+
+      - HomeAssistant:
+            icon: /images/homeassistant.svg
+            href: https://{{ services['homeassistant']['subdomain'] }}.{{ vault_domain }}/
+
+      - Zigbee2MQTT:
+            icon: /images/zigbee2mqtt.svg
+            href: https://{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}/
+
+- Monitoring:
+      - Grafana:
+            icon: /images/grafana.svg
+            href: https://{{ services['grafana']['subdomain'] }}.{{ vault_domain }}/
+
+      - Prometheus:
+            icon: /images/prometheus.svg
+            href: https://{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}/
+
+      - PeaNUT:
+            icon: /images/peanut.svg
+            href: https://{{ services['peanut']['subdomain'] }}.{{ vault_domain }}/
+
+      - go2rtc:
+            href: https://{{ services['go2rtc']['subdomain'] }}.{{ vault_domain }}/
+
+      - Alloy:
+            icon: /images/alloy.svg
+            href: https://{{ services['alloy']['subdomain'] }}.{{ vault_domain }}/
+
+- Network:
+      - Pi-Hole:
+            icon: /images/pihole.svg
+            href: https://{{ services['pihole']['subdomain'] }}.{{ vault_domain }}/
+
+- Vault:
+      - Vaultwarden:
+            icon: /images/vaultwarden.svg
+            href: https://{{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }}/

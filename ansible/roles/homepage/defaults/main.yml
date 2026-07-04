@@ -1,0 +1,5 @@
+---
+homepage_memory_limit: "1g"
+
+# https://github.com/gethomepage/homepage
+homepage_image: "ghcr.io/gethomepage/homepage"
