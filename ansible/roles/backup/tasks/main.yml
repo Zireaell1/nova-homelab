@@ -6,6 +6,8 @@
     mode: "0700"
   loop:
     - "{{ backup_repo_critical }}"
+    - "/home/{{ ansible_user }}/backups"
+    - "/home/{{ ansible_user }}/backups/git_repos"
     - "/home/{{ ansible_user }}/.config/rclone"
     - "/home/{{ ansible_user }}/.config/restic"
 
@@ -50,6 +52,13 @@
   ansible.builtin.template:
     src: homelab-backup.sh.j2
     dest: "/home/{{ ansible_user }}/.local/bin/homelab-backup.sh"
+    mode: "0700"
+    validate: "bash -n %s"
+
+- name: Generate Git sync script
+  ansible.builtin.template:
+    src: git-sync.sh.j2
+    dest: "/home/{{ ansible_user }}/.local/bin/git-sync.sh"
     mode: "0700"
     validate: "bash -n %s"
 

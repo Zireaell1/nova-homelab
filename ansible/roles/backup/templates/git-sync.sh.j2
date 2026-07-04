@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -euo pipefail
+
+TARGET_DIR="{{ git_backup_dir }}"
+mkdir -p "$TARGET_DIR"
+
+echo "[INFO] Starting Git repository sync..."
+
+{% for repo in git_backup_repos %}
+REPO_NAME="{{ repo.name }}"
+REPO_URL="{{ repo.url }}"
+REPO_PATH="$TARGET_DIR/$REPO_NAME"
+
+if [ -d "$REPO_PATH" ]; then
+    echo "[INFO] Updating mirror: $REPO_NAME"\
+    git -C "$REPO_PATH" remote update --prune
+else
+    echo "[INFO] Cloning mirror: $REPO_NAME"
+    git clone --mirror "$REPO_URL" "$REPO_PATH"
+fi
+{% endfor %}
+
+echo "[INFO] Git repository sync complete."
