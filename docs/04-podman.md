@@ -1,4 +1,4 @@
-# Services & Podman
+# Podman
 
 Before diving into the specific services, we need to talk about the engine that runs them. If you look through the repository, you won't find a single `docker-compose.yml` file. As mentioned in previous chapters, we don't use Docker. We use **Podman**—specifically, we run every container using **Podman Quadlets** natively integrated with `systemd`.
 
