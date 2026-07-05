@@ -32,8 +32,6 @@ frontend:
   themes: !include_dir_merge_named themes
 
 automation: !include automations.yaml
-automation manual: !include_dir_merge_list automations_ansible/
-
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
@@ -65,15 +63,7 @@ prometheus:
     sensor.*_energy:
       override_metric: energy_kwh
 
-  filter:
-    include_entities:
-      - binary_sensor.frontdoor_sensor_contact_contact
-      - binary_sensor.boilerroom_sensor_contact_contact
-      - binary_sensor.livingroom_contact_sensor_contact
-      - sensor.bedroom_plug_1_power
-      - sensor.room1_plug_pc_power
-      - sensor.hallway_sensor_climate_temperature
-      - sensor.hallway_sensor_climate_humidity
+  filter: !include prometheus_filter.yaml
 
 input_boolean:
   doorbell_calling:
@@ -142,39 +132,4 @@ template:
           {% set months = {'January': 'stycznia', 'February': 'lutego', 'March': 'marca', 'April': 'kwietnia', 'May': 'maja', 'June': 'czerwca', 'July': 'lipca', 'August': 'sierpnia', 'September': 'września', 'October': 'października', 'November': 'listopada', 'December': 'grudnia'} %}
           {% set now = now() %}
           {{ days[now.strftime('%A')] }}, {{ now.day }} {{ months[now.strftime('%B')] }} {{ now.strftime('%H:%M') }}
-
-  - binary_sensor:
-      - name: "Perimeter Open"
-        unique_id: perimeter_open
-        state: >
-          {{ is_state('binary_sensor.boilerroom_sensor_contact_contact', 'on') or
-            is_state('binary_sensor.livingroom_contact_sensor_contact', 'on') or
-            is_state('binary_sensor.frontdoor_sensor_contact_contact', 'on') }}
-            # is_state('sensor.front_main_gate_state_classification', 'Open') }}
-
-  - switch:
-      - name: "Cameras Alarm"
-        unique_id: cameras_alarm
-        icon: mdi:alarm-light
-        state: >
-          {{ is_state('siren.back_siren', 'on') or
-            is_state('siren.front_siren', 'on') or
-            is_state('siren.doorbell_siren', 'on') or
-            is_state('siren.entry_siren', 'on') }}
-        turn_on:
-          action: siren.turn_on
-          target:
-            entity_id:
-              - siren.back_siren
-              - siren.front_siren
-              - siren.doorbell_siren
-              - siren.entry_siren
-        turn_off:
-          action: siren.turn_off
-          target:
-            entity_id:
-              - siren.back_siren
-              - siren.front_siren
-              - siren.doorbell_siren
-              - siren.entry_siren
 {% endraw %}
