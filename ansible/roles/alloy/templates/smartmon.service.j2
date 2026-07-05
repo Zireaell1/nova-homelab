@@ -1,0 +1,10 @@
+[Unit]
+Description=Generate SMART metrics for Prometheus
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '/usr/local/bin/smartmon.sh > /opt/alloy-metrics/smart.prom.$$ && mv /opt/alloy-metrics/smart.prom.$$ /opt/alloy-metrics/smart.prom'
+
+StandardOutput=journal
+StandardError=journal
