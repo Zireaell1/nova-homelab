@@ -21,11 +21,11 @@ totp:
 definitions:
   network:
     internal:
-      - '{{ network_home }}'
+      - '{{ vault_network_home }}'
     tailscale:
-      - '{{ network_tailscale }}'
+      - '{{ vault_network_tailscale }}'
     dashboard:
-      - '{{ dashboard_tablet_ip }}/32'
+      - '{{ vault_dashboard_tablet_ip }}/32'
 
 access_control:
   default_policy: 'deny'

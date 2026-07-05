@@ -180,7 +180,7 @@ http:// {
     import secure_headers
 
     # TODO: import authelia_middleware_basic
-    reverse_proxy {{ printer_ip }}:4409
+    reverse_proxy {{ vault_printer_ip }}:4409
 }
 
 {{ services['switch']['subdomain'] }}.{{ vault_domain }} {
@@ -188,7 +188,7 @@ http:// {
     import secure_headers
 
     import authelia_middleware_basic
-    reverse_proxy {{ switch_ip }}:80
+    reverse_proxy {{ vault_switch_ip }}:80
 }
 
 {{ services['go2rtc']['subdomain'] }}.{{ vault_domain }} {
@@ -260,7 +260,7 @@ http:// {
     import secure_headers
 
     import authelia_middleware_basic
-    reverse_proxy {{ camera_doorbell_ip }}:80 {
+    reverse_proxy {{ vault_camera_doorbell_ip }}:80 {
         header_up -Via
     }
 }
@@ -270,7 +270,7 @@ http:// {
     import secure_headers
 
     import authelia_middleware_basic
-    reverse_proxy {{ camera_front_ip }}:80 {
+    reverse_proxy {{ vault_camera_front_ip }}:80 {
         header_up -Via
     }
 }
@@ -280,7 +280,7 @@ http:// {
     import secure_headers
 
     import authelia_middleware_basic
-    reverse_proxy {{ camera_back_ip }}:80 {
+    reverse_proxy {{ vault_camera_back_ip }}:80 {
         header_up -Via
     }
 }
@@ -290,7 +290,7 @@ http:// {
     import secure_headers
 
     import authelia_middleware_basic
-    reverse_proxy {{ camera_entry_ip }}:80 {
+    reverse_proxy {{ vault_camera_entry_ip }}:80 {
         header_up -Via
     }
 }

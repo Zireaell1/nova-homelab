@@ -39,7 +39,7 @@
     conn_name: "{{ secondary_network_interface_name }}"
     ifname: "{{ secondary_network_interface_name }}"
     type: ethernet
-    ip4: "{{ secondary_ip }}/24"
+    ip4: "{{ vault_secondary_ip }}/24"
     method4: manual
     state: present
     conn_reload: true

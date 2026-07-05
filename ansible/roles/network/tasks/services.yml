@@ -4,7 +4,7 @@
   ansible.builtin.lineinfile:
     path: "/etc/chrony.conf"
     regexp: '^#?allow\s+'
-    line: "allow {{ network_cctv }}"
+    line: "allow {{ vault_network_cctv }}"
     state: present
   notify: Restart chronyd
 

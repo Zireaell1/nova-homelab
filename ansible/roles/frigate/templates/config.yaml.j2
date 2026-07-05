@@ -19,7 +19,7 @@ proxy:
     user: remote-user
     role: remote-groups
   default_role: viewer
-  # TODO: logout_url:  
+  # TODO: logout_url:
 
 go2rtc:
   streams:
@@ -55,7 +55,7 @@ go2rtc:
     filters:
       networks: [ udp4, tcp4 ]
     candidates:
-      - {{ primary_ip }}:8555
+      - {{ vault_primary_ip }}:8555
       - {{ vault_tailscale_ip }}:8555
 
 ffmpeg:
@@ -186,7 +186,7 @@ cameras:
         - path: rtsp://127.0.0.1:8554/Entry_sub
           input_args: preset-rtsp-restream
           roles:
-            # TODO: - audio 
+            # TODO: - audio
             - detect
         - path: rtsp://127.0.0.1:8554/Entry
           input_args: preset-rtsp-restream

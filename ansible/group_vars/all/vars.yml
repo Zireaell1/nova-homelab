@@ -1,21 +1,3 @@
 ---
-primary_ip: "192.168.3.2"
-secondary_ip: "10.10.10.1"
-
-dashboard_tablet_ip: "192.168.4.10"
-printer_ip: "192.168.2.9"
-switch_ip: "10.10.10.2"
-
-camera_doorbell_ip: "10.10.10.10"
-camera_front_ip: "10.10.10.11"
-camera_back_ip: "10.10.10.12"
-camera_entry_ip: "10.10.10.13"
-
-network_tailscale: "100.64.0.0/10"
-network_home: "192.168.2.0/24"
-network_homelab: "192.168.3.0/24"
-network_iot: "192.168.4.0/24"
-network_cctv: "10.10.10.0/24"
-
 primary_network_interface_name: "enp129s0"
 secondary_network_interface_name: "enp2s0"
