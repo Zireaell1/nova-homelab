@@ -23,13 +23,20 @@
     mode: "0600"
   notify: Restart zigbee2mqtt
 
-- name: Upload configuration.yaml, devices.yaml, groups.yaml files
+- name: Upload configuration.yaml file
+  ansible.builtin.template:
+    src: "configuration.yaml.j2"
+    dest: "{{ stacks_path }}/zigbee2mqtt/config/configuration.yaml"
+    mode: "0644"
+  notify: Restart zigbee2mqtt
+
+- name: Seed devices.yaml and groups.yaml files (do not overwrite)
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "{{ stacks_path }}/zigbee2mqtt/config/{{ item }}"
     mode: "0644"
+    force: false
   loop:
-    - "configuration.yaml"
     - "devices.yaml"
     - "groups.yaml"
   notify: Restart zigbee2mqtt

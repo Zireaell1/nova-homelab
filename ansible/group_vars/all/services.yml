@@ -60,6 +60,8 @@ services:
       stop: true
       paths:
         - /home/{{ ansible_user }}/stacks/zigbee2mqtt/data
+        - /home/{{ ansible_user }}/stacks/zigbee2mqtt/config/devices.yaml
+        - /home/{{ ansible_user }}/stacks/zigbee2mqtt/config/groups.yaml
   homeassistant:
     subdomain: "ha"
     quadlet_name: "homeassistant"
