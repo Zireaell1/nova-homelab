@@ -115,6 +115,23 @@ homelab_backup_repo_size_bytes $repo_size_bytes
 # HELP homelab_backup_snapshot_count Total number of snapshots in the critical repository
 # TYPE homelab_backup_snapshot_count gauge
 homelab_backup_snapshot_count $snapshot_count
+
+# HELP homelab_backup_path_info Information about included and excluded paths per service
+# TYPE homelab_backup_path_info gauge
+{% for svc_name, svc_vars in services.items() %}
+{% if 'backup' in svc_vars %}
+{% if svc_vars.backup.get('paths') %}
+{% for path in svc_vars.backup.paths %}
+homelab_backup_path_info{service="{{ svc_name }}", path="{{ path }}", type="include"} 1
+{% endfor %}
+{% endif %}
+{% if svc_vars.backup.get('excludes') %}
+{% for path in svc_vars.backup.excludes %}
+homelab_backup_path_info{service="{{ svc_name }}", path="{{ path }}", type="exclude"} 1
+{% endfor %}
+{% endif %}
+{% endif %}
+{% endfor %}
 EOF
 
     if [ -d "$PROM_TARGET_DIR" ]; then
