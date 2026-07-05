@@ -1,15 +1,4 @@
 ---
-- name: Restart authelia
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: authelia.service
-    state: restarted
-    enabled: true
-    scope: user
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
-  ignore_errors: "{{ ansible_check_mode }}"
-
 - name: Restart authelia-postgres
   ansible.builtin.systemd:
     daemon_reload: true
@@ -20,11 +9,24 @@
   environment:
     XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
   ignore_errors: "{{ ansible_check_mode }}"
+  notify: Restart authelia
 
 - name: Restart authelia-redis
   ansible.builtin.systemd:
     daemon_reload: true
     name: authelia-redis.service
+    state: restarted
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  notify: Restart authelia
+
+- name: Restart authelia
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: authelia.service
     state: restarted
     enabled: true
     scope: user

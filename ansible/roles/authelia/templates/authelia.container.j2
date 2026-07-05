@@ -5,7 +5,7 @@ Documentation=https://www.authelia.com/
 Wants=network-online.target
 After=network-online.target
 
-Requires=authelia-postgres.service authelia-redis.service
+Wants=authelia-postgres.service authelia-redis.service
 After=authelia-postgres.service authelia-redis.service
 
 RequiresMountsFor={{ stacks_path }}/authelia/config
