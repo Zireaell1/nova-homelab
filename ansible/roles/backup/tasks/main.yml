@@ -18,18 +18,12 @@
     mode: "0600"
   no_log: true
 
-- name: Ensure rclone config directory exists
-  ansible.builtin.file:
-    path: "/home/{{ ansible_user }}/.config/rclone"
-    state: directory
-    mode: "0755"
-  no_log: true
-
 - name: Generate rclone configuration file
   ansible.builtin.template:
     src: rclone.conf.j2
     dest: "/home/{{ ansible_user }}/.config/rclone/rclone.conf"
     mode: "0600"
+  no_log: true
 
 - name: Check if CRITICAL repository is already initialized
   ansible.builtin.command: restic snapshots
