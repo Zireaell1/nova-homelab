@@ -30,6 +30,7 @@
       - prometheus-podman-exporter
       - fail2ban
       - python3
+      - git
     state: present
 
 - name: Upload lm_sensors config
