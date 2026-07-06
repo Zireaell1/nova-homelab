@@ -50,7 +50,6 @@
     mode: "0775"
   loop:
     - "/opt/alloy-metrics"
-  notify: Restart alloy
 
 - name: Deploy smartmon script
   ansible.builtin.copy:
