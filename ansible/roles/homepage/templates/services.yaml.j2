@@ -3,42 +3,62 @@
       - Frigate:
             icon: /images/icons/frigate.svg
             href: https://{{ services['frigate']['subdomain'] }}.{{ vault_domain }}/
-            description: CCTV
+            description: NVR & CCTV
 
       - HomeAssistant:
             icon: /images/icons/homeassistant.svg
             href: https://{{ services['homeassistant']['subdomain'] }}.{{ vault_domain }}/
+            description: Smart Home Automation
 
       - Zigbee2MQTT:
             icon: /images/icons/zigbee2mqtt.svg
             href: https://{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}/
+            description: Zigbee Device Bridge
+
+      - Mainsail:
+            icon: /images/icons/mainsail.svg
+            href: https://{{ services['mainsail']['subdomain'] }}.{{ vault_domain }}/
+            description: 3D Printer Control
+
+      - Authelia:
+            icon: /images/icons/authelia.svg
+            href: https://{{ services['authelia']['subdomain'] }}.{{ vault_domain }}/
+            description: Single Sign-On (SSO)
 
 - Monitoring:
       - Grafana:
             icon: /images/icons/grafana.svg
             href: https://{{ services['grafana']['subdomain'] }}.{{ vault_domain }}/
+            description: Data Visualization Dashboards
 
       - Prometheus:
             icon: /images/icons/prometheus.svg
             href: https://{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}/
+            description: Time-Series Metrics
 
       - PeaNUT:
             icon: /images/icons/peanut.svg
             href: https://{{ services['peanut']['subdomain'] }}.{{ vault_domain }}/
+            description: UPS Power Monitoring
 
       - go2rtc:
+            icon: /images/icons/go2rtc.svg
             href: https://{{ services['go2rtc']['subdomain'] }}.{{ vault_domain }}/
+            description: Camera Stream Router
 
       - Alloy:
             icon: /images/icons/alloy.svg
             href: https://{{ services['alloy']['subdomain'] }}.{{ vault_domain }}/
+            description: Telemetry Data Collector
 
 - Network:
       - Pi-Hole:
             icon: /images/icons/pihole.svg
             href: https://{{ services['pihole']['subdomain'] }}.{{ vault_domain }}/
+            description: Network Ad Blocker
 
 - Vault:
       - Vaultwarden:
             icon: /images/icons/vaultwarden.svg
             href: https://{{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }}/
+            description: Secure Password Vault
