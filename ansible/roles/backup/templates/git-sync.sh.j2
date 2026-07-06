@@ -13,7 +13,7 @@ REPO_URL="{{ repo.url }}"
 REPO_PATH="$TARGET_DIR/$REPO_NAME"
 
 if [ -d "$REPO_PATH" ]; then
-    echo "[INFO] Updating mirror: $REPO_NAME"\
+    echo "[INFO] Updating mirror: $REPO_NAME"
     git -C "$REPO_PATH" remote update --prune
 else
     echo "[INFO] Cloning mirror: $REPO_NAME"
