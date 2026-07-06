@@ -55,6 +55,8 @@
       tags: ["immich"]
     - role: homeassistant
       tags: ["homeassistant"]
+    - role: homepage
+      tags: ["homepage"]
 
     - role: caddy
       tags: ["caddy"]
