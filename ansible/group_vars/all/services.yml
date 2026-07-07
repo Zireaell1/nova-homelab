@@ -26,6 +26,11 @@ services:
     quadlet_name: "authelia-redis.service"
   frigate:
     subdomain: "frigate"
+    quadlet_name: "frigate"
+    backup:
+      stop: false
+      paths:
+        - /mnt/frigate/storage/exports
   grafana:
     subdomain: "grafana"
   pihole:

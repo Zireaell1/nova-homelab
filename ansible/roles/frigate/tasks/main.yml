@@ -8,6 +8,9 @@
     - "{{ stacks_path }}/frigate"
     - "{{ stacks_path }}/frigate/config"
     - "{{ frigate_storage_path }}"
+    - "{{ frigate_storage_path }}/recordings"
+    - "{{ frigate_storage_path }}/clips"
+    - "{{ frigate_storage_path }}/exports"
 
 - name: Upload .network file
   ansible.builtin.template:
