@@ -1,0 +1,14 @@
+[{{ nut_ups_admin_user }}]
+    password = {{ vault_nut_ups_admin_password }}
+    actions = set
+    actions = fsd
+    instcmds = all
+    upsmon primary
+
+[{{ nut_ups_observer_user }}]
+    password = {{ vault_nut_ups_observer_password }}
+    upsmon secondary
+
+[{{ nut_ups_ha_user }}]
+    password = {{ vault_nut_ups_ha_password }}
+    upsmon secondary

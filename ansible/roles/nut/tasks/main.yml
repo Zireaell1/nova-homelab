@@ -1,94 +1,52 @@
 ---
 - name: Configure nut.conf
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: "nut.conf.j2"
     dest: "/etc/ups/nut.conf"
     owner: "root"
     group: "nut"
     mode: "0640"
     backup: true
-    content: |
-      MODE={{ nut_mode }}
   register: nut_conf_result
 
 - name: Configure ups.conf (Driver)
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: "ups.conf.j2"
     dest: "/etc/ups/ups.conf"
     owner: "root"
     group: "nut"
     mode: "0640"
     backup: true
-    content: |
-      maxretry = 3
-
-      [{{ nut_ups_name }}]
-          driver = {{ nut_ups_driver }}
-          desc = "{{ nut_ups_description }}"
-          port = {{ nut_ups_port }}
-
-          vendorid = {{ nut_ups_vendorid }}
-          productid = {{ nut_ups_productid }}
-
-          waitbeforereconnect = {{ nut_ups_waitbeforereconnect }}
-
-          lowbatt = {{ nut_ups_lowbatt }}
-          offdelay = {{ nut_ups_offdelay }}
-          ondelay = {{ nut_ups_ondelay }}
   register: nut_ups_conf_result
 
 - name: Configure upsd.conf (Server Listener)
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: "upsd.conf.j2"
     dest: "/etc/ups/upsd.conf"
     owner: "root"
     group: "nut"
     mode: "0640"
     backup: true
-    content: |
-      LISTEN 0.0.0.0
   register: nut_upsd_conf_result
 
 - name: Configure upsd.users (Server Credentials)
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: "upsd.users.j2"
     dest: "/etc/ups/upsd.users"
     owner: "root"
     group: "nut"
     mode: "0640"
     backup: true
-    content: |
-      [{{ nut_ups_admin_user }}]
-          password = {{ vault_nut_ups_admin_password }}
-          actions = set
-          actions = fsd
-          instcmds = all
-          upsmon primary
-
-      [{{ nut_ups_observer_user }}]
-          password = {{ vault_nut_ups_observer_password }}
-          upsmon secondary
   register: nut_users_conf_result
 
 - name: Configure upsmon.conf (Monitor and Shutdown Trigger)
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: "upsmon.conf.j2"
     dest: "/etc/ups/upsmon.conf"
     owner: "root"
     group: "nut"
     mode: "0640"
     backup: true
-    content: |
-      MINSUPPLIES 1
-      SHUTDOWNCMD "/sbin/shutdown -h +0"
-      POLLFREQ 5
-      POLLFREQALERT 5
-      HOSTSYNC 15
-      DEADTIME 15
-      POWERDOWNFLAG "/etc/killpower"
-      OFFDURATION 30
-      OVERDURATION -1
-      RBWARNTIME 43200
-      NOCOMMWARNTIME 300
-      FINALDELAY 5
-      ALARMCRITICAL 1
-
-      MONITOR {{ nut_ups_name }}@localhost 1 {{ nut_ups_admin_user }} {{ vault_nut_ups_admin_password }} primary
   register: nut_upsmon_conf_result
 
 - name: Rebuild NUT Drivers (Enumerator)

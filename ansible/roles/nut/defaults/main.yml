@@ -20,3 +20,4 @@ nut_ups_ondelay: 600
 
 nut_ups_admin_user: "ups_admin"
 nut_ups_observer_user: "ups_observer"
+nut_ups_ha_user: "ups_ha_observer"
