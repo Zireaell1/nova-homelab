@@ -11,6 +11,9 @@
 # Formatting done via shfmt -i 2
 # https://github.com/mvdan/sh
 
+# Modified by Zireaell1
+# - Added a dedicated parser function for NVMe drives
+
 # Ensure predictable numeric / date formats, etc.
 export LC_ALL=C
 
@@ -85,6 +88,61 @@ parse_smartctl_attributes() {
     awk -v labels="${labels}" "${parse_smartctl_attributes_awk}" 2>/dev/null |
     tr '[:upper:]' '[:lower:]' |
     grep -E "(${smartmon_attrs})"
+}
+
+parse_smartctl_nvme_attributes() {
+  local disk="$1"
+  local disk_type="$2"
+  local labels="disk=\"${disk}\",type=\"${disk_type}\""
+
+  while IFS=: read -r key value; do
+    key="$(echo "$key" | xargs)"
+    value="$(echo "$value" | xargs)"
+
+    case "${key}" in
+    "Temperature")
+      temp_cel="$(echo "${value}" | cut -f1 -d' ')"
+      echo "temperature_celsius_raw_value{${labels},smart_id=\"194\"} ${temp_cel}"
+      ;;
+    "Power On Hours")
+      power_on="$(echo "${value}" | tr -d ',')"
+      echo "power_on_hours_raw_value{${labels},smart_id=\"9\"} ${power_on}"
+      ;;
+    "Power Cycles")
+      power_cycle="$(echo "${value}" | tr -d ',')"
+      echo "power_cycle_count_raw_value{${labels},smart_id=\"12\"} ${power_cycle}"
+      ;;
+    "Percentage Used")
+      used="$(echo "${value}" | tr -d '%')"
+      remain=$((100 - used))
+      echo "percent_lifetime_remain_raw_value{${labels},smart_id=\"202\"} ${remain}"
+      ;;
+    "Available Spare")
+      spare="$(echo "${value}" | tr -d '%')"
+      echo "available_spare_raw_value{${labels},smart_id=\"-1\"} ${spare}"
+      ;;
+    "Media and Data Integrity Errors")
+      errors="$(echo "${value}" | tr -d ',')"
+      echo "media_errors_raw_value{${labels},smart_id=\"-1\"} ${errors}"
+      ;;
+    "Unsafe Shutdowns")
+      unsafe="$(echo "${value}" | tr -d ',')"
+      echo "unsafe_shutdown_count_raw_value{${labels},smart_id=\"-1\"} ${unsafe}"
+      ;;
+    "Data Units Read")
+      read_units="$(echo "${value}" | cut -f1 -d' ' | tr -d ',')"
+      echo "data_units_read_raw_value{${labels},smart_id=\"-1\"} ${read_units}"
+      ;;
+    "Data Units Written")
+      written_units="$(echo "${value}" | cut -f1 -d' ' | tr -d ',')"
+      echo "data_units_written_raw_value{${labels},smart_id=\"-1\"} ${written_units}"
+      ;;
+    "Critical Warning")
+      crit=$((16#${value#0x}))
+      echo "critical_warning_raw_value{${labels},smart_id=\"-1\"} ${crit}"
+      ;;
+    esac
+  done
 }
 
 parse_smartctl_scsi_attributes() {
@@ -206,7 +264,7 @@ for device in ${device_list}; do
   sat+megaraid*) smartctl -A -d "${type}" "${disk}" | parse_smartctl_attributes "${disk}" "${type}" ;;
   scsi) smartctl -A -d "${type}" "${disk}" | parse_smartctl_scsi_attributes "${disk}" "${type}" ;;
   megaraid*) smartctl -A -d "${type}" "${disk}" | parse_smartctl_scsi_attributes "${disk}" "${type}" ;;
-  nvme*) smartctl -A -d "${type}" "${disk}" | parse_smartctl_scsi_attributes "${disk}" "${type}" ;;
+  nvme*) smartctl -A -d "${type}" "${disk}" | parse_smartctl_nvme_attributes "${disk}" "${type}" ;;
   usbprolific) smartctl -A -d "${type}" "${disk}" | parse_smartctl_attributes "${disk}" "${type}" ;;
   *)
       (>&2 echo "disk type is not sat, scsi, nvme or megaraid but ${type}")
