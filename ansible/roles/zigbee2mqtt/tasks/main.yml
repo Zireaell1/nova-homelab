@@ -70,7 +70,7 @@
 # https://github.com/NabuCasa/universal-silabs-flasher
 - name: Install universal-silabs-flasher inside a Python virtual environment
   ansible.builtin.pip:
-    name: universal-silabs-flasher
+    name: "universal-silabs-flasher=={{ zigbee2mqtt_silabs_flasher_version }}"
     virtualenv: "/home/{{ ansible_user }}/tools/universal-silabs-flasher/venv"
     virtualenv_command: "python3 -m venv"
     state: present
