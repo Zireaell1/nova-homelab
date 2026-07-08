@@ -15,22 +15,17 @@
     state: started
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Disable SSH PasswordAuthentication
-  ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^#?PasswordAuthentication'
-    line: 'PasswordAuthentication no'
-    state: present
-    validate: 'sshd -t -f %s'
-  notify: Restart sshd
+- name: Ensure sshd_config.d directory exists
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    mode: "0755"
 
-- name: Disable SSH KbdInteractiveAuthentication
-  ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^#?KbdInteractiveAuthentication'
-    line: 'KbdInteractiveAuthentication no'
-    state: present
-    validate: 'sshd -t -f %s'
+- name: Configure SSH hardening (disable password auth)
+  ansible.builtin.template:
+    src: 50-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/50-hardening.conf
+    mode: "0644"
   notify: Restart sshd
 
 - name: Ensure filter.d directory exists
