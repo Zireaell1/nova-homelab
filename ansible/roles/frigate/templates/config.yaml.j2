@@ -19,7 +19,6 @@ proxy:
     user: remote-user
     role: remote-groups
   default_role: viewer
-  # TODO: logout_url:
 
 go2rtc:
   streams:
@@ -133,7 +132,6 @@ cameras:
         - path: rtsp://127.0.0.1:8554/Front_sub
           input_args: preset-rtsp-restream
           roles:
-            # TODO: - audio
             - detect
         - path: rtsp://127.0.0.1:8554/Front
           input_args: preset-rtsp-restream
@@ -186,7 +184,6 @@ cameras:
         - path: rtsp://127.0.0.1:8554/Entry_sub
           input_args: preset-rtsp-restream
           roles:
-            # TODO: - audio
             - detect
         - path: rtsp://127.0.0.1:8554/Entry
           input_args: preset-rtsp-restream
@@ -239,7 +236,6 @@ cameras:
         - path: rtsp://127.0.0.1:8554/Back_sub
           input_args: preset-rtsp-restream
           roles:
-            # TODO: - audio
             - detect
         - path: rtsp://127.0.0.1:8554/Back
           input_args: preset-rtsp-restream
@@ -294,7 +290,6 @@ cameras:
         - path: rtsp://127.0.0.1:8554/Doorbell_sub
           input_args: preset-rtsp-restream
           roles:
-            # TODO: - audio
             - detect
         - path: rtsp://127.0.0.1:8554/Doorbell
           input_args: preset-rtsp-restream
