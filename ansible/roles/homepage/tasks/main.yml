@@ -3,6 +3,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
   loop:
     - "{{ stacks_path }}/homepage"
@@ -15,6 +17,8 @@
   ansible.builtin.template:
     src: "homepage.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/homepage.network"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart homepage
 
@@ -22,6 +26,8 @@
   ansible.builtin.template:
     src: "homepage.env.j2"
     dest: "{{ stacks_path }}/homepage/homepage.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   notify: Restart homepage
 
@@ -29,6 +35,8 @@
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "{{ stacks_path }}/homepage/config/{{ item }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   loop:
     - bookmarks.yaml
@@ -54,6 +62,8 @@
   ansible.builtin.template:
     src: "homepage.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/homepage.container"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart homepage
 

@@ -3,6 +3,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
   loop:
     - "{{ stacks_path }}/frigate"
@@ -16,6 +18,8 @@
   ansible.builtin.template:
     src: "frigate.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/frigate.network"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart frigate
 
@@ -23,6 +27,8 @@
   ansible.builtin.template:
     src: "frigate.env.j2"
     dest: "{{ stacks_path }}/frigate/frigate.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   no_log: true
   notify: Restart frigate
@@ -31,6 +37,8 @@
   ansible.builtin.template:
     src: "config.yaml.j2"
     dest: "{{ stacks_path }}/frigate/config/config.yaml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart frigate
 
@@ -38,6 +46,8 @@
   ansible.builtin.template:
     src: "frigate.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/frigate.container"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart frigate
 

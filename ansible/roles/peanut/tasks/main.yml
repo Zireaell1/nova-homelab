@@ -3,6 +3,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
   loop:
     - "{{ stacks_path }}/peanut"
@@ -12,6 +14,8 @@
   ansible.builtin.template:
     src: "peanut.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/peanut.network"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart peanut
 
@@ -19,6 +23,8 @@
   ansible.builtin.template:
     src: "peanut.env.j2"
     dest: "{{ stacks_path }}/peanut/peanut.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   notify: Restart peanut
 
@@ -26,6 +32,8 @@
   ansible.builtin.template:
     src: "settings.yml.j2"
     dest: "{{ stacks_path }}/peanut/config/settings.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   no_log: true
   notify: Restart peanut
@@ -34,6 +42,8 @@
   ansible.builtin.template:
     src: "peanut.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/peanut.container"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart peanut
 

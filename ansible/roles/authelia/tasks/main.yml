@@ -3,6 +3,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
   loop:
     - "{{ stacks_path }}/authelia"
@@ -15,6 +17,8 @@
   ansible.builtin.copy:
     content: "{{ item.value }}"
     dest: "{{ stacks_path }}/authelia/secrets/{{ item.name }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   loop:
     - name: "HMAC_SECRET"
@@ -48,6 +52,8 @@
   ansible.builtin.copy:
     content: "{{ vault_authelia_users_database }}"
     dest: "{{ stacks_path }}/authelia/config/users_database.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   no_log: true
   notify: Restart authelia
@@ -56,6 +62,8 @@
   ansible.builtin.template:
     src: "configuration.yml.j2"
     dest: "{{ stacks_path }}/authelia/config/configuration.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart authelia
 
@@ -63,6 +71,8 @@
   ansible.builtin.template:
     src: "authelia.env.j2"
     dest: "{{ stacks_path }}/authelia/authelia.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   notify: Restart authelia
 
@@ -70,6 +80,8 @@
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   loop:
     - authelia.network
@@ -83,6 +95,8 @@
   ansible.builtin.template:
     src: "authelia.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/authelia.container"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart authelia
 
@@ -90,6 +104,8 @@
   ansible.builtin.template:
     src: "{{ item }}.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   loop:
     - authelia-postgres.container

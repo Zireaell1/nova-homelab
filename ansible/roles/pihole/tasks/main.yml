@@ -13,6 +13,8 @@
   ansible.builtin.file:
     path: /etc/systemd/resolved.conf.d
     state: directory
+    owner: root
+    group: root
     mode: "0755"
   become: true
 
@@ -22,6 +24,8 @@
     content: |
       [Resolve]
       DNSStubListener=no
+    owner: root
+    group: root
     mode: "0644"
   become: true
   register: pihole_stub_disabled
@@ -56,6 +60,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
   loop:
     - "{{ stacks_path }}/pihole"
@@ -71,6 +77,8 @@
   ansible.builtin.file:
     path: "{{ item.item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0777"
   loop: "{{ pihole_dirs_stat.results }}"
   when: not item.stat.exists
@@ -79,6 +87,8 @@
   ansible.builtin.template:
     src: "pihole.env.j2"
     dest: "{{ stacks_path }}/pihole/pihole.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   no_log: true
   register: pihole_env_tpl
@@ -87,6 +97,8 @@
   ansible.builtin.template:
     src: "pihole.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/pihole.container"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   register: pihole_container_tpl
 

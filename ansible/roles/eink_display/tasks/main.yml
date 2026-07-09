@@ -18,6 +18,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
   loop:
     - /home/{{ ansible_user }}/eink-display/assets
@@ -54,6 +56,8 @@
   ansible.builtin.template:
     src: eink-display.env.j2
     dest: "/home/{{ ansible_user }}/eink-display/eink-display.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   no_log: true
   notify: Restart eink-display
@@ -62,6 +66,8 @@
   ansible.builtin.template:
     src: eink-display.service.j2
     dest: /home/{{ ansible_user }}/.config/systemd/user/eink-display.service
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart eink-display
 

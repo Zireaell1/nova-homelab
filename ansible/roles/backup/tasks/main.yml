@@ -3,6 +3,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0700"
   loop:
     - "{{ backup_repo_critical }}"
@@ -15,6 +17,8 @@
   ansible.builtin.copy:
     content: "{{ vault_backup_restic_password }}"
     dest: "{{ backup_restic_password_file }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   no_log: true
 
@@ -22,6 +26,8 @@
   ansible.builtin.template:
     src: rclone.conf.j2
     dest: "/home/{{ ansible_user }}/.config/rclone/rclone.conf"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   no_log: true
 
@@ -46,6 +52,8 @@
   ansible.builtin.template:
     src: homelab-backup.sh.j2
     dest: "/home/{{ ansible_user }}/.local/bin/homelab-backup.sh"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0700"
     validate: "bash -n %s"
 
@@ -53,6 +61,8 @@
   ansible.builtin.template:
     src: git-sync.sh.j2
     dest: "/home/{{ ansible_user }}/.local/bin/git-sync.sh"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0700"
     validate: "bash -n %s"
 
@@ -60,12 +70,16 @@
   ansible.builtin.template:
     src: "homelab-backup.service.j2"
     dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup.service"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
 
 - name: Deploy Systemd Timer file
   ansible.builtin.template:
     src: "homelab-backup.timer.j2"
     dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup.timer"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
 
 - name: Enable and start the Timer

@@ -3,6 +3,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
   loop:
     - "{{ restic_data_path }}"
@@ -11,6 +13,8 @@
   ansible.builtin.template:
     src: "restic.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/restic.network"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart restic
 
@@ -18,6 +22,8 @@
   ansible.builtin.template:
     src: "restic.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/restic.container"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart restic
 

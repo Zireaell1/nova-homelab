@@ -3,6 +3,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
   loop:
     - "{{ stacks_path }}/vaultwarden"
@@ -12,6 +14,8 @@
   ansible.builtin.template:
     src: "vaultwarden.network.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/vaultwarden.network"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart vaultwarden
 
@@ -19,6 +23,8 @@
   ansible.builtin.template:
     src: "vaultwarden.env.j2"
     dest: "{{ stacks_path }}/vaultwarden/vaultwarden.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   no_log: true
   notify: Restart vaultwarden
@@ -27,6 +33,8 @@
   ansible.builtin.template:
     src: "vaultwarden.container.j2"
     dest: "/home/{{ ansible_user }}/.config/containers/systemd/vaultwarden.container"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart vaultwarden
 
