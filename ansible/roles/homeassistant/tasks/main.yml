@@ -13,6 +13,7 @@
     - "{{ stacks_path }}/homeassistant/config/custom_components/hacs"
     - "{{ stacks_path }}/homeassistant/config/www"
     - "{{ stacks_path }}/homeassistant/config/blueprints"
+    - "{{ stacks_path }}/homeassistant/config/ansible_managed"
 
 - name: Download and extract latest HACS release
   ansible.builtin.unarchive:
@@ -46,13 +47,12 @@
   notify: Restart homeassistant
 
 - name: Ensure Prometheus filter file exists
-  ansible.builtin.copy:
-    content: "include_entities: []\n"
-    dest: "{{ stacks_path }}/homeassistant/config/prometheus_filter.yaml"
+  ansible.builtin.template:
+    src: "prometheus_filter.yaml.j2"
+    dest: "{{ stacks_path }}/homeassistant/config/ansible_managed/prometheus_filter.yaml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-    force: false
   notify: Restart homeassistant
 
 - name: Upload configuration.yaml file

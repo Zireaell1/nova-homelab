@@ -63,7 +63,7 @@ prometheus:
     sensor.*_energy:
       override_metric: energy_kwh
 
-  filter: !include prometheus_filter.yaml
+  filter: !include ansible_managed/prometheus_filter.yaml
 
 input_boolean:
   doorbell_calling:
