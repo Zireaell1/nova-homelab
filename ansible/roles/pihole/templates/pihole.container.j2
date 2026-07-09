@@ -13,6 +13,13 @@ Image={{ pihole_image }}:{{ version_pihole }}
 ContainerName=pihole
 StopTimeout=20
 
+# --- Identity / Namespaces ---
+UserNS=keep-id:uid=1000,gid=1000
+
+# --- Security / Capabilities ---
+# DropCapability=all
+# NoNewPrivileges=true
+
 # --- Resource Limits ---
 Memory={{ pihole_memory_limit }}
 

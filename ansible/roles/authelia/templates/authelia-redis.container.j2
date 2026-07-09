@@ -11,6 +11,9 @@ StopTimeout=20
 
 Exec=redis-server --requirepass {{ vault_authelia_redis_password }} --save 60 1 --loglevel warning
 
+# --- Identity / Namespaces ---
+UserNS=keep-id:uid=999,gid=999
+
 # --- Resource Limits ---
 Memory={{ authelia_redis_memory_limit }}
 
