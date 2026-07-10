@@ -11,6 +11,8 @@
     - "/srv/monitoring/grafana/provisioning"
     - "/srv/monitoring/grafana/provisioning/datasources"
     - "/srv/monitoring/grafana/provisioning/dashboards"
+    - "/srv/monitoring/grafana/provisioning/alerting"
+    - "/srv/monitoring/grafana/provisioning/plugins"
     - "/srv/monitoring/grafana/data"
 
 - name: Upload .network file
@@ -50,6 +52,15 @@
     mode: "0644"
   notify: Restart grafana
 
+- name: Upload provisioning/alerting/contact-points.yml file
+  ansible.builtin.template:
+    src: "contact-points.yml.j2"
+    dest: "/srv/monitoring/grafana/provisioning/alerting/contact-points.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  notify: Restart grafana
+
 - name: Upload provisioning/dashboards/dashboards.yml file
   ansible.builtin.template:
     src: "dashboards.yml.j2"
@@ -59,18 +70,18 @@
     mode: "0644"
   notify: Restart grafana
 
-- name: Upload dashboard files
-  ansible.builtin.template:
-    src: "dashboards/{{ item }}.j2"
-    dest: "/srv/monitoring/grafana/provisioning/dashboards/{{ item }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  loop:
-    - "frigate-dashboard.json"
-    - "podman-dashboard.json"
-    - "caddy-dashboard.json"
-  notify: Restart grafana
+- name: Sync dashboard files
+  ansible.posix.synchronize:
+    src: "files/dashboards/"
+    dest: "/srv/monitoring/grafana/provisioning/dashboards/"
+    delete: true
+    archive: true
+    owner: false
+    group: false
+    rsync_opts:
+      - "--exclude=dashboards.yml"
+      - "--chmod=D0755,F0644"
+      - "--chown={{ ansible_user }}:{{ ansible_user }}"
 
 - name: Upload .container file
   ansible.builtin.template:

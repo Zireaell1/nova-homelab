@@ -1,11 +1,12 @@
 apiVersion: 1
 
 providers:
-  - name: 'Homelab Dashboards'
+  - name: 'Ansible Provisioned Dashboards'
     orgId: 1
-    folder: ''
     type: file
-    disableDeletion: false
-    updateIntervalSeconds: 10
+    disableDeletion: true
+    updateIntervalSeconds: 15
+    allowUiUpdates: false
     options:
       path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: true
