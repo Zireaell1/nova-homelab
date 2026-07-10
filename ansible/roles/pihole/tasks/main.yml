@@ -19,11 +19,9 @@
   become: true
 
 - name: Disable DNSStubListener (free port 53)
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: pihole.conf.j2
     dest: /etc/systemd/resolved.conf.d/pihole.conf
-    content: |
-      [Resolve]
-      DNSStubListener=no
     owner: root
     group: root
     mode: "0644"
