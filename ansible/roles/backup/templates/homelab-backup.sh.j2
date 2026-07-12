@@ -16,6 +16,11 @@ RCLONE_TARGET="{{ backup_rclone_target }}"
 
 GLOBAL_SUCCESS=1
 RCLONE_SUCCESS=1
+PRUNE_SUCCESS=1
+
+LOCAL_BACKUP_DURATION=0
+CLOUD_SYNC_DURATION=0
+PRUNE_DURATION=0
 
 # ==========================================
 # 2. GENERATE DYNAMIC PATH LISTS
@@ -106,9 +111,19 @@ homelab_backup_success $GLOBAL_SUCCESS
 # TYPE homelab_backup_cloud_sync_success gauge
 homelab_backup_cloud_sync_success $RCLONE_SUCCESS
 
-# HELP homelab_backup_duration_seconds Time taken for the backup script to run
+# HELP homelab_backup_prune_success Whether the retention policy prune succeeded (1) or failed (0)
+# TYPE homelab_backup_prune_success gauge
+homelab_backup_prune_success $PRUNE_SUCCESS
+
+# HELP homelab_backup_duration_seconds Time taken for the total backup script to run
 # TYPE homelab_backup_duration_seconds gauge
 homelab_backup_duration_seconds $duration
+
+# HELP homelab_backup_stage_duration_seconds Time taken for individual backup stages
+# TYPE homelab_backup_stage_duration_seconds gauge
+homelab_backup_stage_duration_seconds{stage="local_backup"} $LOCAL_BACKUP_DURATION
+homelab_backup_stage_duration_seconds{stage="cloud_sync"} $CLOUD_SYNC_DURATION
+homelab_backup_stage_duration_seconds{stage="prune"} $PRUNE_DURATION
 
 # HELP homelab_backup_last_run_timestamp_seconds Timestamp of the last backup run
 # TYPE homelab_backup_last_run_timestamp_seconds gauge
@@ -150,7 +165,7 @@ EOF
         echo "[WARNING] Prometheus textfile directory $PROM_TARGET_DIR does not exist. Metrics not saved."
     fi
 
-    if [ $GLOBAL_SUCCESS -eq 0 ] || [ $RCLONE_SUCCESS -eq 0 ]; then
+    if [ $GLOBAL_SUCCESS -eq 0 ] || [ $RCLONE_SUCCESS -eq 0 ] || [ $PRUNE_SUCCESS -eq 0 ]; then
         exit 1
     else
         exit 0
@@ -190,6 +205,7 @@ fi
 # 6. BACKUP: CRITICAL DATA
 # ==========================================
 echo "[INFO] Running Restic backup for critical data..."
+LOCAL_BACKUP_START=$(date +%s)
 export RESTIC_REPOSITORY="$REPO_CRITICAL"
 
 restic backup \
@@ -204,6 +220,9 @@ restic check --read-data-subset=10% || {
     GLOBAL_SUCCESS=0
 }
 
+LOCAL_BACKUP_END=$(date +%s)
+LOCAL_BACKUP_DURATION=$((LOCAL_BACKUP_END - LOCAL_BACKUP_START))
+
 if [ {% raw %}${#SERVICES_TO_STOP[@]}{% endraw %} -gt 0 ]; then
     echo "[INFO] Local backups finished. Fast restarting services..."
     for service in "${SERVICES_TO_STOP[@]}"; do
@@ -216,6 +235,7 @@ fi
 # 7. CLOUD SYNC (Rclone)
 # ==========================================
 echo "[INFO] Syncing local repositories to the cloud..."
+CLOUD_SYNC_START=$(date +%s)
 
 rclone sync "$REPO_CRITICAL" "${RCLONE_TARGET}/homelab" --fast-list --transfers 8 || RCLONE_SUCCESS=0
 
@@ -224,9 +244,20 @@ if [ -d "$REPO_DEVICES" ]; then
     rclone sync "$REPO_DEVICES" "${RCLONE_TARGET}/devices" --fast-list --transfers 8 || RCLONE_SUCCESS=0
 fi
 
+CLOUD_SYNC_END=$(date +%s)
+CLOUD_SYNC_DURATION=$((CLOUD_SYNC_END - CLOUD_SYNC_START))
+
 # ==========================================
 # 8. RETENTION (Pruning)
 # ==========================================
 echo "[INFO] Running retention policy (Prune)..."
+PRUNE_START=$(date +%s)
 export RESTIC_REPOSITORY="$REPO_CRITICAL"
-restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 6 || GLOBAL_SUCCESS=0
+
+restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 6 || {
+    GLOBAL_SUCCESS=0
+    PRUNE_SUCCESS=0
+}
+
+PRUNE_END=$(date +%s)
+PRUNE_DURATION=$((PRUNE_END - PRUNE_START))
