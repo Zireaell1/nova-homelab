@@ -37,6 +37,7 @@
     group: "nut"
     mode: "0640"
     backup: true
+  no_log: true
   register: nut_users_conf_result
 
 - name: Configure upsmon.conf (Monitor and Shutdown Trigger)
