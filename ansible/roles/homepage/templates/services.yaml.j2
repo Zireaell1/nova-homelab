@@ -25,6 +25,11 @@
             href: https://{{ services['authelia']['subdomain'] }}.{{ vault_domain }}/
             description: Single Sign-On (SSO)
 
+      - Immich:
+            icon: /images/icons/immich.svg
+            href: https://{{ services['immich']['subdomain'] }}.{{ vault_domain }}/
+            description:
+
 - Monitoring:
       - Grafana:
             icon: /images/icons/grafana.svg
@@ -36,6 +41,11 @@
             href: https://{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}/
             description: Time-Series Metrics
 
+      - Alloy:
+            icon: /images/icons/alloy.svg
+            href: https://{{ services['alloy']['subdomain'] }}.{{ vault_domain }}/
+            description: Telemetry Data Collector
+
       - PeaNUT:
             icon: /images/icons/peanut.svg
             href: https://{{ services['peanut']['subdomain'] }}.{{ vault_domain }}/
@@ -45,11 +55,6 @@
             icon: /images/icons/go2rtc.svg
             href: https://{{ services['go2rtc']['subdomain'] }}.{{ vault_domain }}/
             description: Camera Stream Router
-
-      - Alloy:
-            icon: /images/icons/alloy.svg
-            href: https://{{ services['alloy']['subdomain'] }}.{{ vault_domain }}/
-            description: Telemetry Data Collector
 
 - Network:
       - Pi-Hole:
