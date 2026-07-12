@@ -37,7 +37,7 @@ Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/peanut/peanut.env
 
-HealthCmd=node healthcheck.mjs
+HealthCmd=["node", "/app/healthcheck.mjs"]
 HealthInterval=60s
 HealthTimeout=10s
 HealthRetries=3
