@@ -32,7 +32,7 @@ vault_grafana_admin_password: ''
 # NUT
 
 vault_nut_ups_admin_password: ''
-vault_nut_ups_observer_password: ''
+vault_nut_ups_peanut_password: ''
 
 # Caddy
 
