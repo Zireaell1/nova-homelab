@@ -36,11 +36,11 @@ Timezone={{ timezone }}
 
 PublishPort=127.0.0.1:3100:3100
 
-# HealthCmd=/usr/bin/loki -health -health.url=http://127.0.0.1:3100/ready
-# HealthInterval=15s
-# HealthRetries=5
-# HealthStartPeriod=30s
-# HealthTimeout=5s
+HealthCmd=["/usr/bin/loki", "-health", "-health.url=http://127.0.0.1:3100/ready"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
 
 [Service]
 Restart=always

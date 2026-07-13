@@ -39,6 +39,12 @@ Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/authelia/authelia.env
 
+HealthCmd=["/app/healthcheck.sh"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
 [Service]
 Restart=always
 TimeoutStartSec=900

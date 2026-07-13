@@ -28,6 +28,12 @@ Timezone={{ timezone }}
 Environment=POSTGRES_USER=authelia
 Environment=POSTGRES_PASSWORD_FILE=/STORAGE_PASSWORD
 
+HealthCmd=["pg_isready", "-q", "-U", "postgres"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
 [Service]
 Restart=always
 TimeoutStartSec=900

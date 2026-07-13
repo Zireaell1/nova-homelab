@@ -36,7 +36,7 @@ Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.env
 
-HealthCmd=/healthcheck.sh
+HealthCmd=["/healthcheck.sh"]
 HealthInterval=60s
 HealthTimeout=10s
 HealthRetries=3

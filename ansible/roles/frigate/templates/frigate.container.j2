@@ -49,6 +49,12 @@ Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/frigate/frigate.env
 
+HealthCmd=["/bin/sh", "-c", "test -f /dev/shm/.frigate-is-stopping && exit 0; curl --fail --silent --show-error http://127.0.0.1:5000/api/version || exit 1"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=300s
+
 [Service]
 Restart=always
 TimeoutStartSec=900
