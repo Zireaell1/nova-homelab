@@ -4,51 +4,51 @@
 
 # Cloudflare DNS-01
 (cloudflare_tls) {
-    tls {
-        dns cloudflare {env.CF_API_TOKEN}
-    }
+	tls {
+		dns cloudflare {env.CF_API_TOKEN}
+	}
 }
 
 # Authelia Forward Auth
 (authelia_middleware) {
-    forward_auth authelia:9091 {
-        uri /api/authz/forward-auth
-        copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
-    }
+	forward_auth authelia:9091 {
+		uri /api/authz/forward-auth
+		copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+	}
 }
 
 # Authelia Forward Auth (without passing headers)
 (authelia_middleware_basic) {
-    forward_auth authelia:9091 {
-        uri /api/authz/forward-auth
-    }
+	forward_auth authelia:9091 {
+		uri /api/authz/forward-auth
+	}
 }
 
 (standard) {
-    encode
+	encode
 }
 
 (secure_headers) {
-    header {
-        X-Content-Type-Options "nosniff"
-        X-XSS-Protection "0"
-        X-Frame-Options "SAMEORIGIN"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        -Server
-        -X-Powered-By
-    }
+	header {
+		X-Content-Type-Options "nosniff"
+		X-XSS-Protection "0"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+		-X-Powered-By
+	}
 }
 
 (vault_headers) {
-    header {
-        X-Content-Type-Options "nosniff"
-        X-XSS-Protection "0"
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        -Server
-        -X-Powered-By
-        -Last-Modified
-    }
+	header {
+		X-Content-Type-Options "nosniff"
+		X-XSS-Protection "0"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+		-X-Powered-By
+		-Last-Modified
+	}
 }
 
 # ===============================================================================
@@ -67,7 +67,7 @@
 	admin off
 	auto_https disable_redirects
 
-    metrics
+	metrics
 }
 
 http:// {
@@ -83,9 +83,9 @@ http:// {
 # ===============================================================================
 
 :9091 {
-    bind 0.0.0.0
+	bind 0.0.0.0
 
-    metrics
+	metrics
 }
 
 # ===============================================================================
@@ -93,9 +93,9 @@ http:// {
 # ===============================================================================
 
 *.{{ vault_domain }} {
-    import cloudflare_tls
+	import cloudflare_tls
 
-    respond "Service not found" 404
+	respond "Service not found" 404
 }
 
 # ===============================================================================
@@ -103,12 +103,12 @@ http:// {
 # ===============================================================================
 
 {{ vault_domain }} {
-    import cloudflare_tls
-    import standard
-    import secure_headers
+	import cloudflare_tls
+	import standard
+	import secure_headers
 
-    import authelia_middleware
-    reverse_proxy homepage:3000
+	import authelia_middleware
+	reverse_proxy homepage:3000
 }
 
 # ===============================================================================
@@ -116,192 +116,192 @@ http:// {
 # ===============================================================================
 
 {{ services['authelia']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    reverse_proxy authelia:9091
+	reverse_proxy authelia:9091
 }
 
 {{ services['alloy']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy host.containers.internal:12345
+	import authelia_middleware_basic
+	reverse_proxy host.containers.internal:12345
 }
 
 {{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import vault_headers
+	import standard
+	import vault_headers
 
-    import authelia_middleware_basic
-    reverse_proxy vaultwarden:8000
+	import authelia_middleware_basic
+	reverse_proxy vaultwarden:8000
 }
 
 {{ services['loki']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    # TODO: import authelia_middleware_basic
-    reverse_proxy loki:3100
+	# TODO: import authelia_middleware_basic
+	reverse_proxy loki:3100
 }
 
 {{ services['prometheus']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy prometheus:9090
+	import authelia_middleware_basic
+	reverse_proxy prometheus:9090
 }
 
 {{ services['grafana']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware
-    reverse_proxy grafana:3000
+	import authelia_middleware
+	reverse_proxy grafana:3000
 }
 
 {{ services['restic']['subdomain'] }}.{{ vault_domain }} {
-    import secure_headers
+	import secure_headers
 
-    handle /metrics {
-        abort
-    }
+	handle /metrics {
+		abort
+	}
 
-    handle {
-        import authelia_middleware
-        reverse_proxy restic:8000
-    }
+	handle {
+		import authelia_middleware
+		reverse_proxy restic:8000
+	}
 }
 
 {{ services['mainsail']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    # TODO: import authelia_middleware_basic
-    reverse_proxy {{ vault_printer_ip }}:4409
+	# TODO: import authelia_middleware_basic
+	reverse_proxy {{ vault_printer_ip }}:4409
 }
 
 {{ services['switch']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy {{ vault_switch_ip }}:80
+	import authelia_middleware_basic
+	reverse_proxy {{ vault_switch_ip }}:80
 }
 
 {{ services['go2rtc']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy frigate:1984
+	import authelia_middleware_basic
+	reverse_proxy frigate:1984
 }
 
 {{ services['frigate']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware
-    reverse_proxy frigate:8971 {
-        header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
+	import authelia_middleware
+	reverse_proxy frigate:8971 {
+		header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
 
-        flush_interval -1
+		flush_interval -1
 
-        transport http {
-            versions 1.1
-            compression off
-        }
-    }
+		transport http {
+			versions 1.1
+			compression off
+		}
+	}
 }
 
 {{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy zigbee2mqtt:8080
+	import authelia_middleware_basic
+	reverse_proxy zigbee2mqtt:8080
 }
 
 {{ services['pihole']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    redir / /admin 302
-    reverse_proxy host.containers.internal:8080
+	import authelia_middleware_basic
+	redir / /admin 302
+	reverse_proxy host.containers.internal:8080
 }
 
 {{ services['peanut']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy peanut:8080
+	import authelia_middleware_basic
+	reverse_proxy peanut:8080
 }
 
 {{ services['homeassistant']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    handle /api/prometheus {
-        abort
-    }
+	handle /api/prometheus {
+		abort
+	}
 
-    handle {
-        import authelia_middleware_basic
-        reverse_proxy homeassistant:8123
-    }
+	handle {
+		import authelia_middleware_basic
+		reverse_proxy homeassistant:8123
+	}
 }
 
 {{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy {{ vault_camera_doorbell_ip }}:80 {
-        header_up -Via
-    }
+	import authelia_middleware_basic
+	reverse_proxy {{ vault_camera_doorbell_ip }}:80 {
+		header_up -Via
+	}
 }
 
 {{ services['camera_front']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy {{ vault_camera_front_ip }}:80 {
-        header_up -Via
-    }
+	import authelia_middleware_basic
+	reverse_proxy {{ vault_camera_front_ip }}:80 {
+		header_up -Via
+	}
 }
 
 {{ services['camera_back']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy {{ vault_camera_back_ip }}:80 {
-        header_up -Via
-    }
+	import authelia_middleware_basic
+	reverse_proxy {{ vault_camera_back_ip }}:80 {
+		header_up -Via
+	}
 }
 
 {{ services['camera_entry']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware_basic
-    reverse_proxy {{ vault_camera_entry_ip }}:80 {
-        header_up -Via
-    }
+	import authelia_middleware_basic
+	reverse_proxy {{ vault_camera_entry_ip }}:80 {
+		header_up -Via
+	}
 }
 
 {{ services['files']['subdomain'] }}.{{ vault_domain }} {
-    import standard
-    import secure_headers
+	import standard
+	import secure_headers
 
-    import authelia_middleware
-    handle {
-        root /srv
-        file_server browse
-    }
+	import authelia_middleware
+	handle {
+		root /srv
+		file_server browse
+	}
 }
