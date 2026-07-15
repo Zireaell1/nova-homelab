@@ -16,7 +16,8 @@
 			"*.network.j2": "ini",
 			"*.env.j2": "ini",
 			"*.service.j2": "ini",
-			"*.timer.j2": "ini"
+			"*.timer.j2": "ini",
+			"Caddyfile.j2": "makefile"
 		},
 		"[yaml]": {
 			"editor.insertSpaces": true,
@@ -42,6 +43,11 @@
 			},
 			"editor.tabSize": 2,
 			"editor.defaultFormatter": "redhat.ansible"
+		},
+		"[makefile]": {
+			"editor.insertSpaces": false,
+			"editor.tabSize": 4,
+			"editor.detectIndentation": false
 		},
 		"yaml.format.enable": true,
 		"ansible.validation.lint.enabled": true
