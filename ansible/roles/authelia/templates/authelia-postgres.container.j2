@@ -10,7 +10,12 @@ ContainerName=authelia-postgres
 StopTimeout=20
 
 # --- Identity / Namespaces ---
+User=999:999
 UserNS=keep-id:uid=999,gid=999
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
 
 # --- Resource Limits ---
 Memory={{ authelia_postgres_memory_limit }}
