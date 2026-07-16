@@ -23,6 +23,18 @@ loki.relabel "journal" {
     forward_to = []
 
     rule {
+        target_label = "job"
+        replacement  = "os"
+    }
+
+    rule {
+        source_labels = ["__journal_container_name"]
+        regex         = "(.+)"
+        target_label  = "job"
+        replacement   = "container"
+    }
+
+    rule {
         source_labels = ["__journal__systemd_unit"]
         target_label  = "unit"
     }
@@ -31,7 +43,7 @@ loki.relabel "journal" {
         source_labels = ["__journal_syslog_identifier"]
         target_label  = "syslog_identifier"
     }
-    
+
     rule {
         target_label = "host"
         replacement  = constants.hostname
@@ -41,6 +53,11 @@ loki.relabel "journal" {
         source_labels = ["__journal_container_name"]
         target_label  = "container"
     }
+
+    // rule {
+    //     source_labels = ["__journal_priority"]
+    //     target_label  = "level"
+    // }
 }
 
 prometheus.exporter.unix "host" {
@@ -73,5 +90,5 @@ prometheus.scrape "host_metrics" {
     )
     forward_to = [prometheus.remote_write.local_prom.receiver]
 
-    scrape_interval = "15s" 
+    scrape_interval = "15s"
 }
