@@ -47,11 +47,11 @@ Network=restic.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
-HealthCmd=["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9090/-/healthy"]
-HealthInterval=60s
-HealthTimeout=10s
-HealthRetries=3
-HealthStartPeriod=60s
+# HealthCmd=["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9090/-/healthy"]
+# HealthInterval=60s
+# HealthTimeout=10s
+# HealthRetries=3
+# HealthStartPeriod=60s
 
 [Service]
 Restart=always
