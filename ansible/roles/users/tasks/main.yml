@@ -39,11 +39,6 @@
 - name: Reset SSH connection to apply group changes
   ansible.builtin.meta: reset_connection
 
-- name: Enable lingering for current user
-  ansible.builtin.command: "loginctl enable-linger {{ ansible_user }}"
-  args:
-    creates: "/var/lib/systemd/linger/{{ ansible_user }}"
-
 - name: Change default shell to Fish
   ansible.builtin.user:
     name: "{{ ansible_user }}"

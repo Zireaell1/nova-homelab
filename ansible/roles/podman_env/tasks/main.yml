@@ -1,0 +1,70 @@
+---
+- name: Install Podman
+  ansible.builtin.dnf:
+    name:
+      - podman
+      - prometheus-podman-exporter
+    state: present
+
+- name: Enable lingering for current user
+  ansible.builtin.command: "loginctl enable-linger {{ ansible_user }}"
+  args:
+    creates: "/var/lib/systemd/linger/{{ ansible_user }}"
+
+# Default: false
+- name: Allow containers to use host hardware devices (SELinux)
+  ansible.posix.seboolean:
+    name: container_use_devices
+    state: true
+    persistent: true
+
+- name: Verify if config directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - path: "/home/{{ ansible_user }}/.config/containers/systemd"
+      mode: "0755"
+
+- name: Upload .network file
+  ansible.builtin.template:
+    src: "monitoring-backend.network.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/systemd/monitoring-backend.network"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Enable and start Podman Exporter for the rootless user
+  ansible.builtin.systemd:
+    name: prometheus-podman-exporter
+    state: started
+    enabled: true
+    scope: user
+
+- name: Deploy Systemd Service file
+  ansible.builtin.template:
+    src: "podman-prune.service.j2"
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/podman-prune.service"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Deploy Systemd Timer file
+  ansible.builtin.template:
+    src: "podman-prune.timer.j2"
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/podman-prune.timer"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Enable and start the Timer
+  ansible.builtin.systemd:
+    name: podman-prune.timer
+    scope: user
+    enabled: true
+    state: started
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
