@@ -1,0 +1,23 @@
+---
+- name: Check Available System Updates
+  hosts: nova
+  become: true
+  tasks:
+    - name: Gather list of available DNF updates
+      ansible.builtin.dnf:
+        list: updates
+      register: pending_updates
+
+    - name: Show detailed list of updates
+      ansible.builtin.debug:
+        msg: |
+          Available updates ({{ pending_updates.results | default([]) | length }}):
+          {% for pkg in pending_updates.results | default([]) %}
+          - {{ pkg.name }} ({{ pkg.version }}-{{ pkg.release }})
+          {% endfor %}
+      when: pending_updates.results | default([]) | length > 0
+
+    - name: Show up-to-date message
+      ansible.builtin.debug:
+        msg: "System is fully up-to-date! No packages to download."
+      when: pending_updates.results | default([]) | length == 0
