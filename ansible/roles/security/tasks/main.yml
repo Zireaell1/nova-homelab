@@ -1,0 +1,72 @@
+---
+- name: Ensure sshd_config.d directory exists
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Configure SSH hardening (disable password auth)
+  ansible.builtin.template:
+    src: 40-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/40-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Restart sshd
+
+- name: Ensure filter.d directory exists
+  ansible.builtin.file:
+    path: /etc/fail2ban/filter.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy Vaultwarden filter
+  ansible.builtin.template:
+    src: vaultwarden.local.j2
+    dest: /etc/fail2ban/filter.d/vaultwarden.local
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart fail2ban
+
+- name: Configure jail.local
+  ansible.builtin.template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart fail2ban
+
+- name: Ensure fail2ban is enabled and running
+  ansible.builtin.service:
+    name: fail2ban.service
+    state: started
+    enabled: true
+
+# firewall-cmd --get-services (list of available services)
+- name: Open required ports
+  ansible.posix.firewalld:
+    service: "{{ item.service | default(omit) }}"
+    port: "{{ item.port | default(omit) }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop:
+    - service: "cockpit" # TODO: remove when caddy will work as a proxy to cockpit
+    - service: "ntp"
+    - service: "dns"
+    - service: "http"
+    - service: "https"
+    - service: "nut"
+    - service: "ssh"
+    - service: "dhcpv6-client"
+    - port: "443/udp"
+    - port: "41641/udp"
+    - port: "8555/tcp"
+    - port: "8555/udp"
