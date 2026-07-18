@@ -1,21 +1,53 @@
 ---
+- name: Stop and disable ModemManager
+  ansible.builtin.systemd:
+    name: ModemManager.service
+    state: stopped
+    enabled: false
+    masked: true
+
+# TODO
+# cockpit-sosreport
+# cockpit-files
+- name: Software install
+  ansible.builtin.dnf:
+    name:
+      - fish
+      - fastfetch
+      - micro
+      - restic
+      - bat
+      - lm_sensors
+      - cockpit
+      - cockpit-storaged
+      - cockpit-networkmanager
+      - cockpit-podman
+      - cockpit-selinux
+      - rsync
+      - rclone
+      - nut
+      - fail2ban
+      - python3
+      - git
+    state: present
+
 - name: Check current version of Zellij
   ansible.builtin.command: zellij --version
-  register: users_zellij_cmd_output
+  register: system_base_zellij_cmd_output
   failed_when: false
   check_mode: false
   changed_when: false
 
 - name: Install Zellij from GitHub repo
   ansible.builtin.unarchive:
-    src: "{{ users_zellij_link }}"
+    src: "{{ system_base_zellij_link }}"
     dest: /usr/local/bin
     remote_src: true
     creates: /usr/local/bin/zellij
     owner: root
     group: root
     mode: "0755"
-  when: users_zellij_cmd_output.rc != 0 or users_zellij_version not in users_zellij_cmd_output.stdout
+  when: system_base_zellij_cmd_output.rc != 0 or system_base_zellij_version not in system_base_zellij_cmd_output.stdout
 
 - name: Verify if group exists
   ansible.builtin.group:
@@ -42,4 +74,4 @@
 - name: Change default shell to Fish
   ansible.builtin.user:
     name: "{{ ansible_user }}"
-    shell: "{{ users_shell }}"
+    shell: "{{ system_base_shell }}"

@@ -1,0 +1,5 @@
+---
+system_base_zellij_link: "https://github.com/zellij-org/zellij/releases/download/latest/zellij-no-web-x86_64-unknown-linux-musl.tar.gz"
+system_base_zellij_version: "0.43.1"
+
+system_base_shell: "/usr/bin/fish"

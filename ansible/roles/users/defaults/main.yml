@@ -1,5 +1,0 @@
----
-users_zellij_link: "https://github.com/zellij-org/zellij/releases/download/latest/zellij-no-web-x86_64-unknown-linux-musl.tar.gz"
-users_zellij_version: "0.43.1"
-
-users_shell: "/usr/bin/fish"
