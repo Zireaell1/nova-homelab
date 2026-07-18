@@ -3,80 +3,119 @@
   hosts: nova
   become: false
   roles:
-    - role: base
+    # =====================================================
+    # Foundation and hardware
+    # =====================================================
+    - role: system_base
       become: true
-      tags: ["base"]
+      tags: ["system_base", "foundation"]
 
-    - role: storage
+    - role: hardware
       become: true
-      tags: ["storage"]
-    - role: users
-      become: true
-      tags: ["users"]
+      tags: ["hardware", "foundation"]
+
+    # =====================================================
+    # Communication and security
+    # =====================================================
     - role: network
       become: true
-      tags: ["network"]
-    - role: nut
+      tags: ["network", "communication"]
+
+    - role: security
       become: true
-      tags: ["nut"]
-
-    - role: openrgb
-      tags: ["openrgb"]
-
-    - role: monitoring_base
-      tags: ["monitoring_base", "monitoring"]
-    - role: prometheus
-      tags: ["prometheus", "monitoring"]
-    - role: loki
-      tags: ["loki", "monitoring"]
-    - role: alloy
-      become: true
-      tags: ["alloy", "monitoring"]
-    - role: grafana
-      tags: ["grafana", "monitoring"]
-
-    - role: pihole
-      tags: ["pihole"]
-    - role: authelia
-      tags: ["authelia"]
-    - role: mosquitto
-      tags: ["mosquitto", "home"]
-    - role: restic
-      tags: ["restic"]
-    - role: frigate
-      tags: ["frigate", "home"]
-    - role: vaultwarden
-      tags: ["vaultwarden"]
-    - role: zigbee2mqtt
-      tags: ["zigbee2mqtt", "home"]
-    - role: peanut
-      tags: ["peanut"]
-    - role: immich
-      tags: ["immich"]
-    - role: homeassistant
-      tags: ["homeassistant"]
-    - role: homepage
-      tags: ["homepage"]
-
-    - role: caddy
-      tags: ["caddy"]
-
-    - role: podman
-      tags: ["podman"]
-
-    - role: backup
-      tags: ["backup"]
+      tags: ["security", "communication"]
 
     - role: tailscale
       become: true
-      tags: ["tailscale"]
+      tags: ["tailscale", "communication"]
+
+    # =====================================================
+    # Runtime environment
+    # =====================================================
+    - role: podman_env # Mixed root access. Some of the tasks uses become: false
+      become: true
+      tags: ["podman_env", "runtime_root"]
+
+    - role: nut
+      become: true
+      tags: ["nut", "runtime_root"]
+
+    - role: alloy
+      become: true
+      tags: ["alloy", "monitoring", "runtime_root"]
+
+    # =====================================================
+    # Runtime environment (Rootless)
+    # =====================================================
+    - role: dotfiles
+      tags: ["dotfiles", "runtime_rootless"]
+
+    # =====================================================
+    # Services (Rootless)
+    # =====================================================
+    # --- DNS ---
+    - role: pihole
+      tags: ["pihole", "services", "dns"]
+
+    # --- IoT and hardware bridges ---
+    - role: mosquitto
+      tags: ["mosquitto", "services", "iot"]
+    - role: openrgb
+      tags: ["openrgb", "services", "iot"]
+    - role: peanut
+      tags: ["peanut", "services", "iot"]
+    - role: zigbee2mqtt
+      tags: ["zigbee2mqtt", "services", "iot"]
+
+    # --- Backup server ---
+    - role: restic
+      tags: ["restic", "services", "backup_server"]
+
+    # --- Observability stack ---
+    - role: prometheus
+      tags: ["prometheus", "services", "monitoring"]
+    - role: loki
+      tags: ["loki", "services", "monitoring"]
+    - role: grafana
+      tags: ["grafana", "services", "monitoring"]
+
+    # --- Smart home ---
+    - role: frigate
+      tags: ["frigate", "services", "home"]
+    - role: homeassistant
+      tags: ["homeassistant", "services", "home"]
+
+    # --- Services ---
+    - role: vaultwarden
+      tags: ["vaultwarden", "services"]
+    - role: homepage
+      tags: ["homepage", "services"]
+
+    # --- Access control ---
+    - role: authelia
+      tags: ["authelia", "services", "access_control"]
+    - role: caddy
+      tags: ["caddy", "services", "access_control"]
+
+    # =====================================================
+    # Backup scripts (Rootless)
+    # =====================================================
+    - role: backup
+      tags: ["backup", "services"]
 
 - name: Orion RPI configuration
   hosts: orion
   become: false
   roles:
+    # =====================================================
+    # Foundation and hardware
+    # =====================================================
     - role: rpi_base
       become: true
       tags: ["rpi_base"]
+
+    # =====================================================
+    # Services (Rootless)
+    # =====================================================
     - role: eink_display
       tags: ["eink_display"]
