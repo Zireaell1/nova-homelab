@@ -1,4 +1,10 @@
 ---
+- name: Software install
+  ansible.builtin.dnf:
+    name:
+      - lm_sensors
+    state: present
+
 - name: Upload lm_sensors config
   ansible.builtin.copy:
     src: "lm_sensors/lm_sensors"

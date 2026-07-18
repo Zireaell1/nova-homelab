@@ -1,4 +1,10 @@
 ---
+- name: Software install
+  ansible.builtin.dnf:
+    name:
+      - fail2ban
+    state: present
+
 - name: Ensure sshd_config.d directory exists
   ansible.builtin.file:
     path: /etc/ssh/sshd_config.d

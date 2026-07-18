@@ -1,4 +1,10 @@
 ---
+- name: Software install
+  ansible.builtin.dnf:
+    name:
+      - nut
+    state: present
+
 - name: Configure nut.conf
   ansible.builtin.template:
     src: "nut.conf.j2"

@@ -17,7 +17,6 @@
       - micro
       - restic
       - bat
-      - lm_sensors
       - cockpit
       - cockpit-storaged
       - cockpit-networkmanager
@@ -25,8 +24,6 @@
       - cockpit-selinux
       - rsync
       - rclone
-      - nut
-      - fail2ban
       - python3
       - git
     state: present
