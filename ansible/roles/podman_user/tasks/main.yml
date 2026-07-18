@@ -10,6 +10,9 @@
     - path: "/home/{{ ansible_user }}/.config/containers/systemd"
       mode: "0755"
 
+    - path: "/home/{{ ansible_user }}/.config/systemd/user"
+      mode: "0755"
+
 - name: Upload .network file
   ansible.builtin.template:
     src: "monitoring-backend.network.j2"
