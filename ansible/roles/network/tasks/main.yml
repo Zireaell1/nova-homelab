@@ -5,5 +5,5 @@
 - name: Configure Network Interfaces and Features
   ansible.builtin.include_tasks: network.yml
 
-- name: Configure Core Services (NTP, Cockpit, Fail2ban)
+- name: Configure Core Services (NTP, Cockpit)
   ansible.builtin.include_tasks: services.yml
