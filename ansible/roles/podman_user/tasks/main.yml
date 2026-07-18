@@ -1,23 +1,4 @@
 ---
-- name: Install Podman
-  ansible.builtin.dnf:
-    name:
-      - podman
-      - prometheus-podman-exporter
-    state: present
-
-- name: Enable lingering for current user
-  ansible.builtin.command: "loginctl enable-linger {{ ansible_user }}"
-  args:
-    creates: "/var/lib/systemd/linger/{{ ansible_user }}"
-
-# Default: false
-- name: Allow containers to use host hardware devices (SELinux)
-  ansible.posix.seboolean:
-    name: container_use_devices
-    state: true
-    persistent: true
-
 - name: Verify if config directories exist
   ansible.builtin.file:
     path: "{{ item.path }}"
@@ -28,7 +9,6 @@
   loop:
     - path: "/home/{{ ansible_user }}/.config/containers/systemd"
       mode: "0755"
-  become: false
 
 - name: Upload .network file
   ansible.builtin.template:
@@ -37,7 +17,6 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-  become: false
 
 - name: Enable and start Podman Exporter for the rootless user
   ansible.builtin.systemd:
@@ -45,7 +24,6 @@
     state: started
     enabled: true
     scope: user
-  become: false
 
 - name: Deploy Systemd Service file
   ansible.builtin.template:
@@ -54,7 +32,6 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-  become: false
 
 - name: Deploy Systemd Timer file
   ansible.builtin.template:
@@ -63,7 +40,6 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-  become: false
 
 - name: Enable and start the Timer
   ansible.builtin.systemd:
@@ -73,4 +49,3 @@
     state: started
     daemon_reload: true
   ignore_errors: "{{ ansible_check_mode }}"
-  become: false

@@ -1,0 +1,19 @@
+---
+- name: Install Podman
+  ansible.builtin.dnf:
+    name:
+      - podman
+      - prometheus-podman-exporter
+    state: present
+
+- name: Enable lingering for current user
+  ansible.builtin.command: "loginctl enable-linger {{ ansible_user }}"
+  args:
+    creates: "/var/lib/systemd/linger/{{ ansible_user }}"
+
+# Default: false
+- name: Allow containers to use host hardware devices (SELinux)
+  ansible.posix.seboolean:
+    name: container_use_devices
+    state: true
+    persistent: true

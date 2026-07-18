@@ -32,23 +32,29 @@
     # =====================================================
     # Runtime environment
     # =====================================================
-    - role: podman_env # Mixed root access. Some of the tasks uses become: false
+    - role: podman_system
       become: true
-      tags: ["podman_env", "runtime_root"]
-
-    - role: nut
-      become: true
-      tags: ["nut", "runtime_root"]
-
-    - role: alloy
-      become: true
-      tags: ["alloy", "monitoring", "runtime_root"]
+      tags: ["podman_system", "runtime_root"]
 
     # =====================================================
     # Runtime environment (Rootless)
     # =====================================================
+    - role: podman_user
+      tags: ["podman_user", "runtime_rootless"]
+
     - role: dotfiles
       tags: ["dotfiles", "runtime_rootless"]
+
+    # =====================================================
+    # Host monitoring
+    # =====================================================
+    - role: nut
+      become: true
+      tags: ["nut", "host_monitoring"]
+
+    - role: alloy
+      become: true
+      tags: ["alloy", "host_monitoring"]
 
     # =====================================================
     # Services (Rootless)
