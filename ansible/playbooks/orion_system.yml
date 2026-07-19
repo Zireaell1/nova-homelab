@@ -1,0 +1,11 @@
+---
+- name: Orion system and foundation
+  hosts: orion
+  become: true
+  roles:
+    # =====================================================
+    # Foundation and hardware
+    # =====================================================
+    - role: rpi_base
+      become: true
+      tags: ["rpi_base"]

@@ -1,0 +1,10 @@
+---
+- name: Orion rootless services
+  hosts: orion
+  become: false
+  roles:
+    # =====================================================
+    # Services (Rootless)
+    # =====================================================
+    - role: eink_display
+      tags: ["eink_display"]

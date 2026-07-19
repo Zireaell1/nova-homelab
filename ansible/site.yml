@@ -1,0 +1,12 @@
+---
+- name: Provision Nova System (Root)
+  import_playbook: playbooks/nova_system.yml
+
+- name: Provision Nova System (Rootless)
+  import_playbook: playbooks/nova_services.yml
+
+- name: Provision Orion System (Root)
+  import_playbook: playbooks/orion_system.yml
+
+- name: Provision Orion System (Rootless)
+  import_playbook: playbooks/orion_services.yml

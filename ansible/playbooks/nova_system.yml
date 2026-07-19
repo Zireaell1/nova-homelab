@@ -1,0 +1,40 @@
+---
+- name: Nova system and foundation
+  hosts: nova
+  become: true
+  roles:
+    # =====================================================
+    # Foundation and hardware
+    # =====================================================
+    - role: system_base
+      tags: ["system_base", "foundation"]
+
+    - role: hardware
+      tags: ["hardware", "foundation"]
+
+    # =====================================================
+    # Communication and security
+    # =====================================================
+    - role: network
+      tags: ["network", "communication"]
+
+    - role: security
+      tags: ["security", "communication"]
+
+    - role: tailscale
+      tags: ["tailscale", "communication"]
+
+    # =====================================================
+    # Host monitoring
+    # =====================================================
+    - role: nut
+      tags: ["nut", "host_monitoring"]
+
+    - role: alloy
+      tags: ["alloy", "host_monitoring"]
+
+    # =====================================================
+    # Runtime environment
+    # =====================================================
+    - role: podman_system
+      tags: ["podman_system", "runtime_root"]
