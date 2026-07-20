@@ -91,6 +91,16 @@ access_control:
       subject:
         - ['group:screen-controller-group']
 
+    # Loki One-factor Auth for logs endpoint
+    - domain: '{{ services['loki']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'one_factor'
+      networks:
+        - 'internal'
+      resources:
+        - '^/loki/api/v1/push$'
+      subject:
+        - ['group:logs']
+
     # ===============================================================================
     # Exceptions
     # ===============================================================================
@@ -100,7 +110,7 @@ access_control:
       networks:
         - 'internal'
       resources:
-        - "^/admin.*"
+        - '^/admin.*'
       subject:
         - ['group:admin']
 
@@ -149,6 +159,18 @@ access_control:
       networks:
         - 'internal'
         - 'tailscale'
+      subject:
+        - ['group:admin']
+
+    # Loki ready endpoint
+    - domain:
+        - '{{ services['loki']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      resources:
+        - '^/ready$'
       subject:
         - ['group:admin']
 
