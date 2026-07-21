@@ -5,7 +5,7 @@ Documentation=https://docs.immich.app/
 Wants=network-online.target
 After=network-online.target
 
-Requires=immich-postgres.service immich-redis.service
+Wants=immich-postgres.service immich-redis.service
 After=immich-postgres.service immich-redis.service
 
 RequiresMountsFor={{ immich_storage_path }}/data
@@ -42,6 +42,12 @@ Network=immich-backend.network
 Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/immich/immich.env
+
+HealthCmd=["immich-healthcheck"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
 
 [Service]
 Restart=always

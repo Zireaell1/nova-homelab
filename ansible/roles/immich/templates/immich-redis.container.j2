@@ -16,6 +16,12 @@ Network=immich-backend.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+HealthCmd=["redis-cli", "ping"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
 [Service]
 Restart=always
 TimeoutStartSec=900

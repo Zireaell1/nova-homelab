@@ -38,6 +38,12 @@ Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/immich/immich-machine-learning.env
 
+HealthCmd=["python3", "healthcheck.py"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=120s
+
 [Service]
 Restart=always
 TimeoutStartSec=900
