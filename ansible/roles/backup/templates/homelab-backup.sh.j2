@@ -14,6 +14,8 @@ REPO_CRITICAL="{{ backup_repo_critical }}"
 REPO_DEVICES="{{ backup_repo_devices }}"
 RCLONE_TARGET="{{ backup_rclone_target }}"
 
+CANARY_FILE="/tmp/homelab_canary.txt"
+
 GLOBAL_SUCCESS=1
 RCLONE_SUCCESS=1
 PRUNE_SUCCESS=1
@@ -49,6 +51,10 @@ cat << 'EOF' > "$EXCLUDE_FILE"
 EOF
 
 sed -i '/^[[:space:]]*$/d' "$INCLUDE_FILE" "$EXCLUDE_FILE"
+
+echo "[INFO] Generating Canary file for integrity testing..."
+echo "$SCRIPT_START_TIME" > "$CANARY_FILE"
+echo "$CANARY_FILE" >> "$INCLUDE_FILE"
 
 SERVICES_TO_STOP=(
 {% for svc_name, svc_vars in services.items() %}
@@ -91,7 +97,7 @@ cleanup_and_start() {
         done
     fi
 
-    rm -f "$INCLUDE_FILE" "$EXCLUDE_FILE"
+    rm -f "$INCLUDE_FILE" "$EXCLUDE_FILE" "$CANARY_FILE"
 
     if [ $GLOBAL_SUCCESS -eq 1 ]; then
         echo "[SUCCESS] Backup routine completed successfully in ${duration}s."
