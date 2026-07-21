@@ -1,0 +1,80 @@
+#!/bin/bash
+
+set -uo pipefail
+
+echo "[INFO] Starting Backup Cloud Verification..."
+VERIFY_START_TIME=$(date +%s)
+
+# ==========================================
+# 1. CONFIGURATION
+# ==========================================
+export RESTIC_PASSWORD_FILE="{{ backup_restic_password_file }}"
+export XDG_CONFIG_HOME="/home/{{ ansible_user }}/.config"
+RCLONE_TARGET="{{ backup_rclone_target }}"
+
+CANARY_PATH="/tmp/homelab_canary.txt"
+PROM_TARGET_DIR="/opt/alloy-metrics"
+PROM_TMP_FILE="/tmp/homelab_backup_verify.prom"
+
+SUCCESS=0
+CANARY_TIMESTAMP=0
+CANARY_AGE=0
+
+export RESTIC_REPOSITORY="rclone:${RCLONE_TARGET}/homelab"
+
+# ==========================================
+# 2. FETCH CANARY FROM CLOUD
+# ==========================================
+echo "[INFO] Attempting to retrieve canary file directly from B2 (forcing --no-cache)..."
+
+if RAW_TIMESTAMP=$(restic dump latest "$CANARY_PATH" --no-cache 2>/dev/null); then
+
+    if [[ "$RAW_TIMESTAMP" =~ ^[0-9]+$ ]]; then
+        CANARY_TIMESTAMP=$RAW_TIMESTAMP
+        CURRENT_TIME=$(date +%s)
+        CANARY_AGE=$((CURRENT_TIME - CANARY_TIMESTAMP))
+        SUCCESS=1
+
+        echo "[SUCCESS] Canary file retrieved successfully!"
+        echo "[INFO] Canary Timestamp: $CANARY_TIMESTAMP"
+        echo "[INFO] Canary Age: ${CANARY_AGE} seconds"
+    else
+        echo "[ERROR] Canary file retrieved, but content is invalid. Expected a timestamp, got: $RAW_TIMESTAMP"
+    fi
+else
+    echo "[ERROR] Failed to connect to B2 or extract the canary file. The snapshot might be missing or corrupted."
+fi
+
+# ==========================================
+# 3. METRICS GENERATION
+# ==========================================
+VERIFY_END_TIME=$(date +%s)
+VERIFY_DURATION=$((VERIFY_END_TIME - VERIFY_START_TIME))
+
+echo "[INFO] Generating Prometheus metrics..."
+cat <<EOF > "$PROM_TMP_FILE"
+# HELP homelab_backup_verify_success Whether the cloud B2 verification succeeded (1) or failed (0)
+# TYPE homelab_backup_verify_success gauge
+homelab_backup_verify_success $SUCCESS
+
+# HELP homelab_backup_verify_canary_age_seconds Age of the canary file retrieved directly from cloud B2
+# TYPE homelab_backup_verify_canary_age_seconds gauge
+homelab_backup_verify_canary_age_seconds $CANARY_AGE
+
+# HELP homelab_backup_verify_duration_seconds Time taken to run the cloud verification script
+# TYPE homelab_backup_verify_duration_seconds gauge
+homelab_backup_verify_duration_seconds $VERIFY_DURATION
+EOF
+
+if [ -d "$PROM_TARGET_DIR" ]; then
+    mv "$PROM_TMP_FILE" "${PROM_TARGET_DIR}/homelab_backup_verify.prom"
+    echo "[INFO] Metrics saved to $PROM_TARGET_DIR."
+else
+    echo "[WARNING] Prometheus metrics directory $PROM_TARGET_DIR does not exist."
+fi
+
+if [ $SUCCESS -eq 1 ]; then
+    exit 0
+else
+    exit 1
+fi

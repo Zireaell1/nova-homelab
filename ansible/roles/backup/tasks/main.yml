@@ -48,19 +48,19 @@
   when: backup_restic_critical_check.rc != 0
   changed_when: true
 
-- name: Generate backup script from Jinja2 template (with Bash validation)
+- name: Generate Git sync script
   ansible.builtin.template:
-    src: homelab-backup.sh.j2
-    dest: "/home/{{ ansible_user }}/.local/bin/homelab-backup.sh"
+    src: git-sync.sh.j2
+    dest: "/home/{{ ansible_user }}/.local/bin/git-sync.sh"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0700"
     validate: "bash -n %s"
 
-- name: Generate Git sync script
+- name: Generate backup script from Jinja2 template (with Bash validation)
   ansible.builtin.template:
-    src: git-sync.sh.j2
-    dest: "/home/{{ ansible_user }}/.local/bin/git-sync.sh"
+    src: homelab-backup.sh.j2
+    dest: "/home/{{ ansible_user }}/.local/bin/homelab-backup.sh"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0700"
@@ -85,6 +85,40 @@
 - name: Enable and start the Timer
   ansible.builtin.systemd:
     name: homelab-backup.timer
+    scope: user
+    enabled: true
+    state: started
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Generate verify script from Jinja2 template (with Bash validation)
+  ansible.builtin.template:
+    src: "homelab-verify-backup.sh.j2"
+    dest: "/home/{{ ansible_user }}/.local/bin/homelab-verify-backup.sh"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0700'
+    validate: "bash -n %s"
+
+- name: Deploy Verify Systemd Service file
+  ansible.builtin.template:
+    src: "homelab-backup-verify.service.j2"
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup-verify.service"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Deploy Verify Systemd Timer file
+  ansible.builtin.template:
+    src: "homelab-backup-verify.timer.j2"
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup-verify.timer"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Enable and start the Verify Timer
+  ansible.builtin.systemd:
+    name: homelab-backup-verify.timer
     scope: user
     enabled: true
     state: started
