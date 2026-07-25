@@ -28,6 +28,13 @@
   args:
     creates: "/var/lib/systemd/linger/{{ ansible_user }}"
 
+- name: Provide a static DNS entry for Prometheus in /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '.*\b{{ services["prometheus"]["subdomain"] }}\.{{ vault_domain }}$'
+    line: "{{ vault_primary_ip }} {{ services['prometheus']['subdomain'] }}.{{ vault_domain }}"
+    state: present
+
 - name: Enable SPI interface
   ansible.builtin.lineinfile:
     path: /boot/firmware/config.txt
