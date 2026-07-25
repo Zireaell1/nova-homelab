@@ -2,18 +2,19 @@
 setlocal
 
 :: ======================================================================
-:: RESTIC WINDOWS BACKUP SCRIPT (ULTIMATE EDITION)
+:: RESTIC WINDOWS BACKUP SCRIPT
 :: ======================================================================
 :: INSTRUCTIONS:
 :: 1. Download restic.exe for Windows from https://github.com/restic/restic/releases
 :: 2. Place restic.exe in C:\Backup
 :: 3. (Optional) Create an excludes.txt file in C:\Backup to ignore certain files.
 :: 4. Update the variables in "STEP 1: MANDATORY CONFIGURATION" below.
-:: 5. Open Windows Task Scheduler (taskschd.msc):
+:: 5. FIRST RUN ONLY: Open CMD and run: C:\Backup\restic.exe init (to create the repo!)
+:: 6. Open Windows Task Scheduler (taskschd.msc):
 ::    - Create Basic Task -> "Daily Restic Backup" -> Set your preferred time.
 ::    - Action: Start a program -> Point to this .cmd file.
 ::    - Check "Open the Properties dialog for this task when I click Finish".
-::    - In Properties: 
+::    - In Properties:
 ::      a) Change user account to your personal account (NOT SYSTEM).
 ::      b) Check "Run whether user is logged on or not" (Hides the CMD window).
 ::      c) Check "Run with highest privileges" (Required for VSS / locked files).
@@ -24,10 +25,14 @@ setlocal
 :: ==========================================
 
 :: 1. Where is the backup server?
-:: IMPORTANT NOTE ON SPECIAL CHARACTERS IN URL: 
-:: If your 'htpasswd_password' contains special characters (like @, #, ?), 
+:: CHOOSE YOUR STORAGE TIER BY CHANGING THE URL PATH:
+:: - /authelia_backup_user/cloud/<device_name> -> Synced to cloud storage
+:: - /authelia_backup_user/local/<device_name> -> Stays on the home server only
+::
+:: IMPORTANT NOTE ON SPECIAL CHARACTERS IN URL:
+:: If your password contains special characters (like @, #, ?),
 :: they MUST be URL-encoded (e.g., @ becomes %40, # becomes %23).
-set "RESTIC_REPOSITORY=rest:http://authelia_backup_user:authelia_backup_password@<server>/authelia_backup_user/critical"
+set "RESTIC_REPOSITORY=rest:https://authelia_backup_user:authelia_backup_password@<server>/authelia_backup_user/cloud/MyPC"
 
 :: 2. What is the encryption password for this backup?
 :: Do NOT URL-encode this password. Just type it normally.
