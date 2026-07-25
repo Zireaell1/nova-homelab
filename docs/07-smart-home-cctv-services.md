@@ -21,6 +21,10 @@ For my setup, I use the **Sonoff ZBDongle-E** connected directly to the server v
 ### Flashing the Dongle
 If you ever need to flash the software, you don't need to install a bunch of random tools. The `zigbee2mqtt` Ansible role already sets up a Python virtual environment specifically for this, pre-loaded with [universal-silabs-flasher](https://github.com/NabuCasa/universal-silabs-flasher).
 
+> [!CAUTION]
+> **Hardware Compatibility Note:**
+> Flashing procedures vary significantly depending on your coordinator's chipset. The instructions below were specifically tested with the **Sonoff ZBDongle-E**. If you are using a different model, **do not run this tool**. Please consult the official documentation for your specific coordinator before attempting to flash new firmware.
+
 To flash the dongle, first find out what your connected coordinator is named in the OS (usually `/dev/ttyACM0` or `/dev/ttyUSB0`), activate the virtual environment, and run the flasher:
 
 ```bash
