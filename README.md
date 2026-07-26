@@ -4,6 +4,10 @@
 [![Engine: Podman](https://img.shields.io/badge/Engine-Podman-892CA0?logo=podman&logoColor=white)](https://podman.io/)
 [![Automation: Ansible](https://img.shields.io/badge/Automation-Ansible-EE0000?logo=ansible&logoColor=white)](https://docs.ansible.com/)
 
+<p align="center">
+  <img src="docs/assets/nova-rack.jpg" width="350" alt="Nova Server Rack">
+</p>
+
 > [!WARNING]
 > **Work in progress**
 > This project is currently under heavy development. I decided to make the repository public early so I can continue building, troubleshooting, and documenting in the open. You might find a few placeholders in the docs or Ansible roles that are still being refined, but new updates are being pushed regularly!
