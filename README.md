@@ -4,6 +4,10 @@
 [![Engine: Podman](https://img.shields.io/badge/Engine-Podman-892CA0?logo=podman&logoColor=white)](https://podman.io/)
 [![Automation: Ansible](https://img.shields.io/badge/Automation-Ansible-EE0000?logo=ansible&logoColor=white)](https://docs.ansible.com/)
 
+[![License: AGPL-3.0](https://img.shields.io/github/license/Zireaell1/nova-homelab?color=blue&label=License)](https://github.com/Zireaell1/nova-homelab/blob/main/LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/Zireaell1/nova-homelab?label=Last%20Commit)](https://github.com/Zireaell1/nova-homelab/commits/main/)
+[![CI](https://img.shields.io/github/actions/workflow/status/Zireaell1/nova-homelab/ansible-lint.yml?branch=main&label=Ansible%20Lint)](https://github.com/Zireaell1/nova-homelab/actions)
+
 <p align="center">
   <img src="docs/assets/nova-rack.jpg" width="350" alt="Nova Server Rack">
 </p>
@@ -68,6 +72,48 @@ Here is a complete list of the services currently managed by Ansible (primarily 
 | **[NUT](https://networkupstools.org/)** | Network UPS Tools daemon running natively on the host to monitor the physical battery backup. |
 | **[Peanut](https://github.com/Brandawg93/PeaNUT/)** | Web dashboard acting as a frontend UI for the native NUT service. |
 | **[OpenRGB](https://openrgb.org/)** | Hardware lighting control, built locally via a custom Podman `Containerfile`. |
+
+## Quick Start
+> [!WARNING]
+> **Use as a reference first!**
+> Remember that some of these Ansible roles are heavily tailored to my specific hardware and network setup. I do not guarantee they will work out-of-the-box on your machines. I highly suggest using this repo as a reference first, or reading the docs for a detailed explanation. However, if you know what you are doing, here is the quick guide.
+
+**Prerequisites:**
+* Ansible installed on your control machine.
+* SSH keys configured and copied to the target server(s).
+
+**1. Clone the repository and install dependencies:**
+```bash
+git clone https://github.com/Zireaell1/nova-homelab.git
+cd nova-homelab/ansible
+ansible-galaxy collection install -r requirements.yml
+```
+
+**2. Configuration (Inventory, Variables & Secrets):**
+Before running anything, you need to configure your environment.
+* **Inventory:** Copy examples/inventory.ini to ansible/inventory.ini and update it with your servers' actual IP addresses and SSH usernames.
+* **Variables:** Review the files in group_vars/all/ (like vars.yml or services.yml) and change any personal variables.
+* **Secrets:** Copy examples/vault.yml.example to ansible/group_vars/all/vault.yml. Fill in your specific passwords and API keys, then encrypt the file using:
+  ```bash
+  ansible-vault encrypt group_vars/all/vault.yml
+  ```
+
+**3. The Playbooks:**
+The deployment is explicitly split to safely separate root-level host configurations from rootless container deployments across both of my physical machines (Nova and Orion).
+* nova_system.yml — Base system setup for the main server. Requires root access (needs the -K flag).
+* nova_services.yml — Rootless Podman deployment for all of the main server's services.
+* orion_system.yml — Base system setup for the Raspberry Pi e-ink display. Requires root access (needs the -K flag).
+* orion_services.yml — Rootless deployment for the e-ink display services.
+
+**4. Execution:**
+I strongly suggest looking inside these playbooks first. You can execute them with the --tags parameter if you only want to deploy or update specific parts of the stack. *(Note: You must include --ask-vault-pass so Ansible can decrypt your secrets!)*
+```bash
+# Example 1: Running a system-level playbook (prompts for sudo and vault passwords)
+ansible-playbook nova_system.yml -K --ask-vault-pass
+
+# Example 2: Deploying specific rootless services (prompts for vault password)
+ansible-playbook nova_services.yml --tags "grafana,prometheus" --ask-vault-pass
+```
 
 ## Repository Structure
 Currently, the repository is split into two main areas:
