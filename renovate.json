@@ -22,11 +22,18 @@
   ],
   "packageRules": [
     {
+      "matchFileNames": [
+        "ansible/roles/**/templates/**"
+      ],
+      "enabled": false
+    },
+    {
       "matchDatasources": [
         "docker",
         "pypi",
         "galaxy-collection",
-        "github-releases"
+        "github-releases",
+        "github-tags"
       ],
       "minimumReleaseAge": "7 days"
     }
