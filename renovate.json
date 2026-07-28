@@ -1,0 +1,46 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "semanticCommits": "enabled",
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/test/**",
+    "**/tests/**",
+    "**/__fixtures__/**",
+    "ansible/roles/**/templates/**"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update dependencies in Ansible YAML files based on renovate comments",
+      "managerFilePatterns": [
+        "ansible/group_vars/all/versions.yml",
+        "ansible/roles/*/defaults/*.yml"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)(?: versioning=(?<versioning>.*?))?\\n\\s*.*?:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?"
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": [
+        "docker",
+        "pypi",
+        "galaxy-collection",
+        "github-releases",
+        "github-tags"
+      ],
+      "minimumReleaseAge": "7 days"
+    }
+  ]
+}
