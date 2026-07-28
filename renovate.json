@@ -7,6 +7,11 @@
     "dependencies"
   ],
   "semanticCommits": "enabled",
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "ansible/roles/**/templates/**"
+  ],
   "customManagers": [
     {
       "customType": "regex",
@@ -21,12 +26,6 @@
     }
   ],
   "packageRules": [
-    {
-      "matchFileNames": [
-        "ansible/roles/**/templates/**"
-      ],
-      "enabled": false
-    },
     {
       "matchDatasources": [
         "docker",
