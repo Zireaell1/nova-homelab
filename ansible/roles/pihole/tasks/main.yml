@@ -1,59 +1,4 @@
 ---
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ pihole_image }}:{{ pihole_version }}"
-    state: present
-
-- name: Check if systemd-resolved stub is already disabled
-  ansible.builtin.stat:
-    path: /etc/systemd/resolved.conf.d/pihole.conf
-  register: pihole_stub_config
-
-- name: Create directory for systemd-resolved configs
-  ansible.builtin.file:
-    path: /etc/systemd/resolved.conf.d
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
-  become: true
-
-- name: Disable DNSStubListener (free port 53)
-  ansible.builtin.template:
-    src: pihole.conf.j2
-    dest: /etc/systemd/resolved.conf.d/pihole.conf
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
-  register: pihole_stub_disabled
-
-# Default: ../run/systemd/resolve/stub-resolv.conf
-- name: Update /etc/resolv.conf symlink (bypass stub)
-  ansible.builtin.file:
-    src: /run/systemd/resolve/resolv.conf
-    dest: /etc/resolv.conf
-    state: link
-    force: true
-  become: true
-
-- name: Restart systemd-resolved
-  ansible.builtin.systemd:
-    name: systemd-resolved.service
-    state: restarted
-  become: true
-  when: pihole_stub_disabled.changed # noqa: no-handler
-
-- name: Verify that port 53 is free
-  ansible.builtin.wait_for:
-    port: 53
-    state: stopped
-    host: 127.0.0.1
-    timeout: 10
-  become: true
-  ignore_errors: "{{ ansible_check_mode }}"
-  when: pihole_stub_disabled.changed # noqa: no-handler
-
 - name: Verify base directory structure
   ansible.builtin.file:
     path: "{{ item }}"
@@ -100,6 +45,11 @@
     mode: "0644"
   register: pihole_container_tpl
 
+- name: Download Podman images
+  containers.podman.podman_image:
+    name: "{{ pihole_image }}:{{ pihole_version }}"
+    state: present
+
 - name: Start and enable Pi-hole service (with daemon-reload if needed)
   ansible.builtin.systemd:
     daemon_reload: "{{ pihole_container_tpl.changed }}"
@@ -115,27 +65,5 @@
   ansible.builtin.wait_for:
     port: 53
     host: 127.0.0.1
-    delay: 10
-  become: true
+    timeout: 10
   ignore_errors: "{{ ansible_check_mode }}"
-
-- name: Set host to use local Pi-hole for DNS
-  community.general.nmcli:
-    conn_name: "{{ primary_network_interface_name }}"
-    ifname: "{{ primary_network_interface_name }}"
-    type: ethernet
-    dns4:
-      - "127.0.0.1"
-    dns4_ignore_auto: true
-    state: present
-    conn_reload: true
-  become: true
-  register: pihole_local_dns_result
-
-- name: Apply local DNS connection changes
-  community.general.nmcli:
-    conn_name: "{{ primary_network_interface_name }}"
-    ifname: "{{ primary_network_interface_name }}"
-    state: up
-  become: true
-  when: pihole_local_dns_result.changed # noqa: no-handler
