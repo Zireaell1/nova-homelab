@@ -1,7 +1,7 @@
 ---
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ pihole_image }}:{{ version_pihole }}"
+    name: "{{ pihole_image }}:{{ pihole_version }}"
     state: present
 
 - name: Check if systemd-resolved stub is already disabled

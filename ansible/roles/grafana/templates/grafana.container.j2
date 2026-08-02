@@ -9,7 +9,7 @@ RequiresMountsFor=/srv/monitoring/grafana/data
 
 [Container]
 # --- Image / Exec ---
-Image={{ grafana_image }}:{{ version_grafana }}
+Image={{ grafana_image }}:{{ grafana_version }}
 ContainerName=grafana
 StopTimeout=20
 

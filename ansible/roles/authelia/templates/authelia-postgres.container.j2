@@ -5,7 +5,7 @@ RequiresMountsFor={{ stacks_path }}/authelia/postgres
 
 [Container]
 # --- Image / Exec ---
-Image={{ authelia_postgres_image }}:{{ version_authelia_postgres }}
+Image={{ authelia_postgres_image }}:{{ authelia_postgres_version }}
 ContainerName=authelia-postgres
 StopTimeout=20
 

@@ -17,7 +17,7 @@
 
 - name: Download and extract latest HACS release
   ansible.builtin.unarchive:
-    src: https://github.com/hacs/integration/releases/download/{{ version_hacs }}/hacs.zip
+    src: https://github.com/hacs/integration/releases/download/{{ homeassistant_hacs_version }}/hacs.zip
     dest: "{{ stacks_path }}/homeassistant/config/custom_components/hacs"
     remote_src: true
     creates: "{{ stacks_path }}/homeassistant/config/custom_components/hacs/manifest.json"
@@ -75,5 +75,5 @@
 
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ homeassistant_image }}:{{ version_homeassistant }}"
+    name: "{{ homeassistant_image }}:{{ homeassistant_version }}"
     state: present

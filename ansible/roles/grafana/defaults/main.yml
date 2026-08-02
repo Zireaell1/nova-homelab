@@ -6,3 +6,6 @@ grafana_image: "docker.io/grafana/grafana"
 
 grafana_prometheus_datasource_name: "prometheus-datasource"
 grafana_loki_datasource_name: "loki-datasource"
+
+# renovate: datasource=docker depName=docker.io/grafana/grafana
+grafana_version: "13.0.1"

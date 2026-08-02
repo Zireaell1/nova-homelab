@@ -106,7 +106,7 @@
     name: "{{ item }}"
     state: present
   loop:
-    - "{{ immich_image }}:{{ version_immich }}"
-    - "{{ immich_machine_learning_image }}:{{ version_immich_machine_learning }}"
-    - "{{ immich_redis_image }}:{{ version_immich_redis }}"
-    - "{{ immich_postgres_image }}:{{ version_immich_postgres }}"
+    - "{{ immich_image }}:{{ immich_version }}"
+    - "{{ immich_machine_learning_image }}:{{ immich_machine_learning_version }}"
+    - "{{ immich_redis_image }}:{{ immich_redis_version }}"
+    - "{{ immich_postgres_image }}:{{ immich_postgres_version }}"

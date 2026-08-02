@@ -3,3 +3,9 @@ homeassistant_memory_limit: "6g"
 
 # https://github.com/home-assistant/core
 homeassistant_image: "ghcr.io/home-assistant/home-assistant"
+
+# renovate: datasource=docker depName=ghcr.io/home-assistant/home-assistant
+homeassistant_version: "2026.6.3"
+
+# renovate: datasource=github-releases depName=hacs/integration
+homeassistant_hacs_version: "2.0.5"

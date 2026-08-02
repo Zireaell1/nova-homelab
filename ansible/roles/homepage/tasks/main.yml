@@ -69,5 +69,5 @@
 
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ homepage_image }}:{{ version_homepage }}"
+    name: "{{ homepage_image }}:{{ homepage_version }}"
     state: present

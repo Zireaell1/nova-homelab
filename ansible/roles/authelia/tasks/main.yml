@@ -119,6 +119,6 @@
     name: "{{ item }}"
     state: present
   loop:
-    - "{{ authelia_image }}:{{ version_authelia }}"
-    - "{{ authelia_redis_image }}:{{ version_authelia_redis }}"
-    - "{{ authelia_postgres_image }}:{{ version_authelia_postgres }}"
+    - "{{ authelia_image }}:{{ authelia_version }}"
+    - "{{ authelia_redis_image }}:{{ authelia_redis_version }}"
+    - "{{ authelia_postgres_image }}:{{ authelia_postgres_version }}"

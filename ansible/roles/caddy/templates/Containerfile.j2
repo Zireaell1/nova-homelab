@@ -1,8 +1,8 @@
-FROM {{ caddy_image }}:{{ version_caddy }}-builder AS builder
+FROM {{ caddy_image }}:{{ caddy_version }}-builder AS builder
 
 RUN xcaddy build \
     --with github.com/caddy-dns/cloudflare
 
-FROM {{ caddy_image }}:{{ version_caddy }}
+FROM {{ caddy_image }}:{{ caddy_version }}
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy

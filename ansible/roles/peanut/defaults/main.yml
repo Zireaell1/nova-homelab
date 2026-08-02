@@ -3,3 +3,6 @@ peanut_memory_limit: "1g"
 
 # https://hub.docker.com/r/brandawg93/peanut
 peanut_image: "docker.io/brandawg93/peanut"
+
+# renovate: datasource=docker depName=docker.io/brandawg93/peanut
+peanut_version: "6.0.0"

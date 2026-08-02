@@ -39,5 +39,5 @@
 
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ loki_image }}:{{ version_loki }}"
+    name: "{{ loki_image }}:{{ loki_version }}"
     state: present

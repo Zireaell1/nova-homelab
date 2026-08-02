@@ -5,7 +5,7 @@ RequiresMountsFor={{ stacks_path }}/authelia/redis
 
 [Container]
 # --- Image / Exec ---
-Image={{ authelia_redis_image }}:{{ version_authelia_redis }}
+Image={{ authelia_redis_image }}:{{ authelia_redis_version }}
 ContainerName=authelia-redis
 StopTimeout=20
 

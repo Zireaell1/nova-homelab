@@ -5,3 +5,6 @@ frigate_storage_path: "/mnt/frigate/storage"
 
 # https://github.com/blakeblackshear/frigate
 frigate_image: "ghcr.io/blakeblackshear/frigate"
+
+# renovate: datasource=docker depName=ghcr.io/blakeblackshear/frigate
+frigate_version: "0.17.1"

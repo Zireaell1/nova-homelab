@@ -94,5 +94,5 @@
 
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ grafana_image }}:{{ version_grafana }}"
+    name: "{{ grafana_image }}:{{ grafana_version }}"
     state: present

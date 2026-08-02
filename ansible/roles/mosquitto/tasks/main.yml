@@ -52,5 +52,5 @@
 
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ mosquitto_image }}:{{ version_mosquitto }}"
+    name: "{{ mosquitto_image }}:{{ mosquitto_version }}"
     state: present

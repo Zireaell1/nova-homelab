@@ -9,7 +9,7 @@ RequiresMountsFor=/srv/monitoring/prometheus/data
 
 [Container]
 # --- Image / Exec ---
-Image={{ prometheus_image }}:{{ version_prometheus }}
+Image={{ prometheus_image }}:{{ prometheus_version }}
 ContainerName=prometheus
 StopTimeout=20
 

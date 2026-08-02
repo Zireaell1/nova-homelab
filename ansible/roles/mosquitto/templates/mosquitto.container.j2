@@ -11,7 +11,7 @@ RequiresMountsFor={{ stacks_path }}/mosquitto/log
 
 [Container]
 # --- Image / Exec ---
-Image={{ mosquitto_image }}:{{ version_mosquitto }}
+Image={{ mosquitto_image }}:{{ mosquitto_version }}
 ContainerName=mosquitto
 StopTimeout=20
 

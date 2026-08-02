@@ -49,5 +49,5 @@
 
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ peanut_image }}:{{ version_peanut }}"
+    name: "{{ peanut_image }}:{{ peanut_version }}"
     state: present

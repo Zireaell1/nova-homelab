@@ -4,3 +4,6 @@ restic_data_path: "/mnt/backup/rest-server-data"
 
 # https://hub.docker.com/r/restic/rest-server
 restic_image: "docker.io/restic/rest-server"
+
+# renovate: datasource=docker depName=docker.io/restic/rest-server
+restic_version: "0.14.0"

@@ -9,7 +9,7 @@ RequiresMountsFor=/srv/monitoring/loki/data
 
 [Container]
 # --- Image / Exec ---
-Image={{ loki_image }}:{{ version_loki }}
+Image={{ loki_image }}:{{ loki_version }}
 ContainerName=loki
 StopTimeout=20
 

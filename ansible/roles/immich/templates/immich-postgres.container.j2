@@ -5,7 +5,7 @@ RequiresMountsFor={{ stacks_path }}/immich/postgres
 
 [Container]
 # --- Image / Exec ---
-Image={{ immich_postgres_image }}:{{ version_immich_postgres }}
+Image={{ immich_postgres_image }}:{{ immich_postgres_version }}
 ContainerName=immich-postgres
 StopTimeout=20
 

@@ -29,5 +29,5 @@
 
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ restic_image }}:{{ version_restic }}"
+    name: "{{ restic_image }}:{{ restic_version }}"
     state: present

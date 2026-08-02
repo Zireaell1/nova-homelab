@@ -72,7 +72,7 @@
 
 - name: Download Podman images
   containers.podman.podman_image:
-    name: "{{ zigbee2mqtt_image }}:{{ version_zigbee2mqtt }}"
+    name: "{{ zigbee2mqtt_image }}:{{ zigbee2mqtt_version }}"
     state: present
 
 - name: Create directory for the Silabs Flasher tool

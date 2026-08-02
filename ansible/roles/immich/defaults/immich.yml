@@ -1,0 +1,10 @@
+---
+immich_memory_limit: "6g"
+
+immich_storage_path: "/srv/immich"
+
+# https://github.com/immich-app/immich
+immich_image: "ghcr.io/immich-app/immich-server"
+
+# renovate: datasource=docker depName=ghcr.io/immich-app/immich-server
+immich_version: "v3.0.3"

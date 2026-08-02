@@ -3,3 +3,6 @@ homepage_memory_limit: "1g"
 
 # https://github.com/gethomepage/homepage
 homepage_image: "ghcr.io/gethomepage/homepage"
+
+# renovate: datasource=docker depName=ghcr.io/gethomepage/homepage
+homepage_version: "v1.13.2"
