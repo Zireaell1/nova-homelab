@@ -5,4 +5,4 @@ caddy_local_image: "localhost/custom-caddy"
 caddy_memory_limit: 500m
 
 # renovate: datasource=docker depName=docker.io/library/caddy
-caddy_version: "2.11.3"
+caddy_version: "2.11.4"
