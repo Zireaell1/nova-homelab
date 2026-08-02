@@ -6,3 +6,5 @@ peanut_image: "docker.io/brandawg93/peanut"
 
 # renovate: datasource=docker depName=docker.io/brandawg93/peanut
 peanut_version: "6.0.0"
+
+peanut_nut_user: "ups_observer"
