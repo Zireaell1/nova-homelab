@@ -33,12 +33,6 @@
   "packageRules": [
     {
       "matchPackageNames": [
-        "ghcr.io/**"
-      ],
-      "minimumReleaseAgeBehaviour": "timestamp-optional"
-    },
-    {
-      "matchPackageNames": [
         "ghcr.io/blakeblackshear/frigate"
       ],
       "allowedVersions": "/^v?\\d+\\.\\d+\\.\\d+/"
