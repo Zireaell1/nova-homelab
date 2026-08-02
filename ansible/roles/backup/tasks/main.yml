@@ -102,23 +102,23 @@
 
 - name: Deploy Verify Systemd Service file
   ansible.builtin.template:
-    src: "homelab-backup-verify.service.j2"
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup-verify.service"
+    src: "homelab-verify-backup.service.j2"
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-verify-backup.service"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
 
 - name: Deploy Verify Systemd Timer file
   ansible.builtin.template:
-    src: "homelab-backup-verify.timer.j2"
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup-verify.timer"
+    src: "homelab-verify-backup.timer.j2"
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-verify-backup.timer"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
 
 - name: Enable and start the Verify Timer
   ansible.builtin.systemd:
-    name: homelab-backup-verify.timer
+    name: homelab-verify-backup.timer
     scope: user
     enabled: true
     state: started
