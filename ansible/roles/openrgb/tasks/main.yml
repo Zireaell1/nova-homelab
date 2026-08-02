@@ -42,15 +42,5 @@
     name: custom-openrgb
     tag: "latest"
     path: "{{ stacks_path }}/openrgb/openrgb-build"
-    force: "{{ openrgb_containerfile.changed or openrgb_force_rebuild | default(false) }}"
+    force: "{{ openrgb_containerfile.changed }}"
   notify: Restart openrgb
-
-- name: Upload custom Udev rules for ASRock RGB
-  ansible.builtin.template:
-    src: "asrock-rgb.rules.j2"
-    dest: "/etc/udev/rules.d/99-asrock-rgb.rules"
-    owner: root
-    group: root
-    mode: "0644"
-  become: true
-  notify: Reload Udev rules

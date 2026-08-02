@@ -72,3 +72,10 @@
   ansible.builtin.user:
     name: "{{ ansible_user }}"
     shell: "{{ system_base_shell }}"
+
+- name: Upload custom Udev rules for ASRock RGB
+  ansible.builtin.template:
+    src: "asrock-rgb.rules.j2"
+    dest: "/etc/udev/rules.d/99-asrock-rgb.rules"
+    mode: "0644"
+  notify: Reload Udev rules
