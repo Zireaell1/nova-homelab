@@ -1,0 +1,24 @@
+---
+authelia_memory_limit: "500m"
+
+# https://hub.docker.com/r/authelia/authelia
+authelia_image: "docker.io/authelia/authelia"
+
+# renovate: datasource=docker depName=docker.io/authelia/authelia
+authelia_version: "4.39.19"
+
+authelia_postgres_memory_limit: "500m"
+
+# https://hub.docker.com/_/postgres
+authelia_postgres_image: "docker.io/library/postgres"
+
+# renovate: datasource=docker depName=docker.io/library/postgres
+authelia_postgres_version: "18.3"
+
+authelia_redis_memory_limit: "500m"
+
+# https://hub.docker.com/_/redis
+authelia_redis_image: "docker.io/library/redis"
+
+# renovate: datasource=docker depName=docker.io/library/redis
+authelia_redis_version: "8.6.3"

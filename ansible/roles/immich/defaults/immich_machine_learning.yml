@@ -1,7 +1,0 @@
----
-immich_machine_learning_memory_limit: "6g"
-
-immich_machine_learning_image: "ghcr.io/immich-app/immich-machine-learning"
-
-# renovate: datasource=docker depName=ghcr.io/immich-app/immich-machine-learning
-immich_machine_learning_version: "v3.0.3"

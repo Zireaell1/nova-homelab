@@ -1,8 +1,0 @@
----
-authelia_redis_memory_limit: "500m"
-
-# https://hub.docker.com/_/redis
-authelia_redis_image: "docker.io/library/redis"
-
-# renovate: datasource=docker depName=docker.io/library/redis
-authelia_redis_version: "8.6.3"
