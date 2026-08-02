@@ -5,4 +5,4 @@ vaultwarden_memory_limit: "500m"
 vaultwarden_image: "ghcr.io/dani-garcia/vaultwarden"
 
 # renovate: datasource=docker depName=ghcr.io/dani-garcia/vaultwarden
-vaultwarden_version: "1.36.0"
+vaultwarden_version: "1.37.1"
