@@ -93,7 +93,7 @@ cleanup_and_start() {
 
     echo "[INFO] Running final cleanup procedure (Trap)..."
 
-    if [ ${#SERVICES_TO_STOP[@]} -gt 0 ]; then
+    if [ {% raw %}${#SERVICES_TO_STOP[@]}{% endraw %} -gt 0 ]; then
         echo "[INFO] Restarting systemd services..."
         for service in "${SERVICES_TO_STOP[@]}"; do
             systemctl --user start "$service" || echo "[WARNING] Failed to start $service"
@@ -207,7 +207,7 @@ fi
 # ==========================================
 # 5. PRE-HOOK: STOP SERVICES
 # ==========================================
-if [ ${#SERVICES_TO_STOP[@]} -gt 0 ]; then
+if [ {% raw %}${#SERVICES_TO_STOP[@]}{% endraw %} -gt 0 ]; then
     echo "[INFO] Stopping stateful services (Rootless Quadlets)..."
     for service in "${SERVICES_TO_STOP[@]}"; do
         systemctl --user stop "$service"
@@ -236,7 +236,7 @@ restic check --read-data-subset=10% || {
 LOCAL_BACKUP_END=$(date +%s)
 LOCAL_BACKUP_DURATION=$((LOCAL_BACKUP_END - LOCAL_BACKUP_START))
 
-if [ ${#SERVICES_TO_STOP[@]} -gt 0 ]; then
+if [ {% raw %}${#SERVICES_TO_STOP[@]}{% endraw %} -gt 0 ]; then
     echo "[INFO] Local backups finished. Fast restarting services..."
     for service in "${SERVICES_TO_STOP[@]}"; do
         systemctl --user start "$service"
