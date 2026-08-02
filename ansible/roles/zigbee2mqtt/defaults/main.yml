@@ -12,4 +12,4 @@ zigbee2mqtt_adapter_path: "/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Don
 zigbee2mqtt_silabs_flasher_version: "1.1.0"
 
 # renovate: datasource=docker depName=ghcr.io/koenkk/zigbee2mqtt
-zigbee2mqtt_version: "2.10.1"
+zigbee2mqtt_version: "2.13.0"
