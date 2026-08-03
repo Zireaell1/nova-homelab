@@ -1,4 +1,31 @@
 ---
+- name: Restart systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved.service
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
+  notify: Verify that port 53 is free
+
+- name: Verify that port 53 is free
+  ansible.builtin.wait_for:
+    port: 53
+    state: stopped
+    host: 127.0.0.1
+    timeout: 10
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Apply primary network interface changes
+  community.general.nmcli:
+    conn_name: "{{ primary_network_interface_name }}"
+    ifname: "{{ primary_network_interface_name }}"
+    state: up
+
+- name: Apply secondary network interface changes
+  community.general.nmcli:
+    conn_name: "{{ secondary_network_interface_name }}"
+    ifname: "{{ secondary_network_interface_name }}"
+    state: up
+
 - name: Restart chronyd
   ansible.builtin.service:
     name: chronyd.service

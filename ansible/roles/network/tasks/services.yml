@@ -7,10 +7,3 @@
     line: "allow {{ vault_network_cctv }}"
     state: present
   notify: Restart chronyd
-
-- name: Enable cockpit.socket
-  ansible.builtin.systemd:
-    name: cockpit.socket
-    enabled: true
-    state: started
-  ignore_errors: "{{ ansible_check_mode }}"

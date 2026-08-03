@@ -71,13 +71,16 @@
     mode: "0644"
   notify: Restart eink-display
 
-# - name: Enable and start systemd service
-#   ansible.builtin.systemd:
-#     name: "eink-display.service"
-#     scope: user
-#     enabled: true
-#     state: started
-#     daemon_reload: true
-#   environment:
-#     XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
-#   ignore_errors: "{{ ansible_check_mode }}"
+- name: Flush handlers to apply dashboard updates
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure E-Ink Dashboard service is started and enabled
+  ansible.builtin.systemd:
+    name: "eink-display.service"
+    scope: user
+    enabled: true
+    state: started
+    daemon_reload: true
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"

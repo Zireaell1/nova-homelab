@@ -10,3 +10,17 @@
 
 - name: Configure Core Services (NTP, Cockpit)
   ansible.builtin.include_tasks: services.yml
+
+- name: Flush handlers to apply OS network and service changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure OS level services are started and enabled
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - systemd-resolved.service
+    - chronyd.service
+    - cockpit.socket
+  ignore_errors: "{{ ansible_check_mode }}"

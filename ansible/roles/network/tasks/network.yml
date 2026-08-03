@@ -11,8 +11,8 @@
     ethtool.feature-rx-udp-gro-forwarding on
     ethtool.feature-rx-gro-list off
   when: "'on' not in network_primary_current_gro.stdout"
-  register: network_primary_gro_modify
   changed_when: true
+  notify: Apply primary network interface changes
 
 - name: Check current secondary interface ethtool UDP GRO settings
   ansible.builtin.command: "nmcli -g ethtool.feature-rx-udp-gro-forwarding connection show '{{ secondary_network_interface_name }}'"
@@ -26,8 +26,8 @@
     ethtool.feature-rx-udp-gro-forwarding on
     ethtool.feature-rx-gro-list off
   when: "'on' not in network_secondary_current_gro.stdout"
-  register: network_secondary_gro_modify
   changed_when: true
+  notify: Apply secondary network interface changes
 
 - name: Remove the default connection
   community.general.nmcli:
@@ -43,21 +43,7 @@
     method4: manual
     state: present
     conn_reload: true
-  register: network_secondary_network_interface
-
-- name: Apply primary network interface changes
-  community.general.nmcli:
-    conn_name: "{{ primary_network_interface_name }}"
-    ifname: "{{ primary_network_interface_name }}"
-    state: up
-  when: network_primary_gro_modify.changed # noqa: no-handler
-
-- name: Apply secondary network interface changes
-  community.general.nmcli:
-    conn_name: "{{ secondary_network_interface_name }}"
-    ifname: "{{ secondary_network_interface_name }}"
-    state: up
-  when: network_secondary_network_interface.changed or network_secondary_gro_modify.changed # noqa: no-handler
+  notify: Apply secondary network interface changes
 
 - name: Check Wi-Fi status
   ansible.builtin.command: nmcli radio wifi

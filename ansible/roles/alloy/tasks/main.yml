@@ -82,6 +82,9 @@
     enabled: true
     daemon_reload: true
 
+- name: Flush handlers to restart Alloy if configurations changed
+  ansible.builtin.meta: flush_handlers
+
 - name: Ensure Alloy is enabled and running
   ansible.builtin.systemd:
     name: alloy.service

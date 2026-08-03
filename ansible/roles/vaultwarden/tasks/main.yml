@@ -42,3 +42,17 @@
   containers.podman.podman_image:
     name: "{{ vaultwarden_image }}:{{ vaultwarden_version }}"
     state: present
+
+- name: Flush handlers to restart stack if configurations changed
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure stack is started and enabled
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: vaultwarden.service
+    state: started
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"

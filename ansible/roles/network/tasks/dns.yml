@@ -14,7 +14,7 @@
     owner: root
     group: root
     mode: "0644"
-  register: network_stub_disabled
+  notify: Restart systemd-resolved
 
 # Default: ../run/systemd/resolve/stub-resolv.conf
 - name: Update /etc/resolv.conf symlink (bypass stub)
@@ -23,21 +23,6 @@
     dest: /etc/resolv.conf
     state: link
     force: true
-
-- name: Restart systemd-resolved
-  ansible.builtin.systemd:
-    name: systemd-resolved.service
-    state: restarted
-  when: network_stub_disabled.changed # noqa: no-handler
-
-- name: Verify that port 53 is free
-  ansible.builtin.wait_for:
-    port: 53
-    state: stopped
-    host: 127.0.0.1
-    timeout: 10
-  ignore_errors: "{{ ansible_check_mode }}"
-  when: network_stub_disabled.changed # noqa: no-handler
 
 - name: Set host to use local Pi-hole with Quad9 fallback
   community.general.nmcli:
@@ -51,11 +36,4 @@
     dns4_ignore_auto: true
     state: present
     conn_reload: true
-  register: network_local_dns_result
-
-- name: Apply local DNS connection changes
-  community.general.nmcli:
-    conn_name: "{{ primary_network_interface_name }}"
-    ifname: "{{ primary_network_interface_name }}"
-    state: up
-  when: network_local_dns_result.changed # noqa: no-handler
+  notify: Apply primary network interface changes

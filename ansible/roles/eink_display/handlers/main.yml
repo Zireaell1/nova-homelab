@@ -3,7 +3,6 @@
   ansible.builtin.systemd:
     name: "eink-display.service"
     scope: user
-    enabled: true
     state: restarted
     daemon_reload: true
   environment:

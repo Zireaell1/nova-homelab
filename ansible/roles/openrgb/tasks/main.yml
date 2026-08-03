@@ -44,3 +44,17 @@
     path: "{{ stacks_path }}/openrgb/openrgb-build"
     force: "{{ openrgb_containerfile.changed }}"
   notify: Restart openrgb
+
+- name: Flush handlers to restart stack if configurations changed
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure stack is started and enabled
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: openrgb.service
+    state: started
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"

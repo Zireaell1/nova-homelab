@@ -122,3 +122,21 @@
     - "{{ authelia_image }}:{{ authelia_version }}"
     - "{{ authelia_redis_image }}:{{ authelia_redis_version }}"
     - "{{ authelia_postgres_image }}:{{ authelia_postgres_version }}"
+
+- name: Flush handlers to restart stack if configurations changed
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure stack is started and enabled
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: "{{ item }}.service"
+    state: started
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  loop:
+    - authelia-postgres
+    - authelia-redis
+    - authelia
+  ignore_errors: "{{ ansible_check_mode }}"

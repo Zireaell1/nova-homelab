@@ -49,12 +49,6 @@
     mode: "0644"
   notify: Restart fail2ban
 
-- name: Ensure fail2ban is enabled and running
-  ansible.builtin.service:
-    name: fail2ban.service
-    state: started
-    enabled: true
-
 # firewall-cmd --get-services (list of available services)
 - name: Open required ports
   ansible.posix.firewalld:
@@ -76,3 +70,17 @@
     - port: "41641/udp"
     - port: "8555/tcp"
     - port: "8555/udp"
+
+- name: Flush handlers to apply system changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure core OS services are enabled and running
+  ansible.builtin.service:
+    name: "{{ item }}.service"
+    state: started
+    enabled: true
+  loop:
+    - firewalld
+    - sshd
+    - fail2ban
+  ignore_errors: "{{ ansible_check_mode }}"

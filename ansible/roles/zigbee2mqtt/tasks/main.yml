@@ -75,6 +75,21 @@
     name: "{{ zigbee2mqtt_image }}:{{ zigbee2mqtt_version }}"
     state: present
 
+- name: Flush handlers to restart stack if configurations changed
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure stack is started and enabled
+  ansible.builtin.systemd:
+    daemon_reload: true
+    name: zigbee2mqtt.service
+    state: started
+    enabled: true
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
+
 - name: Create directory for the Silabs Flasher tool
   ansible.builtin.file:
     path: "/home/{{ ansible_user }}/tools/universal-silabs-flasher"
