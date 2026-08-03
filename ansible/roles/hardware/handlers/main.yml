@@ -1,12 +1,13 @@
 ---
 - name: Restart lm_sensors
-  ansible.builtin.service:
-    name: lm_sensors
+  ansible.builtin.systemd:
+    name: lm_sensors.service
     state: restarted
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Restart fstrim timer
-  ansible.builtin.systemd_service:
-    name: "fstrim.timer"
+  ansible.builtin.systemd:
+    name: fstrim.timer
     state: restarted
     daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
