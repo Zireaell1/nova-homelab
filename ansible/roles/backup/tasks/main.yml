@@ -73,6 +73,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
+  notify: Restart homelab-backup timer
 
 - name: Deploy Systemd Timer file
   ansible.builtin.template:
@@ -81,15 +82,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-
-- name: Enable and start the Timer
-  ansible.builtin.systemd:
-    name: homelab-backup.timer
-    scope: user
-    enabled: true
-    state: started
-    daemon_reload: true
-  ignore_errors: "{{ ansible_check_mode }}"
+  notify: Restart homelab-backup timer
 
 - name: Generate verify script from Jinja2 template (with Bash validation)
   ansible.builtin.template:
@@ -107,6 +100,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
+  notify: Restart homelab-verify-backup timer
 
 - name: Deploy Verify Systemd Timer file
   ansible.builtin.template:
@@ -115,12 +109,19 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
+  notify: Restart homelab-verify-backup timer
 
-- name: Enable and start the Verify Timer
+- name: Flush handlers to restart Timers if configurations changed
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start the Timers
   ansible.builtin.systemd:
-    name: homelab-verify-backup.timer
+    name: "{{ item }}"
     scope: user
     enabled: true
     state: started
     daemon_reload: true
+  loop:
+    - homelab-backup.timer
+    - homelab-verify-backup.timer
   ignore_errors: "{{ ansible_check_mode }}"

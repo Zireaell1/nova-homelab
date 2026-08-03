@@ -20,13 +20,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-
-- name: Enable and start Podman Exporter for the rootless user
-  ansible.builtin.systemd:
-    name: prometheus-podman-exporter
-    state: started
-    enabled: true
-    scope: user
+  notify: Reload systemd user daemon
 
 - name: Deploy Systemd Service file
   ansible.builtin.template:
@@ -35,6 +29,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
+  notify: Restart podman-prune timer
 
 - name: Deploy Systemd Timer file
   ansible.builtin.template:
@@ -43,12 +38,19 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
+  notify: Restart podman-prune timer
 
-- name: Enable and start the Timer
+- name: Flush handlers to apply systemd changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start systemd user services and timers
   ansible.builtin.systemd:
-    name: podman-prune.timer
+    name: "{{ item }}"
     scope: user
     enabled: true
     state: started
     daemon_reload: true
+  loop:
+    - prometheus-podman-exporter.service
+    - podman-prune.timer
   ignore_errors: "{{ ansible_check_mode }}"

@@ -1,0 +1,14 @@
+---
+- name: Restart homelab-backup timer
+  ansible.builtin.systemd:
+    name: homelab-backup.timer
+    scope: user
+    state: restarted
+    daemon_reload: true
+
+- name: Restart homelab-verify-backup timer
+  ansible.builtin.systemd:
+    name: homelab-verify-backup.timer
+    scope: user
+    state: restarted
+    daemon_reload: true
