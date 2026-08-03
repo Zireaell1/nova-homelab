@@ -1,39 +1,26 @@
 ---
 - name: Software install
   ansible.builtin.dnf:
-    name:
-      - nut
+    name: nut
     state: present
 
-- name: Configure nut.conf
+- name: Configure standard NUT files
   ansible.builtin.template:
-    src: "nut.conf.j2"
-    dest: "/etc/ups/nut.conf"
+    src: "{{ item }}.j2"
+    dest: "/etc/ups/{{ item }}"
     owner: "root"
     group: "nut"
     mode: "0640"
     backup: true
-  register: nut_conf_result
-
-- name: Configure ups.conf (Driver)
-  ansible.builtin.template:
-    src: "ups.conf.j2"
-    dest: "/etc/ups/ups.conf"
-    owner: "root"
-    group: "nut"
-    mode: "0640"
-    backup: true
-  register: nut_ups_conf_result
-
-- name: Configure upsd.conf (Server Listener)
-  ansible.builtin.template:
-    src: "upsd.conf.j2"
-    dest: "/etc/ups/upsd.conf"
-    owner: "root"
-    group: "nut"
-    mode: "0640"
-    backup: true
-  register: nut_upsd_conf_result
+  loop:
+    - nut.conf
+    - ups.conf
+    - upsd.conf
+    - upsmon.conf
+  notify:
+    - Restart NUT enumerator
+    - Restart NUT server
+    - Restart NUT monitor
 
 - name: Configure upsd.users (Server Credentials)
   ansible.builtin.template:
@@ -44,60 +31,23 @@
     mode: "0640"
     backup: true
   no_log: true
-  register: nut_users_conf_result
+  notify:
+    - Restart NUT enumerator
+    - Restart NUT server
+    - Restart NUT monitor
 
-- name: Configure upsmon.conf (Monitor and Shutdown Trigger)
-  ansible.builtin.template:
-    src: "upsmon.conf.j2"
-    dest: "/etc/ups/upsmon.conf"
-    owner: "root"
-    group: "nut"
-    mode: "0640"
-    backup: true
-  register: nut_upsmon_conf_result
+- name: Flush handlers to restart NUT stack if configurations changed
+  ansible.builtin.meta: flush_handlers
 
-- name: Rebuild NUT Drivers (Enumerator)
-  ansible.builtin.systemd:
-    name: nut-driver-enumerator.service
-    state: restarted
-    daemon_reload: true
-  ignore_errors: "{{ ansible_check_mode }}"
-  when: >
-    nut_conf_result.changed or
-    nut_ups_conf_result.changed or
-    nut_upsd_conf_result.changed or
-    nut_users_conf_result.changed or
-    nut_upsmon_conf_result.changed
-
-- name: Restart NUT
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    state: restarted
-  loop:
-    - nut-server.service
-    - nut-monitor.service
-  ignore_errors: "{{ ansible_check_mode }}"
-  when: >
-    nut_conf_result.changed or
-    nut_ups_conf_result.changed or
-    nut_upsd_conf_result.changed or
-    nut_users_conf_result.changed or
-    nut_upsmon_conf_result.changed
-
-- name: Ensure that all service are running
+- name: Ensure all NUT services are started and enabled
   ansible.builtin.systemd:
     name: "{{ item }}"
     state: started
     enabled: true
   loop:
     - nut-driver-enumerator.path
+    - nut-driver-enumerator.service
     - nut-server.service
     - nut-monitor.service
     - nut.target
-  ignore_errors: "{{ ansible_check_mode }}"
-
-- name: Ensure NUT enumerator service is enabled
-  ansible.builtin.systemd:
-    name: nut-driver-enumerator.service
-    enabled: true
   ignore_errors: "{{ ansible_check_mode }}"

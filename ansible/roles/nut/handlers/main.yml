@@ -1,0 +1,19 @@
+---
+- name: Restart NUT enumerator
+  ansible.builtin.systemd:
+    name: nut-driver-enumerator.service
+    state: restarted
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart NUT server
+  ansible.builtin.systemd:
+    name: nut-server.service
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart NUT monitor
+  ansible.builtin.systemd:
+    name: nut-monitor.service
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
