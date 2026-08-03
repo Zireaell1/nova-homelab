@@ -34,7 +34,7 @@
     group: "{{ ansible_user }}"
     mode: "0600"
   no_log: true
-  register: pihole_env_tpl
+  notify: Restart pihole
 
 - name: Upload .container file
   ansible.builtin.template:
@@ -43,18 +43,21 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-  register: pihole_container_tpl
+  notify: Restart pihole
 
 - name: Download Podman images
   containers.podman.podman_image:
     name: "{{ pihole_image }}:{{ pihole_version }}"
     state: present
 
-- name: Start and enable Pi-hole service (with daemon-reload if needed)
+- name: Flush handlers to restart stack if configurations changed
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure stack is started and enabled
   ansible.builtin.systemd:
-    daemon_reload: "{{ pihole_container_tpl.changed }}"
+    daemon_reload: true
     name: pihole.service
-    state: "{{ 'restarted' if (pihole_env_tpl.changed or pihole_container_tpl.changed) else 'started' }}"
+    state: started
     enabled: true
     scope: user
   environment:
