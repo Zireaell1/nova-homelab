@@ -3,6 +3,7 @@
 [![OS: Fedora Server](https://img.shields.io/badge/OS-Fedora_Server-294172?logo=fedora&logoColor=white)](https://fedoraproject.org/server/)
 [![Engine: Podman](https://img.shields.io/badge/Engine-Podman-892CA0?logo=podman&logoColor=white)](https://podman.io/)
 [![Automation: Ansible](https://img.shields.io/badge/Automation-Ansible-EE0000?logo=ansible&logoColor=white)](https://docs.ansible.com/)
+[![Renovate: Enabled](https://img.shields.io/badge/Renovate-Enabled-31BDC6?logo=renovate&logoColor=white)](https://docs.renovatebot.com/)
 
 [![License: AGPL-3.0](https://img.shields.io/github/license/Zireaell1/nova-homelab?color=blue&label=License)](https://github.com/Zireaell1/nova-homelab/blob/main/LICENSE)
 [![Last Commit](https://img.shields.io/github/last-commit/Zireaell1/nova-homelab?label=Last%20Commit)](https://github.com/Zireaell1/nova-homelab/commits/main/)
