@@ -21,7 +21,7 @@
     group: root
     mode: "0644"
     validate: /usr/sbin/sshd -t -f %s
-  notify: Restart sshd
+  notify: Reload sshd
 
 - name: Ensure filter.d directory exists
   ansible.builtin.file:

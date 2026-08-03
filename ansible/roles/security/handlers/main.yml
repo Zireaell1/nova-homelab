@@ -5,7 +5,8 @@
     state: restarted
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Restart sshd
+- name: Reload sshd
   ansible.builtin.service:
     name: sshd
     state: reloaded
+  ignore_errors: "{{ ansible_check_mode }}"
