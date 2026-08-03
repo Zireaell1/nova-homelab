@@ -9,3 +9,6 @@ homeassistant_version: "2026.6.3"
 
 # renovate: datasource=github-releases depName=hacs/integration
 homeassistant_hacs_version: "2.0.5"
+
+# renovate: datasource=github-releases depName=home-assistant/android
+homeassistant_android_version: "2026.6.5"

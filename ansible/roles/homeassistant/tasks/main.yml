@@ -15,6 +15,22 @@
     - "{{ stacks_path }}/homeassistant/config/blueprints"
     - "{{ stacks_path }}/homeassistant/config/ansible_managed"
 
+- name: Ensure Caddy download directory exists for HA app
+  ansible.builtin.file:
+    path: "{{ stacks_path }}/caddy/srv/homeassistant"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+
+- name: Download Home Assistant Android App (Minimal)
+  ansible.builtin.get_url:
+    url: "https://github.com/home-assistant/android/releases/download/{{ homeassistant_android_version }}/app-minimal-release.apk"
+    dest: "{{ stacks_path }}/caddy/srv/homeassistant/home-assistant-android-{{ homeassistant_android_version }}.apk"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
 - name: Download and extract latest HACS release
   ansible.builtin.unarchive:
     src: https://github.com/hacs/integration/releases/download/{{ homeassistant_hacs_version }}/hacs.zip
