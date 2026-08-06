@@ -20,6 +20,12 @@
     - path: "/home/{{ ansible_user }}/.config/fastfetch"
       mode: "0744"
 
+    - path: "/home/{{ ansible_user }}/.config/zellij"
+      mode: "0755"
+
+    - path: "/home/{{ ansible_user }}/.config/zellij/layouts"
+      mode: "0755"
+
     - path: "{{ stacks_path }}"
       mode: "0755"
 
@@ -35,14 +41,30 @@
     mode: "0644"
 
 - name: Generate Zellij completions for Fish
-  ansible.builtin.shell: zellij setup --generate-completion fish > ~/.config/fish/completions/zellij.fish
+  ansible.builtin.shell: zellij setup --generate-completion fish > /home/{{ ansible_user }}/.config/fish/completions/zellij.fish
   args:
-    creates: ~/.config/fish/completions/zellij.fish
+    creates: "/home/{{ ansible_user }}/.config/fish/completions/zellij.fish"
 
 - name: Upload Fastfetch config
   ansible.builtin.copy:
     src: "fastfetch/config.jsonc"
     dest: "/home/{{ ansible_user }}/.config/fastfetch/config.jsonc"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Upload Zellij config
+  ansible.builtin.copy:
+    src: "zellij/config.kdl"
+    dest: "/home/{{ ansible_user }}/.config/zellij/config.kdl"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Upload Zellij layout
+  ansible.builtin.copy:
+    src: "zellij/default_strider.kdl"
+    dest: "/home/{{ ansible_user }}/.config/zellij/layouts/default_strider.kdl"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
