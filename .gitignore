@@ -1,3 +1,4 @@
+# Logs / tmp files
 *.log
 *.tmp
 tmp/
@@ -6,11 +7,19 @@ tmp/
 ansible/group_vars/**/vault.yml
 ansible/inventory.ini
 ansible/.vault_pass
-
 .collections
 .ansible
 
-.DS_Store
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
 
+# System / IDE
+.DS_Store
+.vscode/
+
+# eink_display Ansible role assets
 ansible/roles/eink_display/files/images/
 ansible/roles/eink_display/files/fonts/
