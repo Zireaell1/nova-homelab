@@ -42,7 +42,7 @@
 				"strings": true
 			},
 			"editor.tabSize": 2,
-			"editor.defaultFormatter": "redhat.ansible"
+			"editor.defaultFormatter": "redhat.vscode-yaml"
 		},
 		"[makefile]": {
 			"editor.insertSpaces": false,
