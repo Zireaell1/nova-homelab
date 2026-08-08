@@ -32,6 +32,18 @@
 			},
 			"editor.defaultFormatter": "redhat.vscode-yaml"
 		},
+		"[github-actions-workflow]": {
+			"editor.insertSpaces": true,
+			"editor.tabSize": 2,
+			"editor.autoIndent": "keep",
+			"diffEditor.ignoreTrimWhitespace": false,
+			"editor.defaultColorDecorators": "never",
+			"editor.quickSuggestions": {
+				"strings": true,
+				"other": true,
+				"comments": false
+			}
+		},
 		"[ansible]": {
 			"editor.autoIndent": "advanced",
 			"editor.detectIndentation": true,
@@ -50,6 +62,9 @@
 			"editor.detectIndentation": false
 		},
 		"yaml.format.enable": true,
+		"yaml.format.singleQuote": true,
+		"yaml.format.bracketSpacing": true,
+		"yaml.validate": true,
 		"ansible.validation.lint.enabled": true
 	},
 	"extensions": {
