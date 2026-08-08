@@ -7,11 +7,19 @@
     force: true
   notify: Restart eink-display
 
-- name: Install Python dependencies in venv
-  ansible.builtin.pip:
-    requirements: "/home/{{ ansible_user }}/eink-display/requirements-pi.txt"
-    virtualenv: "/home/{{ ansible_user }}/eink-display/venv"
-    virtualenv_command: /usr/bin/python3 -m venv
+- name: Ensure uv is installed via pipx
+  ansible.builtin.command:
+    cmd: pipx install uv=={{ eink_display_uv_version }}
+  args:
+    creates: "/home/{{ ansible_user }}/.local/bin/uv"
+
+- name: Install/Sync Python dependencies using uv
+  ansible.builtin.command:
+    cmd: /home/{{ ansible_user }}/.local/bin/uv sync --frozen --no-dev
+  args:
+    chdir: /home/{{ ansible_user }}/eink-display
+  register: eink_display_uv_sync_result
+  changed_when: eink_display_uv_sync_result.stdout | regex_search('(Installing|Uninstalled|Updated)')
   notify: Restart eink-display
 
 - name: Create assets directories

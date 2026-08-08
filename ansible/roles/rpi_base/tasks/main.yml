@@ -9,6 +9,7 @@
       - git
       - swig
       - liblgpio-dev
+      - pipx
     state: present
     update_cache: true
 
