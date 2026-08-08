@@ -5,9 +5,8 @@ timezone: "Europe/Warsaw"
 
 git_backup_dir: "/home/{{ ansible_user }}/backups/git_repos"
 git_backup_repos:
-  # TODO:
-  # - name: "nova-homelab.git"
-  #   url: "https://github.com/Zireaell1/nova-homelab.git"
+  - name: "nova-homelab.git"
+    url: "https://github.com/Zireaell1/nova-homelab.git"
   - name: "nova-eink-display.git"
     url: "https://github.com/Zireaell1/nova-eink-display.git"
 
