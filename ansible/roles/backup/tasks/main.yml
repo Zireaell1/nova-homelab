@@ -90,7 +90,7 @@
     dest: "/home/{{ ansible_user }}/.local/bin/homelab-verify-backup.sh"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: '0700'
+    mode: "0700"
     validate: "bash -n %s"
 
 - name: Deploy Verify Systemd Service file
