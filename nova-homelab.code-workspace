@@ -62,7 +62,6 @@
 			"editor.detectIndentation": false
 		},
 		"yaml.format.enable": true,
-		"yaml.format.singleQuote": true,
 		"yaml.format.bracketSpacing": true,
 		"yaml.validate": true,
 		"ansible.validation.lint.enabled": true
