@@ -33,7 +33,7 @@ AddDevice=/dev/accel/accel0:/dev/accel/accel0
 
 # --- Storage ---
 Volume={{ stacks_path }}/frigate/config:/config:Z
-Volume={{ frigate_storage_path }}:/media/frigate:Z
+Volume={{ frigate_storage_path }}:/media/frigate
 
 Tmpfs=/tmp/cache:rw,size=1g,mode=1777
 
@@ -59,8 +59,6 @@ HealthStartPeriod=300s
 Restart=always
 TimeoutStartSec=900
 TimeoutStopSec=130
-
-ExecStartPre=/bin/sleep 120
 
 [Install]
 WantedBy=default.target

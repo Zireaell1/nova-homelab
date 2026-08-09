@@ -49,6 +49,13 @@
     mode: "0644"
   notify: Restart fail2ban
 
+- name: Define SELinux policy for Frigate directory
+  community.general.sefcontext:
+    target: "/mnt/frigate/storage(/.*)?"
+    setype: container_file_t
+    state: present
+  notify: Apply Frigate SELinux policy
+
 # firewall-cmd --get-services (list of available services)
 - name: Open required ports
   ansible.posix.firewalld:
