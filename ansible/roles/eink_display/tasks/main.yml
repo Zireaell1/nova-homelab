@@ -15,7 +15,7 @@
 
 - name: Install/Sync Python dependencies using uv
   ansible.builtin.command:
-    cmd: /home/{{ ansible_user }}/.local/bin/uv sync --frozen --no-dev
+    cmd: /home/{{ ansible_user }}/.local/bin/uv sync --frozen --no-dev --extra rpi
   args:
     chdir: /home/{{ ansible_user }}/eink-display
   register: eink_display_uv_sync_result
