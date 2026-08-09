@@ -30,6 +30,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
+    setype: "container_file_t"
 
 - name: Download and extract latest HACS release
   ansible.builtin.unarchive:
