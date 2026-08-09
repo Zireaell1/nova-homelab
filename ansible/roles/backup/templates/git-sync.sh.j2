@@ -14,10 +14,10 @@ REPO_PATH="$TARGET_DIR/$REPO_NAME"
 
 if [ -d "$REPO_PATH" ]; then
     echo "[INFO] Updating mirror: $REPO_NAME"
-    git -C "$REPO_PATH" remote update --prune
+    git -c gc.autoDetach=false -C "$REPO_PATH" remote update --prune
 else
     echo "[INFO] Cloning mirror: $REPO_NAME"
-    git clone --mirror "$REPO_URL" "$REPO_PATH"
+    git -c gc.autoDetach=false clone --mirror "$REPO_URL" "$REPO_PATH"
 fi
 {% endfor %}
 
