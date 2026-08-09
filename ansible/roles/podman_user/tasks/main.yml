@@ -7,11 +7,23 @@
     group: "{{ ansible_user }}"
     mode: "{{ item.mode }}"
   loop:
+    - path: "/home/{{ ansible_user }}/.config/containers"
+      mode: "0755"
+
     - path: "/home/{{ ansible_user }}/.config/containers/systemd"
       mode: "0755"
 
     - path: "/home/{{ ansible_user }}/.config/systemd/user"
       mode: "0755"
+
+- name: Upload containers.conf file
+  ansible.builtin.template:
+    src: "containers.conf.j2"
+    dest: "/home/{{ ansible_user }}/.config/containers/containers.conf"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  notify: Show Podman config restart warning
 
 - name: Upload .network file
   ansible.builtin.template:

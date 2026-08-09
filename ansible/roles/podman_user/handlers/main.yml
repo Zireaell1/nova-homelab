@@ -10,3 +10,11 @@
     state: restarted
     daemon_reload: true
     scope: user
+
+- name: Show Podman config restart warning
+  ansible.builtin.debug:
+    msg: >
+      [WARNING] Podman configuration (containers.conf) was updated.
+      The changes (e.g., muting healthcheck logs) require a container
+      restart to take effect. Please restart your containers or reboot
+      the server manually.
