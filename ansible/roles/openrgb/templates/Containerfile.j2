@@ -40,11 +40,14 @@ RUN apt-get update && \
         libqt5gui5t64 \
         libqt5widgets5t64 \
         libqt5dbus5t64 \
-        init-system-helpers && \
+        init-system-helpers \
+        tini && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /src/build/openrgb /app/openrgb
 
 EXPOSE 6742
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
 
 CMD [ "/app/openrgb", "--server", "--server-port", "6742" ]
