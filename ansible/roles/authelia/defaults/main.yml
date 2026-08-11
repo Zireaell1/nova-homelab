@@ -1,5 +1,5 @@
 ---
-authelia_memory_limit: "500m"
+authelia_memory_limit: "1g"
 
 # https://hub.docker.com/r/authelia/authelia
 authelia_image: "docker.io/authelia/authelia"

@@ -9,8 +9,7 @@ pihole_dns_rev_servers: >-
     ] | join(';')
   }}
 pihole_session_timeout: 2592000
-
-pihole_memory_limit: "500m"
+pihole_memory_limit: "1g"
 
 # https://hub.docker.com/r/pihole/pihole
 # https://github.com/pi-hole/docker-pi-hole
