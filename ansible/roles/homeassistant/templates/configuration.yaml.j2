@@ -38,13 +38,6 @@ scene: !include scenes.yaml
 logger:
   default: warning
 
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 10.89.0.0/16
-  ip_ban_enabled: true
-  login_attempts_threshold: 3
-
 recorder:
   purge_keep_days: 7
   auto_purge: true
