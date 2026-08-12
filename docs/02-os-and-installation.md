@@ -4,15 +4,23 @@ Before we get to the fun stuff (like the services), we need to set up the OS.
 
 If you browse homelab forums, you will mostly read about virtualizing with Proxmox, or sticking to the tried-and-true Debian with Docker. Because I like to experiment and wanted a more cutting-edge OS, I chose... **Fedora!** (The headless Server Edition, of course). To be honest, it has been running beautifully from day one. I even managed a major version upgrade from Fedora 43 to 44 without a single hiccup.
 
-Fedora also pairs perfectly with Podman. My previous server iterations used Docker, but since I was jumping into Fedora, I figured—why not try Podman? The only real learning curve was **SELinux**. Sometimes it complains when a container wants to access a specific hardware device or requires elevated permissions. Troubleshooting exactly what SELinux wants can definitely be a headache at times!
+Fedora also pairs perfectly with Podman. My previous server iterations used Docker, but since I was jumping into Fedora, I figured - why not try Podman? The only real learning curve was **SELinux**. Sometimes it complains when a container wants to access a specific hardware device or requires elevated permissions. Troubleshooting exactly what SELinux wants can definitely be a headache at times!
 
 Of course, this doesn't mean Fedora is the definitive "best" choice. I can't speak much to Proxmox since I haven't used it, and Debian is undeniably the more reliable, set-it-and-forget-it choice. It comes down to a tradeoff: older, rock-solid software vs. managing more frequent updates for recent features. For me, the cutting-edge features won.
 
 > [!WARNING]
 > **A quick heads-up:** The Ansible tasks written in this repository are specifically tailored for Fedora Server. I cannot guarantee that all of them will work out-of-the-box on other operating systems (like Debian or Ubuntu). Still, you are welcome to use them as a baseline and adapt them for your own setup!
 
-You can configure the installation however you want, but for future reference (and as a set of "dumb install instructions" for myself), here is exactly how Nova is configured:
-- **Partitioning:** Automatic
+### The LVM Mistake
+
+When I originally installed Fedora, I messed up the partitioning and didn't set up `/home` as a separate LVM (Logical Volume) right away. I had to improvise and set it up manually via the command line later, which was a huge pain and is obviously not covered by the Ansible automation.
+
+Let me save you the headache: **do it directly in the Fedora GUI installer!** It is by far the easiest way to handle it. Note that my Ansible scripts (**hardware** role) *assume* `/home` is already set up as its own LVM volume, so do not skip this.
+
+## The Installation Config
+
+You can configure the installation however you want, but for future reference (and as a set of "dumb install instructions" for myself), here is exactly how Nova should be configured in the installer:
+- **Partitioning:** Custom (Ensure `/home` is created as a separate LVM volume)
 - **Software Selection:** Do not install additional software (Minimal)
 - **Root Account:** Disabled
 - **Mirrors:** Install from the closest mirror
@@ -33,7 +41,7 @@ Let it install the updates, give the server a quick `sudo reboot`, and the base 
 
 ## Setup SSH Keys
 
-I use macOS as my daily driver, so these instructions are slightly tailored to Apple's ecosystem (specifically the keychain stuff). If you are on Linux or Windows, the process is almost identical—just skip the Apple-specific flags.
+I use macOS as my daily driver, so these instructions are slightly tailored to Apple's ecosystem (specifically the keychain stuff). If you are on Linux or Windows, the process is almost identical - just skip the Apple-specific flags.
 
 First, generate a new modern SSH key. I highly recommend using `ed25519`:
 
