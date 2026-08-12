@@ -27,6 +27,8 @@ Memory={{ pihole_memory_limit }}
 Volume={{ stacks_path }}/pihole/etc-pihole:/etc/pihole:Z
 
 # --- Networking ---
+Sysctl=net.ipv4.ip_local_port_range=61000 65500
+
 PublishPort=53:53/tcp
 PublishPort=53:53/udp
 PublishPort=8080:80
