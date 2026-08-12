@@ -8,4 +8,4 @@ grafana_prometheus_datasource_name: "prometheus-datasource"
 grafana_loki_datasource_name: "loki-datasource"
 
 # renovate: datasource=docker depName=docker.io/grafana/grafana
-grafana_version: "13.1.1"
+grafana_version: "13.1.2"
