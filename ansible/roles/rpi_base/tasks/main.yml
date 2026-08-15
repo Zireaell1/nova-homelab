@@ -24,6 +24,9 @@
     - path: "/home/{{ ansible_user }}/.config/systemd/user"
       mode: "0755"
 
+    - path: "/home/{{ ansible_user }}/.local/bin"
+      mode: "0775"
+
 - name: Enable lingering for current user
   ansible.builtin.command: "loginctl enable-linger {{ ansible_user }}"
   args:
