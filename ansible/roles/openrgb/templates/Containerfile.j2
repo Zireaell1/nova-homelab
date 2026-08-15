@@ -20,11 +20,12 @@ RUN apt-get update && \
         ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-RUN git clone --branch {{ openrgb_branch }} --depth 1 {{ openrgb_repo }} . && \
+RUN git clone {{ openrgb_repo }} . && \
+    git checkout {{ openrgb_upstream_commit }} && \
     mkdir build && \
     cd build && \
     qmake ../OpenRGB.pro && \
-    make -j$(nproc)
+    make -j$(($(nproc) > 3 ? $(nproc) - 2 : 1))
 
 FROM debian:13-slim AS runtime
 
