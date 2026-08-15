@@ -143,6 +143,22 @@ access_control:
         - ['group:user']
         - ['group:admin']
 
+    - domain: '{{ services['files']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'one_factor'
+      networks:
+        - 'dashboard'
+      subject:
+        - ['group:dashboard-group']
+
+    - domain: '{{ services['files']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:user']
+        - ['group:admin']
+
     # ===============================================================================
     # Admin Services
     # ===============================================================================
@@ -154,7 +170,6 @@ access_control:
         - '{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}'
         - '{{ services['pihole']['subdomain'] }}.{{ vault_domain }}'
         - '{{ services['peanut']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['files']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
