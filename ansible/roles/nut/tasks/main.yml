@@ -39,15 +39,20 @@
 - name: Flush handlers to restart NUT stack if configurations changed
   ansible.builtin.meta: flush_handlers
 
-- name: Ensure all NUT services are started and enabled
+- name: Ensure continuous NUT services are started and enabled
   ansible.builtin.systemd:
     name: "{{ item }}"
     state: started
     enabled: true
   loop:
     - nut-driver-enumerator.path
-    - nut-driver-enumerator.service
     - nut-server.service
     - nut-monitor.service
     - nut.target
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Ensure NUT enumerator service is enabled
+  ansible.builtin.systemd:
+    name: nut-driver-enumerator.service
+    enabled: true
   ignore_errors: "{{ ansible_check_mode }}"
