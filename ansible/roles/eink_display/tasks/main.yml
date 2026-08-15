@@ -19,7 +19,9 @@
   args:
     chdir: /home/{{ ansible_user }}/eink-display
   register: eink_display_uv_sync_result
-  changed_when: eink_display_uv_sync_result.stdout | regex_search('(Installing|Uninstalled|Updated)')
+  changed_when: >
+    eink_display_uv_sync_result.stdout is search('Installing|Installed|Uninstalled|Updated') or
+    eink_display_uv_sync_result.stderr is search('Installing|Installed|Uninstalled|Updated')
   notify: Restart eink-display
 
 - name: Create assets directories
