@@ -45,12 +45,4 @@
     regexp: "^#?dtparam=spi="
     line: "dtparam=spi=on"
     state: present
-  register: rpi_base_spi_config
-
-- name: Abort playbook if SPI was just enabled (manual reboot required)
-  ansible.builtin.fail:
-    msg: >
-      SPI was just enabled in /boot/firmware/config.txt!
-      The Raspberry Pi requires a full system reboot to load the spidev hardware drivers.
-      Please reboot the Pi manually ('sudo reboot') and re-run this playbook.
-  when: rpi_base_spi_config.changed # noqa: no-handler
+  notify: Abort playbook if SPI was just enabled (manual reboot required)

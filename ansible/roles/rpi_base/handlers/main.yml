@@ -1,0 +1,7 @@
+---
+- name: Abort playbook if SPI was just enabled (manual reboot required)
+  ansible.builtin.fail:
+    msg: >
+      SPI was just enabled in /boot/firmware/config.txt!
+      The Raspberry Pi requires a full system reboot to load the spidev hardware drivers.
+      Please reboot the Pi manually ('sudo reboot') and re-run this playbook.
