@@ -2,6 +2,9 @@
 # renovate: datasource=github-releases depName=zellij-org/zellij
 system_base_zellij_version: "0.43.1"
 
-system_base_zellij_link: "https://github.com/zellij-org/zellij/releases/download/latest/zellij-no-web-x86_64-unknown-linux-musl.tar.gz"
+system_base_zellij_base_url: "https://github.com/zellij-org/zellij/releases/download"
+system_base_zellij_filename: "zellij-no-web-x86_64-unknown-linux-musl.tar.gz"
+
+system_base_zellij_link: "{{ system_base_zellij_base_url }}/v{{ system_base_zellij_version }}/{{ system_base_zellij_filename }}"
 
 system_base_shell: "/usr/bin/fish"

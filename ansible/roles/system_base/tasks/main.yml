@@ -40,7 +40,6 @@
     src: "{{ system_base_zellij_link }}"
     dest: /usr/local/bin
     remote_src: true
-    creates: /usr/local/bin/zellij
     owner: root
     group: root
     mode: "0755"
