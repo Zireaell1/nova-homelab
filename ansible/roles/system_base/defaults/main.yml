@@ -1,6 +1,6 @@
 ---
 # renovate: datasource=github-releases depName=zellij-org/zellij
-system_base_zellij_version: "0.43.1"
+system_base_zellij_version: "0.44.3"
 
 system_base_zellij_base_url: "https://github.com/zellij-org/zellij/releases/download"
 system_base_zellij_filename: "zellij-no-web-x86_64-unknown-linux-musl.tar.gz"
