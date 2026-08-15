@@ -53,11 +53,6 @@ loki.relabel "journal" {
         source_labels = ["__journal_container_name"]
         target_label  = "container"
     }
-
-    // rule {
-    //     source_labels = ["__journal_priority"]
-    //     target_label  = "level"
-    // }
 }
 
 prometheus.exporter.unix "host" {
@@ -84,7 +79,7 @@ prometheus.scrape "host_metrics" {
             },
             {
                 job         = "tailscale",
-                __address__ = "100.100.100.100",
+                __address__ = "100.100.100.100:80",
             },
         ],
     )
