@@ -9,3 +9,9 @@
     - role: rpi_base
       become: true
       tags: ["rpi_base"]
+
+    # =====================================================
+    # Host monitoring
+    # =====================================================
+    - role: alloy
+      tags: ["alloy", "host_monitoring"]

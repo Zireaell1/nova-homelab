@@ -1,0 +1,91 @@
+logging {
+    level = "warn"
+}
+
+prometheus.remote_write "remote_prom" {
+    endpoint {
+        url = "https://{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}/api/v1/write"
+
+        basic_auth {
+            username = "{{ vault_prometheus_service_account_username }}"
+            password = "{{ vault_prometheus_service_account_password }}"
+        }
+    }
+}
+
+loki.write "remote_loki" {
+    endpoint {
+        url = "https://{{ services['loki']['subdomain'] }}.{{ vault_domain }}/loki/api/v1/push"
+
+        basic_auth {
+            username = "{{ vault_loki_service_account_username }}"
+            password = "{{ vault_loki_service_account_password }}"
+        }
+    }
+}
+
+loki.source.journal "system" {
+    forward_to    = [loki.write.remote_loki.receiver]
+    relabel_rules = loki.relabel.journal.rules
+}
+
+loki.relabel "journal" {
+    forward_to = []
+
+    rule {
+        target_label = "job"
+        replacement  = "os"
+    }
+
+    rule {
+        source_labels = ["__journal_container_name"]
+        regex         = "(.+)"
+        target_label  = "job"
+        replacement   = "container"
+    }
+
+    rule {
+        source_labels = ["__journal__systemd_unit"]
+        target_label  = "unit"
+    }
+
+    rule {
+        source_labels = ["__journal_syslog_identifier"]
+        target_label  = "syslog_identifier"
+    }
+
+    rule {
+        target_label = "host"
+        replacement  = constants.hostname
+    }
+
+    rule {
+        source_labels = ["__journal_container_name"]
+        target_label  = "container"
+    }
+}
+
+prometheus.exporter.unix "host" {
+    include_exporter_metrics = true
+    disable_collectors       = ["mdadm"]
+    enable_collectors        = ["systemd", "processes", "logind"]
+
+    textfile {
+        directory = "/opt/alloy-metrics"
+    }
+}
+
+prometheus.scrape "host_metrics" {
+    targets = array.concat(
+        prometheus.exporter.unix.host.targets,
+        [
+            {
+                job         = "alloy",
+                __address__ = "127.0.0.1:12345",
+            },
+        ],
+    )
+    forward_to = [prometheus.remote_write.remote_prom.receiver]
+
+    scrape_interval = "15s"
+}

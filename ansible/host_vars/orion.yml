@@ -1,0 +1,4 @@
+---
+alloy_enable_smartmon: true
+
+alloy_config_template: "config_nova.alloy.j2"

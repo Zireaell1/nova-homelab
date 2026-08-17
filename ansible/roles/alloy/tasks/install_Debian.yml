@@ -1,0 +1,41 @@
+---
+- name: Ensure keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Download Grafana GPG key
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg-full.key
+    dest: /etc/apt/keyrings/grafana.asc
+    mode: "0644"
+    owner: root
+    group: root
+    force: true
+
+- name: Add Grafana package repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/grafana.asc] https://apt.grafana.com stable main"
+    state: present
+    filename: grafana
+
+- name: Install Grafana Alloy
+  ansible.builtin.apt:
+    name: alloy
+    state: present
+    update_cache: true
+
+- name: Configure Alloy environment variables
+  ansible.builtin.lineinfile:
+    path: /etc/default/alloy
+    regexp: '^#?\s*CUSTOM_ARGS='
+    line: 'CUSTOM_ARGS="--disable-reporting --server.http.listen-addr=0.0.0.0:12345"'
+    state: present
+    owner: root
+    group: root
+    mode: "0644"
+    create: true
+  notify: Restart alloy

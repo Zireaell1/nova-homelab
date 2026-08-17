@@ -10,6 +10,7 @@
       - swig
       - liblgpio-dev
       - pipx
+      - gpg
     state: present
     update_cache: true
 

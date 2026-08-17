@@ -1,21 +1,6 @@
 ---
-- name: Add Grafana package repository
-  ansible.builtin.yum_repository:
-    name: grafana
-    description: grafana
-    baseurl: https://rpm.grafana.com
-    gpgcheck: true
-    repo_gpgcheck: true
-    gpgkey: https://rpm.grafana.com/gpg.key
-    enabled: true
-    sslverify: true
-    priority: "10"
-
-- name: Install Grafana Alloy
-  ansible.builtin.dnf:
-    name: alloy
-    state: present
-    update_cache: true
+- name: Include OS-specific installation tasks
+  ansible.builtin.include_tasks: "install_{{ ansible_os_family }}.yml"
 
 - name: Add alloy user to systemd-journal group
   ansible.builtin.user:
@@ -24,21 +9,13 @@
     append: true
   notify: Restart alloy
 
-- name: Configure Alloy environment variables
-  ansible.builtin.lineinfile:
-    path: /etc/sysconfig/alloy
-    regexp: '^#?\s*CUSTOM_ARGS='
-    line: 'CUSTOM_ARGS="--disable-reporting --server.http.listen-addr=0.0.0.0:12345"'
-    state: present
-  notify: Restart alloy
-
 - name: Deploy Alloy configuration
   ansible.builtin.template:
-    src: config.alloy.j2
+    src: "{{ alloy_config_template }}"
     dest: /etc/alloy/config.alloy
     owner: root
     group: root
-    mode: "0644"
+    mode: "0600"
   notify: Restart alloy
 
 - name: Ensure custom metrics directory exists
@@ -51,36 +28,39 @@
   loop:
     - "/opt/alloy-metrics"
 
-- name: Deploy smartmon script
-  ansible.builtin.copy:
-    src: smartmon.sh
-    dest: /usr/local/bin/smartmon.sh
-    owner: root
-    group: root
-    mode: "0755"
+- name: Smartmon block
+  when: alloy_enable_smartmon
+  block:
+    - name: Deploy smartmon script
+      ansible.builtin.copy:
+        src: smartmon.sh
+        dest: /usr/local/bin/smartmon.sh
+        owner: root
+        group: root
+        mode: "0755"
 
-- name: Deploy smartmon systemd service
-  ansible.builtin.template:
-    src: smartmon.service.j2
-    dest: /etc/systemd/system/smartmon.service
-    owner: root
-    group: root
-    mode: "0644"
+    - name: Deploy smartmon systemd service
+      ansible.builtin.template:
+        src: smartmon.service.j2
+        dest: /etc/systemd/system/smartmon.service
+        owner: root
+        group: root
+        mode: "0644"
 
-- name: Deploy smartmon systemd timer
-  ansible.builtin.template:
-    src: smartmon.timer.j2
-    dest: /etc/systemd/system/smartmon.timer
-    owner: root
-    group: root
-    mode: "0644"
+    - name: Deploy smartmon systemd timer
+      ansible.builtin.template:
+        src: smartmon.timer.j2
+        dest: /etc/systemd/system/smartmon.timer
+        owner: root
+        group: root
+        mode: "0644"
 
-- name: Ensure smartmon timer is enabled and running
-  ansible.builtin.systemd:
-    name: smartmon.timer
-    state: started
-    enabled: true
-    daemon_reload: true
+    - name: Ensure smartmon timer is enabled and running
+      ansible.builtin.systemd:
+        name: smartmon.timer
+        state: started
+        enabled: true
+        daemon_reload: true
 
 - name: Flush handlers to restart Alloy if configurations changed
   ansible.builtin.meta: flush_handlers

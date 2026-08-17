@@ -1,0 +1,26 @@
+---
+- name: Add Grafana package repository
+  ansible.builtin.yum_repository:
+    name: grafana
+    description: grafana
+    baseurl: https://rpm.grafana.com
+    gpgcheck: true
+    repo_gpgcheck: true
+    gpgkey: https://rpm.grafana.com/gpg.key
+    enabled: true
+    sslverify: true
+    priority: "10"
+
+- name: Install Grafana Alloy
+  ansible.builtin.dnf:
+    name: alloy
+    state: present
+    update_cache: true
+
+- name: Configure Alloy environment variables
+  ansible.builtin.lineinfile:
+    path: /etc/sysconfig/alloy
+    regexp: '^#?\s*CUSTOM_ARGS='
+    line: 'CUSTOM_ARGS="--disable-reporting --server.http.listen-addr=0.0.0.0:12345"'
+    state: present
+  notify: Restart alloy
