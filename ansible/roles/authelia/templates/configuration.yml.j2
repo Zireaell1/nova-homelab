@@ -101,6 +101,16 @@ access_control:
       subject:
         - ['group:logs']
 
+    # Prometheus One-factor Auth for metrics endpoint
+    - domain: '{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'one_factor'
+      networks:
+        - 'internal'
+      resources:
+        - '^/api/v1/write$'
+      subject:
+        - ['group:metrics']
+
     # ===============================================================================
     # Exceptions
     # ===============================================================================
