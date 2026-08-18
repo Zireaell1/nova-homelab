@@ -31,3 +31,9 @@
     name: chronyd.service
     state: restarted
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart fwupd
+  ansible.builtin.service:
+    name: fwupd.service
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"

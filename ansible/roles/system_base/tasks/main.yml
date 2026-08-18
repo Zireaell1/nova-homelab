@@ -1,11 +1,4 @@
 ---
-- name: Stop and disable ModemManager
-  ansible.builtin.systemd:
-    name: ModemManager.service
-    state: stopped
-    enabled: false
-    masked: true
-
 # TODO
 # cockpit-sosreport
 # cockpit-files
