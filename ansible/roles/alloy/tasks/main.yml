@@ -14,8 +14,8 @@
     src: "{{ alloy_config_template }}"
     dest: /etc/alloy/config.alloy
     owner: root
-    group: root
-    mode: "0600"
+    group: alloy
+    mode: "0640"
   notify: Restart alloy
 
 - name: Ensure custom metrics directory exists
