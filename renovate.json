@@ -35,7 +35,9 @@
       "matchPackageNames": [
         "ghcr.io/blakeblackshear/frigate"
       ],
-      "allowedVersions": "/^v?\\d+\\.\\d+\\.\\d+/"
+      "ignoreUnstable": false,
+      "respectLatest": false,
+      "allowedVersions": "/^v?\\d+\\.\\d+\\.\\d+(-(beta|rc)\\.?\\d*)?$/"
     },
     {
       "matchDatasources": [
