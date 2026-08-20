@@ -2,3 +2,9 @@
 - name: Reload Udev rules
   ansible.builtin.command: udevadm control --reload-rules && udevadm trigger
   changed_when: true
+
+- name: Restart fwupd
+  ansible.builtin.service:
+    name: fwupd.service
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"

@@ -7,36 +7,3 @@
     line: "allow {{ vault_network_cctv }}"
     state: present
   notify: Restart chronyd
-
-- name: Stop, disable and mask ModemManager
-  ansible.builtin.systemd:
-    name: ModemManager.service
-    state: stopped
-    enabled: false
-    masked: true
-
-- name: Stop, disable and mask Avahi
-  ansible.builtin.systemd:
-    name: "{{ item }}"
-    state: stopped
-    enabled: false
-    masked: true
-  loop:
-    - avahi-daemon.socket
-    - avahi-daemon.service
-
-- name: Disable Passim P2P sharing in fwupd config
-  community.general.ini_file:
-    path: /etc/fwupd/fwupd.conf
-    section: fwupd
-    option: P2pPolicy
-    value: "nothing"
-    mode: "0644"
-  notify: Restart fwupd
-
-- name: Stop, disable and mask Passim service
-  ansible.builtin.systemd:
-    name: passim.service
-    state: stopped
-    enabled: false
-    masked: true

@@ -1,4 +1,72 @@
 ---
+- name: Disable Passim P2P sharing in fwupd config
+  community.general.ini_file:
+    path: /etc/fwupd/fwupd.conf
+    section: fwupd
+    option: P2pPolicy
+    value: "nothing"
+    mode: "0644"
+  notify: Restart fwupd
+
+- name: Stop, disable and mask unnecessary system services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+    masked: true
+  loop:
+    - bluetooth.service
+    - passim.service
+    - pcscd.socket
+    - pcscd.service
+
+    - abrtd.service
+    - abrt-journal-core.service
+    - abrt-oops.service
+    - abrt-vmcore.service
+    - abrt-xorg.service
+
+    - sssd.service
+    - sssd-kcm.service
+    - sssd-kcm.socket
+
+    - iscsid.socket
+    - iscsid.service
+    - iscsi.service
+    - iscsiuio.socket
+    - iscsi-onboot.service
+    - multipathd.service
+    - multipathd.socket
+
+    # - plymouth-start.service
+    # - plymouth-quit-wait.service
+
+    - ModemManager.service
+    - wpa_supplicant.service
+    - avahi-daemon.socket
+    - avahi-daemon.service
+  # register: system_base_systemd_result
+  # failed_when:
+  #   - system_base_systemd_result.failed == true
+  #   - "'Could not find the requested service' not in system_base_systemd_result.msg | default('')"
+  #   - "'not found' not in system_base_systemd_result.msg | default('')"
+
+- name: Flush handlers to restart fwupd immediately
+  ansible.builtin.meta: flush_handlers
+
+# - name: Remove unnecessary packages to debloat the system
+#   ansible.builtin.dnf:
+#     name:
+#       - plymouth
+#       - wpa_supplicant
+#       - ModemManager
+#       - avahi
+#       - sssd
+#       - abrt
+#       - iscsi-initiator-utils
+#     state: absent
+#     autoremove: true
+
 # TODO
 # cockpit-sosreport
 # cockpit-files
