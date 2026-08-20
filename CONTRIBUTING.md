@@ -14,6 +14,16 @@ This repository has an automated GitHub Actions workflow configured to run **Ans
 > [!TIP]
 > If you use Visual Studio Code, I highly recommend installing the [official Ansible extension](https://marketplace.visualstudio.com/items?itemName=redhat.ansible). It catches most linting errors and formatting issues directly in the editor as you type.
 
+## Commit Messages
+
+Please try to follow the Conventional Commits specification for your commit messages and Pull Request titles. This keeps the project history clean, readable, and easy to navigate.
+
+**Common types include:**
+* `feat:` – A new feature or addition (e.g., `feat: add new Nextcloud container`)
+* `fix:` – A bug fix (e.g., `fix: correct SSH port in firewall rules`)
+* `chore:` – Maintenance tasks, updates, or refactoring (e.g., `chore: update Ansible roles`)
+* `docs:` – Documentation changes (e.g., `docs: add network diagram to readme`)
+
 ## Handling Secrets (Ansible Vault)
 
 **Never commit unencrypted secrets or real Ansible Vault files to this repository.**
