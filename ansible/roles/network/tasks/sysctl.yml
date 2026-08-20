@@ -1,19 +1,22 @@
 ---
-- name: Let users set services on ports 53+
-  ansible.posix.sysctl:
-    name: net.ipv4.ip_unprivileged_port_start
-    value: "53"
-    sysctl_set: true
+- name: Load tcp_bbr module and make it persistent
+  community.general.modprobe:
+    name: tcp_bbr
     state: present
-    reload: true
+    persistent: present
 
-- name: Enable IPv4 and IPv6 forwarding for routing
+- name: Configure system-wide network and kernel parameters
   ansible.posix.sysctl:
-    name: "{{ item }}"
-    value: "1"
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
     sysctl_set: true
     state: present
     reload: true
+    sysctl_file: /etc/sysctl.d/99-homelab-network.conf
   loop:
-    - net.ipv4.ip_forward
-    - net.ipv6.conf.all.forwarding
+    - { name: "net.ipv4.ip_unprivileged_port_start", value: "53" }
+    - { name: "net.ipv4.ip_forward", value: "1" }
+    - { name: "net.ipv6.conf.all.forwarding", value: "1" }
+
+    - { name: "net.core.default_qdisc", value: "fq" }
+    - { name: "net.ipv4.tcp_congestion_control", value: "bbr" }
