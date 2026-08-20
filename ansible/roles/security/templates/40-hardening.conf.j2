@@ -4,3 +4,7 @@
 PasswordAuthentication no
 KbdInteractiveAuthentication no
 AuthenticationMethods publickey
+PermitRootLogin no
+PubkeyAuthentication yes
+PermitEmptyPasswords no
+AllowUsers {{ ansible_user }}
