@@ -15,13 +15,14 @@
   notify: Restart lm_sensors
 
 # Default: 2
-- name: Allow unpriviledged users to read hardware performance counters
+- name: Allow unprivileged users to read hardware performance counters
   ansible.posix.sysctl:
     name: kernel.perf_event_paranoid
     value: "0"
     sysctl_set: true
     state: present
     reload: true
+    sysctl_file: /etc/sysctl.d/90-frigate.conf
 
 # https://docs.kernel.org/hwmon/nct6683.html
 - name: Load nct6683 module and make it persistent
