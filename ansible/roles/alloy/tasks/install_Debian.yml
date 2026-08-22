@@ -14,13 +14,16 @@
     mode: "0644"
     owner: root
     group: root
-    force: true
 
 - name: Add Grafana package repository
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/grafana.asc] https://apt.grafana.com stable main"
+  ansible.builtin.deb822_repository:
+    name: grafana
+    types: deb
+    uris: https://apt.grafana.com
+    suites: stable
+    components: main
+    signed_by: /etc/apt/keyrings/grafana.asc
     state: present
-    filename: grafana
 
 - name: Install Grafana Alloy
   ansible.builtin.apt:
