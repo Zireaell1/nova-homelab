@@ -1,4 +1,4 @@
-version: 0.17-0
+version: 0.18-0
 
 mqtt:
   enabled: true
@@ -13,8 +13,12 @@ tls:
 auth:
   enabled: false
 
+telemetry:
+  version_check: false
+
 proxy:
-  auth_secret: {{ vault_caddy_frigate_auth_secret }}
+  auth_secret:
+    {{ vault_caddy_frigate_auth_secret }}
   header_map:
     user: remote-user
     role: remote-groups
@@ -52,7 +56,7 @@ go2rtc:
       - rtsp://{FRIGATE_DOORBELL_USER}:{FRIGATE_DOORBELL_PASSWORD}@{FRIGATE_DOORBELL_ADDRESS}:554/Preview_01_sub
   webrtc:
     filters:
-      networks: [ udp4, tcp4 ]
+      networks: [udp4, tcp4]
     candidates:
       - {{ vault_primary_ip }}:8555
       - {{ vault_tailscale_ip }}:8555
@@ -124,7 +128,7 @@ classification:
 cameras:
   Front:
     enabled: true
-    webui_url: "https://{{ services['camera_front']['subdomain'] }}.{{ vault_domain }}"
+    webui_url: https://{{ services['camera_front']['subdomain'] }}.{{ vault_domain }}
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy
@@ -139,6 +143,9 @@ cameras:
             - record
     detect:
       enabled: true
+      width: 896
+      height: 512
+      fps: 5
       annotation_offset: -1000
     record:
       enabled: true
@@ -156,7 +163,11 @@ cameras:
         days: 0
     motion:
       mask:
-        0,0.095,0,0,1,0,1,0.112,0.912,0,0.736,0,0.553,0.012,0.426,0.076,0.353,0.076,0.157,0.081
+        motion_mask_1:
+          friendly_name: Motion Mask 1
+          enabled: true
+          coordinates:
+            0,0.095,0,0,1,0,1,0.112,0.912,0,0.736,0,0.553,0.012,0.426,0.076,0.353,0.076,0.157,0.081
       threshold: 50
       contour_area: 10
       improve_contrast: true
@@ -176,7 +187,7 @@ cameras:
 
   Entry:
     enabled: true
-    webui_url: "https://{{ services['camera_entry']['subdomain'] }}.{{ vault_domain }}"
+    webui_url: https://{{ services['camera_entry']['subdomain'] }}.{{ vault_domain }}
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy
@@ -191,6 +202,9 @@ cameras:
             - record
     detect:
       enabled: true
+      width: 896
+      height: 512
+      fps: 5
       annotation_offset: -1000
     record:
       enabled: true
@@ -208,7 +222,11 @@ cameras:
         days: 0
     motion:
       mask:
-        0,0.597,0,0,1,0,1,0.094,1,0.775,0.793,0.359,0.608,0.107,0.289,0.086,0.182,0.227,0.085,0.394
+        motion_mask_1:
+          friendly_name: Motion Mask 1
+          enabled: true
+          coordinates:
+            0,0.597,0,0,1,0,1,0.094,1,0.775,0.793,0.359,0.608,0.107,0.289,0.086,0.182,0.227,0.085,0.394
       threshold: 50
       contour_area: 10
       improve_contrast: true
@@ -228,7 +246,7 @@ cameras:
 
   Back:
     enabled: true
-    webui_url: "https://{{ services['camera_back']['subdomain'] }}.{{ vault_domain }}"
+    webui_url: https://{{ services['camera_back']['subdomain'] }}.{{ vault_domain }}
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy
@@ -243,6 +261,9 @@ cameras:
             - record
     detect:
       enabled: true
+      width: 896
+      height: 512
+      fps: 5
       annotation_offset: -1000
     record:
       enabled: true
@@ -260,9 +281,20 @@ cameras:
         days: 0
     motion:
       mask:
-        - 0,0.466,0,0,0.427,0,0.428,0.07,0.122,0.072,0.062,0.2
-        - 0.849,0,0.879,0.07,0.929,0.154,0.952,0.218,0.978,0.284,1,0.34,1,0
-        - 0.131,1,0.112,0.966,0.102,0.914,0.135,0.84,0.144,0.802,0.121,0.758,0.133,0.682,0.147,0.637,0.17,0.617,0.195,0.619,0.234,0.666,0.28,0.756,0.313,0.838,0.317,0.916,0.316,1
+        motion_mask_1:
+          friendly_name: Motion Mask 1
+          enabled: true
+          coordinates: 0,0.466,0,0,0.427,0,0.428,0.07,0.122,0.072,0.062,0.2
+        motion_mask_2:
+          friendly_name: Motion Mask 2
+          enabled: true
+          coordinates:
+            0.849,0,0.879,0.07,0.929,0.154,0.952,0.218,0.978,0.284,1,0.34,1,0
+        motion_mask_3:
+          friendly_name: Motion Mask 3
+          enabled: true
+          coordinates:
+            0.131,1,0.112,0.966,0.102,0.914,0.135,0.84,0.144,0.802,0.121,0.758,0.133,0.682,0.147,0.637,0.17,0.617,0.195,0.619,0.234,0.666,0.28,0.756,0.313,0.838,0.317,0.916,0.316,1
       threshold: 50
       contour_area: 10
       improve_contrast: true
@@ -282,7 +314,7 @@ cameras:
 
   Doorbell:
     enabled: true
-    webui_url: "https://{{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }}"
+    webui_url: https://{{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }}
     ffmpeg:
       output_args:
         record: preset-record-generic-audio-copy
@@ -297,6 +329,9 @@ cameras:
             - record
     detect:
       enabled: true
+      width: 640
+      height: 480
+      fps: 5
       annotation_offset: -1000
     record:
       enabled: true
@@ -314,7 +349,11 @@ cameras:
         days: 0
     motion:
       mask:
-        0,0,0,0.21,0.293,0.364,0.476,0.355,0.654,0.344,0.793,0.381,0.911,0.39,1,0.394,1,0
+        motion_mask_1:
+          friendly_name: Motion Mask 1
+          enabled: true
+          coordinates:
+            0,0,0,0.21,0.293,0.364,0.476,0.355,0.654,0.344,0.793,0.381,0.911,0.39,1,0.394,1,0
       threshold: 50
       contour_area: 25
       improve_contrast: true
