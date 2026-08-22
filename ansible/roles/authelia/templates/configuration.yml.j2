@@ -41,6 +41,14 @@ access_control:
       resources:
         - '^/favicon\.svg$'
 
+    - domain: '{{ services['go2rtc']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'bypass'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      resources:
+        - '^/favicon\.ico$'
+
     - domain: '{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
