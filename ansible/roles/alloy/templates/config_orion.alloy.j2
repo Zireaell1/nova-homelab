@@ -2,13 +2,23 @@ logging {
     level = "warn"
 }
 
+local.file "prom_auth" {
+    filename  = "/etc/alloy/prom_password.txt"
+    is_secret = true
+}
+
+local.file "loki_auth" {
+    filename  = "/etc/alloy/loki_password.txt"
+    is_secret = true
+}
+
 prometheus.remote_write "remote_prom" {
     endpoint {
         url = "https://{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}/api/v1/write"
 
         basic_auth {
             username = "{{ vault_prometheus_service_account_username }}"
-            password = "{{ vault_prometheus_service_account_password }}"
+            password = local.file.prom_auth.content
         }
     }
 }
@@ -19,7 +29,7 @@ loki.write "remote_loki" {
 
         basic_auth {
             username = "{{ vault_loki_service_account_username }}"
-            password = "{{ vault_loki_service_account_password }}"
+            password = local.file.loki_auth.content
         }
     }
 }

@@ -42,3 +42,17 @@
     mode: "0644"
     create: true
   notify: Restart alloy
+
+- name: Deploy Alloy authentication secrets
+  ansible.builtin.copy:
+    content: "{{ item.content }}"
+    dest: "/etc/alloy/{{ item.filename }}"
+    owner: root
+    group: alloy
+    mode: "0600"
+  loop:
+    - filename: prom_password.txt
+      content: "{{ vault_prometheus_service_account_password }}"
+    - filename: loki_password.txt
+      content: "{{ vault_loki_service_account_password }}"
+  no_log: true
