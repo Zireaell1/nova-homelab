@@ -87,6 +87,7 @@
       - rclone
       - python3
       - git
+      - jq
     state: present
 
 - name: Check current version of Zellij
