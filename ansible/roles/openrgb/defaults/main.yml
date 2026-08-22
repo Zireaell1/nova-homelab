@@ -7,4 +7,4 @@ openrgb_repo: "https://github.com/CalcProgrammer1/OpenRGB.git"
 openrgb_upstream_commit: "b03cd94"
 
 # renovate: datasource=docker depName=docker.io/library/debian
-openrgb_base_image_version: "13-slim"
+openrgb_base_image_version: "13.6-slim"
