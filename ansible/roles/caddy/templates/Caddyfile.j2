@@ -204,13 +204,25 @@ http:// {
 	import secure_headers
 
 	import authelia_middleware
-	reverse_proxy frigate:8971 {
+
+	@websockets {
+		header Connection *Upgrade*
+		header Upgrade websocket
+	}
+
+	reverse_proxy @websockets frigate:8971 {
 		header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
-
 		flush_interval -1
-
 		transport http {
 			versions 1.1
+		}
+	}
+
+	reverse_proxy frigate:8971 {
+		header_up X-Proxy-Secret {env.FRIGATE_AUTH_SECRET}
+		flush_interval -1
+		transport http {
+			versions h2c
 			compression off
 		}
 	}
