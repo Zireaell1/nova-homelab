@@ -77,8 +77,8 @@ loki.relabel "journal" {
 
 prometheus.exporter.unix "host" {
     include_exporter_metrics = true
-    disable_collectors       = ["mdadm"]
-    enable_collectors        = ["systemd", "processes", "logind"]
+    disable_collectors       = ["mdadm", "rapl", "dmi", "edac", "nvme", "nfs", "nfsd", "tapestats", "infiniband", "fibrechannel", "ipvs", "btrfs", "zfs", "bache", "xfs"]
+    enable_collectors        = ["systemd", "processes", "logind", "wifi"]
 
     textfile {
         directory = "/opt/alloy-metrics"

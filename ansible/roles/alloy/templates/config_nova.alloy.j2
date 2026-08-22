@@ -57,7 +57,7 @@ loki.relabel "journal" {
 
 prometheus.exporter.unix "host" {
     include_exporter_metrics = true
-    disable_collectors       = ["mdadm"]
+    disable_collectors       = ["mdadm", "nfs", "nfsd", "tapestats", "infiniband", "fibrechannel", "ipvs", "btrfs", "zfs", "bcache"]
     enable_collectors        = ["systemd", "processes", "logind"]
 
     textfile {
