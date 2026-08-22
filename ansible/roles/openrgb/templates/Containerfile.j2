@@ -1,6 +1,4 @@
-FROM debian:13-slim AS builder
-
-# HASH: {{ openrgb_upstream_commit }}
+FROM docker.io/library/debian:{{ openrgb_base_image_version }} AS builder
 
 WORKDIR /src
 
@@ -27,7 +25,7 @@ RUN git clone {{ openrgb_repo }} . && \
     qmake ../OpenRGB.pro && \
     make -j$(($(nproc) > 3 ? $(nproc) - 2 : 1))
 
-FROM debian:13-slim AS runtime
+FROM docker.io/library/debian:{{ openrgb_base_image_version }} AS runtime
 
 WORKDIR /app
 

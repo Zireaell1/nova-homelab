@@ -3,6 +3,8 @@ openrgb_memory_limit: "500m"
 
 openrgb_local_image: "localhost/custom-openrgb"
 
-openrgb_branch: "master"
 openrgb_repo: "https://github.com/CalcProgrammer1/OpenRGB.git"
-openrgb_upstream_commit: "b03cd94" # Update this hash to force Ansible to rebuild the container with the newest code
+openrgb_upstream_commit: "b03cd94"
+
+# renovate: datasource=docker depName=docker.io/library/debian
+openrgb_base_image_version: "13-slim"
