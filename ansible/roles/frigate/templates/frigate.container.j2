@@ -18,11 +18,6 @@ StopTimeout=120
 GroupAdd=keep-groups
 UserNS=keep-id:uid=0,gid=0
 
-# --- Security / Capabilities ---
-AddCapability=CAP_PERFMON
-SeccompProfile=unconfined
-SecurityLabelDisable=true
-
 # --- Resource Limits ---
 ShmSize=1g
 Memory={{ frigate_memory_limit }}
