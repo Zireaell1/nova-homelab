@@ -20,8 +20,7 @@ http {
                         '"$http_user_agent" "$http_x_forwarded_for" '
                         'request_time="$request_time" upstream_response_time="$upstream_response_time"';
 
-    # Modified by Ansible
-    access_log off;
+    access_log /dev/stdout main;
 
     # send headers in one piece, it is better than sending them one by one
     tcp_nopush on;
@@ -302,6 +301,14 @@ http {
             }
 
             location /api/version {
+                include auth_request.conf;
+                access_log off;
+                rewrite ^/api(/.*)$ $1 break;
+                proxy_pass http://frigate_api;
+                include proxy.conf;
+            }
+
+            location /api/metrics {
                 include auth_request.conf;
                 access_log off;
                 rewrite ^/api(/.*)$ $1 break;
