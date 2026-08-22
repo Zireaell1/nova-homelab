@@ -13,7 +13,7 @@ authelia_postgres_memory_limit: "500m"
 authelia_postgres_image: "docker.io/library/postgres"
 
 # renovate: datasource=docker depName=authelia-postgres packageName=docker.io/library/postgres
-authelia_postgres_version: "18.4"
+authelia_postgres_version: "18.6"
 
 authelia_redis_memory_limit: "500m"
 
