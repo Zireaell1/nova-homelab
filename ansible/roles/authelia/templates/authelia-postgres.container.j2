@@ -9,7 +9,7 @@ Image={{ authelia_postgres_image }}:{{ authelia_postgres_version }}
 ContainerName=authelia-postgres
 StopTimeout=20
 
-Exec=postgres -c log_min_messages=WARNING
+Exec=postgres -c log_min_messages=WARNING -c log_checkpoints=off
 
 # --- Identity / Namespaces ---
 User=999:999
