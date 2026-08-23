@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+INTERVAL={{ alloy_smartmon_interval_seconds }}
+
+FINAL_FILE="{{ alloy_metrics_directory }}/smart.prom"
+TMP_FILE="{{ alloy_metrics_directory }}/smart.prom.$$"
+
+echo "Starting S.M.A.R.T. monitoring daemon (Interval: ${INTERVAL}s)..."
+
+while true; do
+    /usr/local/bin/smartmon.sh > "$TMP_FILE" && mv "$TMP_FILE" "$FINAL_FILE"
+
+    sleep $INTERVAL
+done

@@ -1,0 +1,4 @@
+---
+alloy_smartmon_interval_seconds: 300
+
+alloy_metrics_directory: /opt/alloy-metrics
