@@ -8,6 +8,12 @@
 		}
 	],
 	"settings": {
+		"workbench.editor.customLabels.patterns": {
+			"**/tasks/**.yml": "${dirname(1)} > ${filename}.${extname} [tasks]",
+			"**/vars/**.yml": "${dirname(1)} > ${filename}.${extname} [vars]",
+			"**/defaults/**.yml": "${dirname(1)} > ${filename}.${extname} [defaults]",
+			"**/handlers/**.yml": "${dirname(1)} > ${filename}.${extname} [handlers]"
+		},
 		"editor.formatOnSave": true,
 		"files.trimTrailingWhitespace": true,
 		"files.insertFinalNewline": true,
