@@ -90,6 +90,14 @@
       - jq
     state: present
 
+- name: Remove Cockpit MOTD/issue banner
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/motd.d/cockpit
+    - /etc/issue.d/cockpit.issue
+
 - name: Check current version of Zellij
   ansible.builtin.command: zellij --version
   register: system_base_zellij_cmd_output
@@ -142,3 +150,34 @@
     group: root
     mode: "0644"
   notify: Reload Udev rules
+
+- name: Check if Ghostty terminfo is already installed system-wide
+  ansible.builtin.stat:
+    path: /usr/share/terminfo/x/xterm-ghostty
+  register: system_base_ghostty_terminfo_stat
+
+- name: Ghostty terminfo system-wide install block
+  when: not system_base_ghostty_terminfo_stat.stat.exists
+  block:
+    - name: Dump Ghostty terminfo definition from the rootless user's database
+      become: false
+      ansible.builtin.command: "infocmp -x xterm-ghostty"
+      register: system_base_ghostty_terminfo_src
+      changed_when: false
+      failed_when: false
+
+    - name: Warn if source terminfo entry isn't found for the rootless user either
+      ansible.builtin.debug:
+        msg: >
+          [WARNING] xterm-ghostty terminfo not found for {{ ansible_user }} either.
+          SSH into the host at least once with Ghostty as {{ ansible_user }} so its
+          shell integration installs the entry, then re-run this role.
+      when: system_base_ghostty_terminfo_src.rc != 0
+
+    - name: Compile and install Ghostty terminfo into /usr/share/terminfo (all users)
+      ansible.builtin.command: "tic -x -o /usr/share/terminfo -"
+      args:
+        stdin: "{{ system_base_ghostty_terminfo_src.stdout }}"
+        creates: /usr/share/terminfo/x/xterm-ghostty
+      when: system_base_ghostty_terminfo_src.rc == 0
+      changed_when: true
