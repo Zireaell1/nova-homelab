@@ -73,8 +73,6 @@ services:
       stop: false
       paths:
         - /home/{{ ansible_user }}/stacks/homeassistant/config/backups
-  uptime_kuma:
-    subdomain: "kuma"
   peanut:
     subdomain: "peanut"
   cockpit:
