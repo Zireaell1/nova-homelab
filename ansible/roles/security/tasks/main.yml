@@ -70,7 +70,6 @@
     - service: "dns"
     - service: "http"
     - service: "https"
-    - service: "nut"
     - service: "ssh"
     - service: "dhcpv6-client"
     - port: "443/udp"
