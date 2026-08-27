@@ -7,14 +7,14 @@ immich_storage_path: "/srv/immich"
 immich_image: "ghcr.io/immich-app/immich-server"
 
 # renovate: datasource=docker depName=immich packageName=ghcr.io/immich-app/immich-server
-immich_version: "v3.0.3"
+immich_version: "v3.1.0"
 
 immich_machine_learning_memory_limit: "6g"
 
 immich_machine_learning_image: "ghcr.io/immich-app/immich-machine-learning"
 
 # renovate: datasource=docker depName=immich-machine-learning packageName=ghcr.io/immich-app/immich-machine-learning
-immich_machine_learning_version: "v3.0.3"
+immich_machine_learning_version: "v3.1.0"
 
 immich_postgres_memory_limit: "500m"
 
