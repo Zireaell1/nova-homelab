@@ -4,10 +4,13 @@ hardware_data_drives:
     fstype: "xfs"
     mountpoint: "/mnt/backup"
     passno: "0"
+    fstrim_notrim: true
+
   - uuid: "cb64996e-45e2-4806-b8b1-f14635ecaa2f"
     fstype: "xfs"
     mountpoint: "/mnt/frigate"
     passno: "0"
+    fstrim_notrim: true
 
 hardware_target_lvs:
   - name: root

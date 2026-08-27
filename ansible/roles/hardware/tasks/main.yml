@@ -71,7 +71,7 @@
     fstype: "{{ item.fstype }}"
     dump: "0"
     passno: "{{ item.passno }}"
-    opts: defaults,nofail
+    opts: "defaults,nofail{{ ',X-fstrim.notrim' if item.fstrim_notrim | default(false) else '' }}"
     state: mounted
   loop: "{{ hardware_data_drives }}"
 
