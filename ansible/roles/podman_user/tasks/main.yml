@@ -1,20 +1,17 @@
 ---
 - name: Verify if config directories exist
   ansible.builtin.file:
-    path: "{{ item.path }}"
+    path: "{{ item }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: "{{ item.mode }}"
+    mode: "0755"
   loop:
-    - path: "/home/{{ ansible_user }}/.config/containers"
-      mode: "0755"
-
-    - path: "/home/{{ ansible_user }}/.config/containers/systemd"
-      mode: "0755"
-
-    - path: "/home/{{ ansible_user }}/.config/systemd/user"
-      mode: "0755"
+    - "/home/{{ ansible_user }}/.config/containers"
+    - "/home/{{ ansible_user }}/.config/containers/systemd"
+    - "/home/{{ ansible_user }}/.config/systemd/user"
+    - "/home/{{ ansible_user }}/.config/systemd/user/prometheus-podman-exporter.service.d"
+    - "/home/{{ ansible_user }}/.config/prometheus-podman-exporter"
 
 - name: Upload containers.conf file
   ansible.builtin.template:
@@ -51,6 +48,24 @@
     group: "{{ ansible_user }}"
     mode: "0644"
   notify: Restart podman-prune timer
+
+- name: Deploy user-owned env file for podman-exporter
+  ansible.builtin.copy:
+    dest: "/home/{{ ansible_user }}/.config/prometheus-podman-exporter/podman-exporter.conf"
+    mode: "0644"
+    content: |
+      PODMAN_EXPORTER_OPTS="--collector.enable-all --web.listen-address=127.0.0.1:9882"
+  notify: Restart prometheus-podman-exporter
+
+- name: Repoint EnvironmentFile to user-owned config
+  ansible.builtin.copy:
+    dest: "/home/{{ ansible_user }}/.config/systemd/user/prometheus-podman-exporter.service.d/override.conf"
+    mode: "0644"
+    content: |
+      [Service]
+      EnvironmentFile=
+      EnvironmentFile=-/home/{{ ansible_user }}/.config/prometheus-podman-exporter/podman-exporter.conf
+  notify: Restart prometheus-podman-exporter
 
 - name: Flush handlers to apply systemd changes
   ansible.builtin.meta: flush_handlers

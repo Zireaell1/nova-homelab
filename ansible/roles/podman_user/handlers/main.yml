@@ -11,6 +11,13 @@
     daemon_reload: true
     scope: user
 
+- name: Restart prometheus-podman-exporter
+  ansible.builtin.systemd:
+    name: prometheus-podman-exporter.service
+    state: restarted
+    daemon_reload: true
+    scope: user
+
 - name: Show Podman config restart warning
   ansible.builtin.debug:
     msg: >
