@@ -1,0 +1,20 @@
+---
+- name: Create host-only service interface for containers
+  community.general.nmcli:
+    conn_name: podhost
+    ifname: podhost
+    type: dummy
+    ip4: "{{ host_svc_address }}/32"
+    method6: disabled
+    zone: trusted
+    autoconnect: true
+    may_fail4: false
+    state: present
+
+- name: Block forwarded traffic toward the host-only address
+  ansible.posix.firewalld:
+    rich_rule: 'rule family="ipv4" destination address="{{ host_svc_address }}/32" drop'
+    zone: public
+    permanent: true
+    immediate: true
+    state: enabled

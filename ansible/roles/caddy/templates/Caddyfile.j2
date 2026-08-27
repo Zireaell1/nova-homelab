@@ -127,7 +127,7 @@ http:// {
 	import secure_headers
 
 	import authelia_middleware_basic
-	reverse_proxy host.containers.internal:12345
+	reverse_proxy host.svc.internal:12345
 }
 
 {{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }} {
@@ -242,7 +242,7 @@ http:// {
 
 	import authelia_middleware_basic
 	redir / /admin 302
-	reverse_proxy host.containers.internal:8080
+	reverse_proxy host.svc.internal:8080
 }
 
 {{ services['peanut']['subdomain'] }}.{{ vault_domain }} {

@@ -5,6 +5,9 @@
 - name: Configure Network Interfaces and Features
   ansible.builtin.include_tasks: network.yml
 
+- name: Configure dummy Podman Interface
+  ansible.builtin.include_tasks: hostnet.yml
+
 - name: Configure Host DNS and systemd-resolved
   ansible.builtin.include_tasks: dns.yml
 

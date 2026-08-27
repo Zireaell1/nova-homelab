@@ -29,7 +29,7 @@ Volume={{ stacks_path }}/pihole/etc-pihole:/etc/pihole:Z
 # --- Networking ---
 PublishPort=53:53/tcp
 PublishPort=53:53/udp
-PublishPort=8080:80
+PublishPort={{ host_svc_address }}:8080:80
 
 # --- Configuration / Env ---
 Timezone={{ timezone }}

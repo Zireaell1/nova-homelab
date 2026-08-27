@@ -21,6 +21,6 @@
   ansible.builtin.lineinfile:
     path: /etc/sysconfig/alloy
     regexp: '^#?\s*CUSTOM_ARGS='
-    line: 'CUSTOM_ARGS="--disable-reporting --server.http.listen-addr=0.0.0.0:12345"'
+    line: 'CUSTOM_ARGS="--disable-reporting --server.http.listen-addr={{ host_svc_address }}:12345"'
     state: present
   notify: Restart alloy

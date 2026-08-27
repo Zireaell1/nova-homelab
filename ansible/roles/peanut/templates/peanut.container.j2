@@ -32,6 +32,8 @@ Volume={{ stacks_path }}/peanut/config:/config:Z
 # --- Networking ---
 Network=peanut.network
 
+AddHost=host.svc.internal:{{ host_svc_address }}
+
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 

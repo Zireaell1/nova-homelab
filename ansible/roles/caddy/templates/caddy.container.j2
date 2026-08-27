@@ -53,6 +53,8 @@ Network=prometheus.network
 Network=loki.network
 Network=grafana.network
 
+AddHost=host.svc.internal:{{ host_svc_address }}
+
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 

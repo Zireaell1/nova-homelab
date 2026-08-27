@@ -71,7 +71,7 @@ prometheus.scrape "host_metrics" {
         [
             {
                 job         = "alloy",
-                __address__ = "127.0.0.1:12345",
+                __address__ = "{{ host_svc_address }}:12345",
             },
             {
                 job         = "podman",
