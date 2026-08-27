@@ -1,0 +1,14 @@
+---
+- name: Reload systemd daemon and warn about required reboot
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Show cgroup delegation restart warning
+  ansible.builtin.debug:
+    msg: >
+      [WARNING] The 'io' cgroup controller was just delegated to user sessions.
+      This only takes effect for NEW user@.service instances. You must reboot
+      the server (or fully log out the {{ ansible_user }} session, including
+      killing user@{{ ansible_facts['user_uid'] }}.service) for rootless
+      Podman blkio stats to start populating.
+  listen: Reload systemd daemon and warn about required reboot
