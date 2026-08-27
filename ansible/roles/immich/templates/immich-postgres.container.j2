@@ -26,7 +26,7 @@ Timezone={{ timezone }}
 Environment=POSTGRES_USER=postgres
 Environment=POSTGRES_PASSWORD_FILE=/STORAGE_PASSWORD
 Environment=POSTGRES_DB=immich
-Environment=POSTGRES_INITDB_ARGS: '--data-checksums'
+Environment=POSTGRES_INITDB_ARGS=--data-checksums
 
 HealthCmd=["pg_isready", "-q", "-U", "postgres"]
 HealthInterval=60s
