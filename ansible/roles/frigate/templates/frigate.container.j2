@@ -34,8 +34,8 @@ Volume={{ frigate_storage_path }}:/media/frigate
 Tmpfs=/tmp/cache:rw,size=1g,mode=1777
 
 # --- Networking ---
-PublishPort=8555:8555/tcp
-PublishPort=8555:8555/udp
+PublishPort={{ vault_primary_ip }}:8555:8555/tcp
+PublishPort={{ vault_primary_ip }}:8555:8555/udp
 
 Network=frigate.network
 Network=home.network
