@@ -5,7 +5,7 @@
     section: fwupd
     option: P2pPolicy
     value: "nothing"
-    mode: "0644"
+    mode: "0640"
   notify: Restart fwupd
 
 - name: Stop, disable and mask unnecessary system services
