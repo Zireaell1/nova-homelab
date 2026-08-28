@@ -1,17 +1,52 @@
 ---
 vault_domain: ''
-# Format: 'Town, Country'
-vault_location: ''
 vault_admin_username: ''
 
-# Tailscale
+vault_discord_webhook_url: ''
 
+# Network
+vault_primary_ip
+vault_secondary_ip
+
+vault_dashboard_tablet_ip: ''
+vault_printer_ip: ''
+vault_switch_ip: ''
+
+vault_camera_back_ip: ''
+vault_camera_doorbell_ip: ''
+vault_camera_entry_ip: ''
+vault_camera_front_ip: ''
+
+vault_network_cctv: ''
+vault_network_home: ''
+vault_network_homelab: ''
+vault_network_iot: ''
+vault_network_tailscale: ''
+
+vault_gateway_home: ''
+vault_gateway_homelab: ''
+vault_gateway_iot: ''
+
+# Immich
+vault_immich_storage_password: ''
+
+# Eink Display
+vault_eink_display_password: ''
+vault_eink_display_username: ''
+
+# Orion Alloy
+vault_prometheus_service_account_password: ''
+vault_prometheus_service_account_username: ''
+
+vault_loki_service_account_password: ''
+vault_loki_service_account_username: ''
+
+# Tailscale
 vault_tailscale_auth_key: ''
 vault_tailscale_node_name: ''
 vault_tailscale_ip: ''
 
 # Backup
-
 vault_backup_restic_password: ''
 
 vault_backup_rclone_bucket_name: ''
@@ -19,7 +54,6 @@ vault_backup_rclone_b2_key_id: ''
 vault_backup_rclone_b2_app_key: ''
 
 # Vaultwarden
-
 # podman run --rm -it ghcr.io/dani-garcia/vaultwarden:1.36.0 /vaultwarden hash
 vault_vaultwarden_admin_token: ''
 
@@ -30,12 +64,11 @@ vault_zigbee2mqtt_network_key: []
 vault_grafana_admin_password: ''
 
 # NUT
-
 vault_nut_ups_admin_password: ''
 vault_nut_ups_peanut_password: ''
+vault_nut_ups_ha_password: ''
 
 # Caddy
-
 # CloudFlare API token for DNS-01 challange
 vault_caddy_cf_api_token: ''
 
@@ -43,7 +76,6 @@ vault_caddy_cf_api_token: ''
 vault_caddy_frigate_auth_secret: ''
 
 # Pi-Hole
-
 # Format: 'DNS1;DNS2'
 vault_pihole_dns_upstreams: ''
 
@@ -57,7 +89,6 @@ vault_pihole_webserver_app_password_hash: ''
 vault_pihole_webserver_app_password: ''
 
 # Frigate
-
 vault_frigate_doorbell_user: ''
 vault_frigate_doorbell_password: ''
 vault_frigate_front_user: ''
@@ -68,7 +99,6 @@ vault_frigate_entry_user: ''
 vault_frigate_entry_password: ''
 
 # Mosquitto MQTT
-
 vault_mosquitto_zigbee2mqtt_user: ''
 vault_mosquitto_zigbee2mqtt_password: ''
 
@@ -81,7 +111,6 @@ vault_mosquitto_homeassistant_password: ''
 vault_mosquitto_pwfile_content: ''
 
 # Authelia
-
 vault_authelia_hmac_secret: ''
 vault_authelia_jwt_secret: ''
 vault_authelia_redis_password: ''
