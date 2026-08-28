@@ -25,7 +25,9 @@
 			"*.timer.j2": "ini",
 			"Caddyfile.j2": "makefile",
 			"*.yml.example": "yaml",
-			"*.ini.example": "ini"
+			"*.ini.example": "ini",
+			".yamllint": "yaml",
+			".ansible-lint": "yaml"
 		},
 		"[yaml]": {
 			"editor.insertSpaces": true,
