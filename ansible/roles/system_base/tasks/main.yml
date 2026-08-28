@@ -88,6 +88,7 @@
       - python3
       - git
       - jq
+      - smartmontools
     state: present
 
 - name: Remove Cockpit MOTD/issue banner
