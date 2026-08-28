@@ -5,8 +5,8 @@ vault_admin_username: ''
 vault_discord_webhook_url: ''
 
 # Network
-vault_primary_ip
-vault_secondary_ip
+vault_primary_ip: ''
+vault_secondary_ip: ''
 
 vault_dashboard_tablet_ip: ''
 vault_printer_ip: ''
