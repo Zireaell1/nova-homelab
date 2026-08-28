@@ -13,6 +13,7 @@
     - "{{ stacks_path }}/homeassistant/config/custom_components/hacs"
     - "{{ stacks_path }}/homeassistant/config/www"
     - "{{ stacks_path }}/homeassistant/config/blueprints"
+    - "{{ stacks_path }}/homeassistant/config/themes"
     - "{{ stacks_path }}/homeassistant/config/ansible_managed"
 
 - name: Ensure Caddy download directory exists for HA app
