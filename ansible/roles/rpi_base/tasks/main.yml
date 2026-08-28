@@ -37,13 +37,13 @@
 - name: Provide a static DNS entries in /etc/hosts
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    regexp: '.*\b{{ item.subdomain }}\.{{ vault_domain }}$'
-    line: "{{ vault_primary_ip }} {{ item.subdomain }}.{{ vault_domain }}"
+    regexp: '.*\b{{ item }}\.{{ vault_domain }}$'
+    line: "{{ vault_primary_ip }} {{ item }}.{{ vault_domain }}"
     state: present
   loop:
-    - { subdomain: "{{ services['prometheus']['subdomain'] }}" }
-    - { subdomain: "{{ services['loki']['subdomain'] }}" }
-    - { subdomain: "{{ services['authelia']['subdomain'] }}" }
+    - "{{ services['prometheus']['subdomain'] }}"
+    - "{{ services['loki']['subdomain'] }}"
+    - "{{ services['authelia']['subdomain'] }}"
 
 - name: Enable SPI interface
   ansible.builtin.lineinfile:
