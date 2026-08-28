@@ -6,6 +6,7 @@ rules:
     max: 160
   truthy:
     allowed-values: ["true", "false"]
+    check-keys: false
   braces:
     max-spaces-inside: 1
   brackets:
