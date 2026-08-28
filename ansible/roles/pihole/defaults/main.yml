@@ -1,3 +1,4 @@
+---
 # TODO: not sure if the "all" listeningMode is correct one here
 pihole_dns_listening_mode: "all"
 pihole_dns_rev_servers: >-

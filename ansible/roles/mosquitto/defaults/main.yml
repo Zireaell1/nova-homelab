@@ -1,3 +1,4 @@
+---
 mosquitto_memory_limit: "500m"
 
 # https://hub.docker.com/_/eclipse-mosquitto
