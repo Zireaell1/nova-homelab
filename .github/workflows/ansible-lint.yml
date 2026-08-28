@@ -34,3 +34,16 @@ jobs:
         env:
           ANSIBLE_CONFIG: "ansible-ci.cfg"
           ANSIBLE_COLLECTIONS_PATH: "${{ github.workspace }}/.collections"
+
+      - name: Check vault example completeness
+        run: |
+          grep -rhoE 'vault_[a-z0-9_]+' ansible/ | sort -u > /tmp/used
+          grep -oE '^vault_[a-z0-9_]+' examples/vault.yml.example | sort -u > /tmp/defined
+          missing=$(comm -23 /tmp/used /tmp/defined | grep -vE '^vault_(pass|password_file|headers)$' || true)
+          if [ -n "$missing" ]; then echo "Missing from vault.yml.example:"; echo "$missing"; exit 1; fi
+
+      - name: yamllint
+        run: pipx run yamllint -s ansible/ .github/
+
+      - name: shellcheck rendered scripts
+        run: shellcheck ansible/roles/alloy/files/smartmon.sh
