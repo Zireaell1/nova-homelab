@@ -41,6 +41,7 @@
     type: ethernet
     ip4: "{{ vault_secondary_ip }}/24"
     method4: manual
+    zone: isolated
     state: present
     conn_reload: true
   notify: Apply secondary network interface changes

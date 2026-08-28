@@ -56,9 +56,32 @@
     state: present
   notify: Apply Frigate SELinux policy
 
+- name: Create dedicated isolated firewalld zone
+  ansible.posix.firewalld:
+    zone: isolated
+    state: present
+    permanent: true
+
+- name: Set isolated zone target to DROP
+  ansible.posix.firewalld:
+    zone: isolated
+    target: DROP
+    permanent: true
+    immediate: true
+    state: enabled
+
+- name: Allow only NTP from the isolated zone
+  ansible.posix.firewalld:
+    zone: isolated
+    service: ntp
+    permanent: true
+    immediate: true
+    state: enabled
+
 # firewall-cmd --get-services (list of available services)
 - name: Open required ports
   ansible.posix.firewalld:
+    zone: public
     service: "{{ item.service | default(omit) }}"
     port: "{{ item.port | default(omit) }}"
     permanent: true
