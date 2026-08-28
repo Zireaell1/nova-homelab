@@ -13,7 +13,7 @@ export XDG_CONFIG_HOME="/home/{{ ansible_user }}/.config"
 RCLONE_TARGET="{{ backup_rclone_target }}"
 
 CANARY_PATH="/tmp/homelab_canary.txt"
-PROM_TARGET_DIR="/opt/alloy-metrics"
+PROM_TARGET_DIR="{{ alloy_metrics_directory }}"
 PROM_TMP_FILE="/tmp/homelab_backup_verify.prom"
 
 SUCCESS=0

@@ -81,7 +81,7 @@ prometheus.exporter.unix "host" {
     enable_collectors        = ["systemd", "processes", "logind", "wifi"]
 
     textfile {
-        directory = "/opt/alloy-metrics"
+        directory = "{{ alloy_metrics_directory }}"
     }
 }
 

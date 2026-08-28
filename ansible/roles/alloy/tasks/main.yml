@@ -20,13 +20,11 @@
 
 - name: Ensure custom metrics directory exists
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ alloy_metrics_directory }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "alloy"
     mode: "0775"
-  loop:
-    - "/opt/alloy-metrics"
 
 - name: Smartmon block
   when: alloy_enable_smartmon

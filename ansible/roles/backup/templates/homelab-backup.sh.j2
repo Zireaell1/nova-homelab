@@ -109,7 +109,7 @@ cleanup_and_start() {
     fi
 
     local PROM_TMP_FILE="/tmp/homelab_backup.prom"
-    local PROM_TARGET_DIR="/opt/alloy-metrics"
+    local PROM_TARGET_DIR="{{ alloy_metrics_directory }}"
 
     cat <<EOF > "$PROM_TMP_FILE"
 # HELP homelab_backup_success Whether the local Restic backup succeeded (1) or failed (0)
