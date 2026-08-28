@@ -43,7 +43,7 @@ jobs:
           if [ -n "$missing" ]; then echo "Missing from vault.yml.example:"; echo "$missing"; exit 1; fi
 
       - name: Lint YAML files
-        run: yamllint -s ansible/ .github/
+        run: yamllint -c ansible/.yamllint -s ansible/ .github/
 
       - name: shellcheck rendered scripts
         run: shellcheck ansible/roles/alloy/files/smartmon.sh
