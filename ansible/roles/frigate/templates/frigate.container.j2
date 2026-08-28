@@ -19,6 +19,10 @@ GroupAdd={{ getent_group.render[1] }}
 GroupAdd={{ getent_group.dialout[1] }}
 UserNS=keep-id:uid=0,gid=0
 
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+
 # --- Resource Limits ---
 ShmSize=1g
 Memory={{ frigate_memory_limit }}
