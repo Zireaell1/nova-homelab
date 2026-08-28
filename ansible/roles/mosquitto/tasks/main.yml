@@ -10,7 +10,6 @@
     - "{{ stacks_path }}/mosquitto"
     - "{{ stacks_path }}/mosquitto/config"
     - "{{ stacks_path }}/mosquitto/data"
-    - "{{ stacks_path }}/mosquitto/log"
 
 - name: Upload pwfile file
   ansible.builtin.copy:
