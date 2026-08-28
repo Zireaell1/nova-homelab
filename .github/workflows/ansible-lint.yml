@@ -42,8 +42,8 @@ jobs:
           missing=$(comm -23 /tmp/used /tmp/defined | grep -vE '^vault_(pass|password_file|headers)$' || true)
           if [ -n "$missing" ]; then echo "Missing from vault.yml.example:"; echo "$missing"; exit 1; fi
 
-      - name: yamllint
-        run: pipx run yamllint -s ansible/ .github/
+      - name: Lint YAML files
+        run: yamllint -s ansible/ .github/
 
       - name: shellcheck rendered scripts
         run: shellcheck ansible/roles/alloy/files/smartmon.sh
