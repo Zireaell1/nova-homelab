@@ -10,6 +10,11 @@
     - "{{ stacks_path }}/openrgb"
     - "{{ stacks_path }}/openrgb/openrgb-build"
 
+- name: Resolve rgb GID
+  ansible.builtin.getent:
+    database: group
+    key: rgb
+
 - name: Upload .network file
   ansible.builtin.template:
     src: "openrgb.network.j2"

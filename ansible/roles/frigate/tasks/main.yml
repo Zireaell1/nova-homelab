@@ -15,6 +15,14 @@
     - "{{ frigate_storage_path }}/clips"
     - "{{ frigate_storage_path }}/exports"
 
+- name: Resolve render and dialout GIDs
+  ansible.builtin.getent:
+    database: group
+    key: "{{ item }}"
+  loop:
+    - render
+    - dialout
+
 - name: Upload .network file
   ansible.builtin.template:
     src: "frigate.network.j2"
