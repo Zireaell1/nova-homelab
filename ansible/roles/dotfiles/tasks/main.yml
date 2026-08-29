@@ -8,22 +8,22 @@
     mode: "{{ item.mode }}"
   loop:
     # TODO permissions
-    - path: "/home/{{ ansible_user }}/tools"
+    - path: "{{ user_home }}/tools"
       mode: "0755"
 
-    - path: "/home/{{ ansible_user }}/.config/fish"
+    - path: "{{ user_home }}/.config/fish"
       mode: "0700"
 
-    - path: "/home/{{ ansible_user }}/.config/fish/completions"
+    - path: "{{ user_home }}/.config/fish/completions"
       mode: "0755"
 
-    - path: "/home/{{ ansible_user }}/.config/fastfetch"
+    - path: "{{ user_home }}/.config/fastfetch"
       mode: "0744"
 
-    - path: "/home/{{ ansible_user }}/.config/zellij"
+    - path: "{{ user_home }}/.config/zellij"
       mode: "0755"
 
-    - path: "/home/{{ ansible_user }}/.config/zellij/layouts"
+    - path: "{{ user_home }}/.config/zellij/layouts"
       mode: "0755"
 
     - path: "{{ stacks_path }}"
@@ -35,20 +35,20 @@
 - name: Upload Fish config
   ansible.builtin.copy:
     src: "fish/config.fish"
-    dest: "/home/{{ ansible_user }}/.config/fish/config.fish"
+    dest: "{{ user_home }}/.config/fish/config.fish"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
 
 - name: Generate Zellij completions for Fish
-  ansible.builtin.shell: zellij setup --generate-completion fish > /home/{{ ansible_user }}/.config/fish/completions/zellij.fish
+  ansible.builtin.shell: zellij setup --generate-completion fish > {{ user_home }}/.config/fish/completions/zellij.fish
   args:
-    creates: "/home/{{ ansible_user }}/.config/fish/completions/zellij.fish"
+    creates: "{{ user_home }}/.config/fish/completions/zellij.fish"
 
 - name: Upload Fastfetch config
   ansible.builtin.copy:
     src: "fastfetch/config.jsonc"
-    dest: "/home/{{ ansible_user }}/.config/fastfetch/config.jsonc"
+    dest: "{{ user_home }}/.config/fastfetch/config.jsonc"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -56,7 +56,7 @@
 - name: Upload Zellij config
   ansible.builtin.copy:
     src: "zellij/config.kdl"
-    dest: "/home/{{ ansible_user }}/.config/zellij/config.kdl"
+    dest: "{{ user_home }}/.config/zellij/config.kdl"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -64,7 +64,7 @@
 - name: Upload Zellij layout
   ansible.builtin.copy:
     src: "zellij/default_strider.kdl"
-    dest: "/home/{{ ansible_user }}/.config/zellij/layouts/default_strider.kdl"
+    dest: "{{ user_home }}/.config/zellij/layouts/default_strider.kdl"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

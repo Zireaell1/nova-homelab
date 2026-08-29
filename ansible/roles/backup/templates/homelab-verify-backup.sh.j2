@@ -9,7 +9,7 @@ VERIFY_START_TIME=$(date +%s)
 # 1. CONFIGURATION
 # ==========================================
 export RESTIC_PASSWORD_FILE="{{ backup_restic_password_file }}"
-export XDG_CONFIG_HOME="/home/{{ ansible_user }}/.config"
+export XDG_CONFIG_HOME="{{ user_home }}/.config"
 RCLONE_TARGET="{{ backup_rclone_target }}"
 
 CANARY_PATH="/tmp/homelab_canary.txt"

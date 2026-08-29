@@ -5,6 +5,6 @@ backup_repo_devices: "{{ backup_mount }}/rest-server-data"
 backup_rclone_remote_name: "external"
 backup_rclone_target: "{{ backup_rclone_remote_name }}:{{ vault_backup_rclone_bucket_name }}"
 
-backup_restic_password_file: "/home/{{ ansible_user }}/.config/restic/.repo_pass"
+backup_restic_password_file: "{{ user_home }}/.config/restic/.repo_pass"
 
 backup_b2_quota_bytes: 9000000000

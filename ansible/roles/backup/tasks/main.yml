@@ -8,10 +8,10 @@
     mode: "0700"
   loop:
     - "{{ backup_repo_critical }}"
-    - "/home/{{ ansible_user }}/backups"
-    - "/home/{{ ansible_user }}/backups/git_repos"
-    - "/home/{{ ansible_user }}/.config/rclone"
-    - "/home/{{ ansible_user }}/.config/restic"
+    - "{{ user_home }}/backups"
+    - "{{ user_home }}/backups/git_repos"
+    - "{{ user_home }}/.config/rclone"
+    - "{{ user_home }}/.config/restic"
 
 - name: Deploy Restic password
   ansible.builtin.copy:
@@ -25,7 +25,7 @@
 - name: Generate rclone configuration file
   ansible.builtin.template:
     src: rclone.conf.j2
-    dest: "/home/{{ ansible_user }}/.config/rclone/rclone.conf"
+    dest: "{{ user_home }}/.config/rclone/rclone.conf"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0600"
