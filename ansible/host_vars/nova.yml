@@ -39,3 +39,6 @@ zigbee2mqtt_adapter_path: "/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Don
 
 primary_network_interface_name: "enp129s0"
 secondary_network_interface_name: "enp2s0"
+
+nut_ups_vendorid: "0463"
+nut_ups_productid: "ffff"

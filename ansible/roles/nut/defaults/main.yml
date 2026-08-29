@@ -7,9 +7,6 @@ nut_ups_driver: "usbhid-ups"
 nut_ups_description: "Eaton 5E"
 nut_ups_port: "auto"
 
-nut_ups_vendorid: "0463"
-nut_ups_productid: "ffff"
-
 nut_ups_waitbeforereconnect: 20
 # ups_interrupt_pipe_no_events_tolerance: 5
 # ups_pollfreq: 15
