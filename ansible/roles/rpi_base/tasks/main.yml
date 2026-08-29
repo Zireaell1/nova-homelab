@@ -27,7 +27,7 @@
       mode: "0755"
 
     - path: "{{ user_bin_path }}"
-      mode: "0775"
+      mode: "0755"
 
 - name: Enable lingering for current user
   ansible.builtin.command: "loginctl enable-linger {{ ansible_user }}"
