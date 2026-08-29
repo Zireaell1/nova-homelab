@@ -6,12 +6,12 @@ After=network-online.target
 [Service]
 SyslogIdentifier=eink-display
 
-WorkingDirectory={{ user_home }}/eink-display
+WorkingDirectory={{ eink_display_path }}
 
-Environment="PATH={{ user_home }}/eink-display/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-EnvironmentFile={{ user_home }}/eink-display/eink-display.env
+Environment="PATH={{ eink_display_path }}/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+EnvironmentFile={{ eink_display_path }}/eink-display.env
 
-ExecStart={{ user_home }}/eink-display/.venv/bin/python src/nova_eink_display/main.py
+ExecStart={{ eink_display_path }}/.venv/bin/python src/nova_eink_display/main.py
 
 Restart=always
 RestartSec=10

@@ -2,7 +2,7 @@
 - name: Pull latest E-Ink Dashboard app from GitHub
   ansible.builtin.git:
     repo: "{{ eink_display_repo }}"
-    dest: "{{ user_home }}/eink-display"
+    dest: "{{ eink_display_path }}"
     version: main
     force: true
   notify: Restart eink-display
@@ -17,7 +17,7 @@
   ansible.builtin.command:
     cmd: "{{ user_bin_path }}/uv sync --frozen --no-dev --extra rpi"
   args:
-    chdir: "{{ user_home }}/eink-display"
+    chdir: "{{ eink_display_path }}"
   register: eink_display_uv_sync_result
   changed_when: >
     eink_display_uv_sync_result.stdout is search('Installing|Installed|Uninstalled|Updated') or
@@ -32,14 +32,14 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "{{ user_home }}/eink-display/assets"
-    - "{{ user_home }}/eink-display/assets/fonts"
-    - "{{ user_home }}/eink-display/assets/images"
+    - "{{ eink_display_path }}/assets"
+    - "{{ eink_display_path }}/assets/fonts"
+    - "{{ eink_display_path }}/assets/images"
 
 - name: Sync all images
   ansible.posix.synchronize:
     src: "files/images/"
-    dest: "{{ user_home }}/eink-display/assets/images/"
+    dest: "{{ eink_display_path }}/assets/images/"
     delete: true
     archive: true
     owner: false
@@ -52,7 +52,7 @@
 - name: Sync all fonts
   ansible.posix.synchronize:
     src: "files/fonts/"
-    dest: "{{ user_home }}/eink-display/assets/fonts/"
+    dest: "{{ eink_display_path }}/assets/fonts/"
     delete: true
     archive: true
     owner: false
@@ -65,7 +65,7 @@
 - name: Deploy environment variables
   ansible.builtin.template:
     src: eink-display.env.j2
-    dest: "{{ user_home }}/eink-display/eink-display.env"
+    dest: "{{ eink_display_path }}/eink-display.env"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0600"
