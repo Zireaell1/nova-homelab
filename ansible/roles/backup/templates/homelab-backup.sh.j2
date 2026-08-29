@@ -8,7 +8,7 @@ set -uo pipefail
 SCRIPT_START_TIME=$(date +%s)
 
 export RESTIC_PASSWORD_FILE="{{ backup_restic_password_file }}"
-export XDG_CONFIG_HOME="{{ user_home }}/.config"
+export XDG_CONFIG_HOME="{{ user_config_path }}"
 
 REPO_CRITICAL="{{ backup_repo_critical }}"
 REPO_DEVICES_ROOT="{{ backup_repo_devices }}"
