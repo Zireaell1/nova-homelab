@@ -7,13 +7,13 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "/srv/monitoring/loki"
-    - "/srv/monitoring/loki/data"
+    - "{{ monitoring_path }}/loki"
+    - "{{ monitoring_path }}/loki/data"
 
 - name: Upload loki.yaml file
   ansible.builtin.template:
     src: "loki.yaml.j2"
-    dest: "/srv/monitoring/loki/loki.yaml"
+    dest: "{{ monitoring_path }}/loki/loki.yaml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -22,7 +22,7 @@
 - name: Upload .network file
   ansible.builtin.template:
     src: "loki.network.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/loki.network"
+    dest: "{{ quadlet_path }}/loki.network"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -31,7 +31,7 @@
 - name: Upload .container file
   ansible.builtin.template:
     src: "loki.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/loki.container"
+    dest: "{{ quadlet_path }}/loki.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

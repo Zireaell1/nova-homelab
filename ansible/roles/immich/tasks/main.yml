@@ -61,7 +61,7 @@
 - name: Upload .network files
   ansible.builtin.template:
     src: "{{ item }}.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
+    dest: "{{ quadlet_path }}/{{ item }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -77,7 +77,7 @@
 - name: Upload Immich .container file
   ansible.builtin.template:
     src: "immich.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/immich.container"
+    dest: "{{ quadlet_path }}/immich.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -86,7 +86,7 @@
 - name: Upload Immich Machine Learning .container file
   ansible.builtin.template:
     src: "immich-machine-learning.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/immich-machine-learning.container"
+    dest: "{{ quadlet_path }}/immich-machine-learning.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -95,7 +95,7 @@
 - name: Upload Postgres and Redis .container files
   ansible.builtin.template:
     src: "{{ item }}.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
+    dest: "{{ quadlet_path }}/{{ item }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

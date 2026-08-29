@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 
-ExecStart=/home/{{ ansible_user }}/.local/bin/homelab-verify-backup.sh
+ExecStart={{ user_bin_path }}/homelab-verify-backup.sh
 
 StandardOutput=journal
 StandardError=journal

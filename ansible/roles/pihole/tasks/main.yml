@@ -39,7 +39,7 @@
 - name: Upload .container file
   ansible.builtin.template:
     src: "pihole.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/pihole.container"
+    dest: "{{ quadlet_path }}/pihole.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

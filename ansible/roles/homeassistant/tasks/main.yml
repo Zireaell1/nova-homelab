@@ -57,7 +57,7 @@
 - name: Upload .network file
   ansible.builtin.template:
     src: "homeassistant.network.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/homeassistant.network"
+    dest: "{{ quadlet_path }}/homeassistant.network"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -98,7 +98,7 @@
 - name: Upload .container file
   ansible.builtin.template:
     src: "homeassistant.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/homeassistant.container"
+    dest: "{{ quadlet_path }}/homeassistant.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

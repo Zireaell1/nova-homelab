@@ -51,7 +51,7 @@
 - name: Generate Git sync script
   ansible.builtin.template:
     src: git-sync.sh.j2
-    dest: "/home/{{ ansible_user }}/.local/bin/git-sync.sh"
+    dest: "{{ user_bin_path }}/git-sync.sh"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0700"
@@ -60,7 +60,7 @@
 - name: Generate backup script from Jinja2 template (with Bash validation)
   ansible.builtin.template:
     src: homelab-backup.sh.j2
-    dest: "/home/{{ ansible_user }}/.local/bin/homelab-backup.sh"
+    dest: "{{ user_bin_path }}/homelab-backup.sh"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0700"
@@ -69,7 +69,7 @@
 - name: Deploy Systemd Service file
   ansible.builtin.template:
     src: "homelab-backup.service.j2"
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup.service"
+    dest: "{{ user_units_path }}/homelab-backup.service"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -78,7 +78,7 @@
 - name: Deploy Systemd Timer file
   ansible.builtin.template:
     src: "homelab-backup.timer.j2"
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-backup.timer"
+    dest: "{{ user_units_path }}/homelab-backup.timer"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -87,7 +87,7 @@
 - name: Generate verify script from Jinja2 template (with Bash validation)
   ansible.builtin.template:
     src: "homelab-verify-backup.sh.j2"
-    dest: "/home/{{ ansible_user }}/.local/bin/homelab-verify-backup.sh"
+    dest: "{{ user_bin_path }}/homelab-verify-backup.sh"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0700"
@@ -96,7 +96,7 @@
 - name: Deploy Verify Systemd Service file
   ansible.builtin.template:
     src: "homelab-verify-backup.service.j2"
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-verify-backup.service"
+    dest: "{{ user_units_path }}/homelab-verify-backup.service"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -105,7 +105,7 @@
 - name: Deploy Verify Systemd Timer file
   ansible.builtin.template:
     src: "homelab-verify-backup.timer.j2"
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/homelab-verify-backup.timer"
+    dest: "{{ user_units_path }}/homelab-verify-backup.timer"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

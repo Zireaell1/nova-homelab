@@ -11,11 +11,11 @@
   ansible.builtin.command:
     cmd: pipx install uv=={{ eink_display_uv_version }}
   args:
-    creates: "/home/{{ ansible_user }}/.local/bin/uv"
+    creates: "{{ user_bin_path }}/uv"
 
 - name: Install/Sync Python dependencies using uv
   ansible.builtin.command:
-    cmd: /home/{{ ansible_user }}/.local/bin/uv sync --frozen --no-dev --extra rpi
+    cmd: {{ user_bin_path }}/uv sync --frozen --no-dev --extra rpi
   args:
     chdir: /home/{{ ansible_user }}/eink-display
   register: eink_display_uv_sync_result
@@ -75,7 +75,7 @@
 - name: Deploy systemd service file
   ansible.builtin.template:
     src: eink-display.service.j2
-    dest: /home/{{ ansible_user }}/.config/systemd/user/eink-display.service
+    dest: {{ user_units_path }}/eink-display.service
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

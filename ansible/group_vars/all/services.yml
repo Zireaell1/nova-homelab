@@ -1,9 +1,6 @@
 ---
-stacks_path: "/home/{{ ansible_user }}/stacks"
-
 timezone: "Europe/Warsaw"
 
-git_backup_dir: "/home/{{ ansible_user }}/backups/git_repos"
 git_backup_repos:
   - name: "nova-homelab.git"
     url: "https://github.com/Zireaell1/nova-homelab.git"
@@ -29,7 +26,7 @@ services:
     backup:
       stop: false
       paths:
-        - /mnt/frigate/storage/exports
+        - "{{ frigate_mount }}/storage/exports"
   grafana:
     subdomain: "grafana"
   pihole:
@@ -52,9 +49,9 @@ services:
     backup:
       stop: true
       paths:
-        - /home/{{ ansible_user }}/stacks/vaultwarden/data
+        - "{{ stacks_path }}/vaultwarden/data"
       excludes:
-        - /home/{{ ansible_user }}/stacks/vaultwarden/data/icon_cache
+        - "{{ stacks_path }}/vaultwarden/data/icon_cache"
   go2rtc:
     subdomain: "go2rtc"
   zigbee2mqtt:
@@ -63,16 +60,16 @@ services:
     backup:
       stop: true
       paths:
-        - /home/{{ ansible_user }}/stacks/zigbee2mqtt/data
-        - /home/{{ ansible_user }}/stacks/zigbee2mqtt/config/devices.yaml
-        - /home/{{ ansible_user }}/stacks/zigbee2mqtt/config/groups.yaml
+        - "{{ stacks_path }}/zigbee2mqtt/data"
+        - "{{ stacks_path }}/zigbee2mqtt/config/devices.yaml"
+        - "{{ stacks_path }}/zigbee2mqtt/config/groups.yaml"
   homeassistant:
     subdomain: "ha"
     quadlet_name: "homeassistant"
     backup:
       stop: false
       paths:
-        - /home/{{ ansible_user }}/stacks/homeassistant/config/backups
+        - "{{ stacks_path }}/homeassistant/config/backups"
   peanut:
     subdomain: "peanut"
   cockpit:

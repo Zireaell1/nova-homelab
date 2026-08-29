@@ -2,13 +2,13 @@
 hardware_data_drives:
   - uuid: "3ddf5ac7-b3a8-4ac2-8573-f38c02297c04"
     fstype: "xfs"
-    mountpoint: "/mnt/backup"
+    mountpoint: "{{ backup_mount }}"
     passno: "0"
     fstrim_notrim: true
 
   - uuid: "cb64996e-45e2-4806-b8b1-f14635ecaa2f"
     fstype: "xfs"
-    mountpoint: "/mnt/frigate"
+    mountpoint: "{{ frigate_mount }}"
     passno: "0"
     fstrim_notrim: true
 
@@ -22,11 +22,11 @@ hardware_target_lvs:
     manage_fs_and_mount: true
   - name: monitoring
     size: 10g
-    mount_path: /srv/monitoring
+    mount_path: "{{ monitoring_path }}"
     manage_fs_and_mount: true
   - name: immich
     size: 50g
-    mount_path: /srv/immich
+    mount_path: "{{ immich_path }}"
     manage_fs_and_mount: true
 
 hardware_vg_name: "fedora_nova-2"

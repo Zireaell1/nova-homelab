@@ -8,9 +8,9 @@
     mode: "0755"
   loop:
     - "/home/{{ ansible_user }}/.config/containers"
-    - "/home/{{ ansible_user }}/.config/containers/systemd"
-    - "/home/{{ ansible_user }}/.config/systemd/user"
-    - "/home/{{ ansible_user }}/.config/systemd/user/prometheus-podman-exporter.service.d"
+    - "{{ quadlet_path }}"
+    - "{{ user_units_path }}"
+    - "{{ user_units_path }}/prometheus-podman-exporter.service.d"
     - "/home/{{ ansible_user }}/.config/prometheus-podman-exporter"
 
 - name: Upload containers.conf file
@@ -25,7 +25,7 @@
 - name: Deploy shared podman networks
   ansible.builtin.template:
     src: "{{ item }}.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
+    dest: "{{ quadlet_path }}/{{ item }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -37,7 +37,7 @@
 - name: Deploy Systemd Service file
   ansible.builtin.template:
     src: "podman-prune.service.j2"
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/podman-prune.service"
+    dest: "{{ user_units_path }}/podman-prune.service"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -46,7 +46,7 @@
 - name: Deploy Systemd Timer file
   ansible.builtin.template:
     src: "podman-prune.timer.j2"
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/podman-prune.timer"
+    dest: "{{ user_units_path }}/podman-prune.timer"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -62,7 +62,7 @@
 
 - name: Repoint EnvironmentFile to user-owned config
   ansible.builtin.copy:
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/prometheus-podman-exporter.service.d/override.conf"
+    dest: "{{ user_units_path }}/prometheus-podman-exporter.service.d/override.conf"
     mode: "0644"
     content: |
       [Service]

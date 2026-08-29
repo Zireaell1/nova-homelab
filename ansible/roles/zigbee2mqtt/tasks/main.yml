@@ -14,7 +14,7 @@
 - name: Upload .network file
   ansible.builtin.template:
     src: "zigbee2mqtt.network.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/zigbee2mqtt.network"
+    dest: "{{ quadlet_path }}/zigbee2mqtt.network"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -64,7 +64,7 @@
 - name: Upload .container file
   ansible.builtin.template:
     src: "zigbee2mqtt.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/zigbee2mqtt.container"
+    dest: "{{ quadlet_path }}/zigbee2mqtt.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

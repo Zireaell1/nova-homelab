@@ -3,5 +3,3 @@ primary_network_interface_name: "enp129s0"
 secondary_network_interface_name: "enp2s0"
 
 host_svc_address: "10.42.42.1"
-
-alloy_metrics_directory: /opt/alloy-metrics

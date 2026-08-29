@@ -27,8 +27,8 @@ Memory={{ homepage_memory_limit }}
 Volume={{ stacks_path }}/homepage/config:/app/config:Z
 Volume={{ stacks_path }}/homepage/assets:/app/public/images:Z,ro
 
-Volume=/mnt/frigate/homepage_monitoring:/mnt/frigate:Z,ro
-Volume=/mnt/backup/homepage_monitoring:/mnt/backup:Z,ro
+Volume={{ frigate_mount }}/homepage_monitoring:{{ frigate_mount }}:Z,ro
+Volume={{ backup_mount }}/homepage_monitoring:{{ backup_mount }}:Z,ro
 
 # --- Networking ---
 Network=homepage.network

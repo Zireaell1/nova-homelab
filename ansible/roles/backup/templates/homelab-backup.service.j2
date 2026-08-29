@@ -6,8 +6,8 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 
-ExecStartPre=-/home/{{ ansible_user }}/.local/bin/git-sync.sh
-ExecStart=/home/{{ ansible_user }}/.local/bin/homelab-backup.sh
+ExecStartPre=-{{ user_bin_path }}/git-sync.sh
+ExecStart={{ user_bin_path }}/homelab-backup.sh
 
 StandardOutput=journal
 StandardError=journal

@@ -5,7 +5,7 @@ Documentation=https://grafana.com/docs/loki/latest/
 Wants=network-online.target
 After=network-online.target
 
-RequiresMountsFor=/srv/monitoring/loki/data
+RequiresMountsFor={{ monitoring_path }}/loki/data
 
 [Container]
 # --- Image / Exec ---
@@ -24,8 +24,8 @@ NoNewPrivileges=true
 Memory={{ loki_memory_limit }}
 
 # --- Storage ---
-Volume=/srv/monitoring/loki/loki.yaml:/etc/loki/local-config.yaml:ro,Z
-Volume=/srv/monitoring/loki/data:/loki:Z
+Volume={{ monitoring_path }}/loki/loki.yaml:/etc/loki/local-config.yaml:ro,Z
+Volume={{ monitoring_path }}/loki/data:/loki:Z
 
 # --- Networking ---
 Network=loki.network

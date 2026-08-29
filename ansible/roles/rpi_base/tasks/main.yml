@@ -23,10 +23,10 @@
     group: "{{ ansible_user }}"
     mode: "{{ item.mode }}"
   loop:
-    - path: "/home/{{ ansible_user }}/.config/systemd/user"
+    - path: "{{ user_units_path }}"
       mode: "0755"
 
-    - path: "/home/{{ ansible_user }}/.local/bin"
+    - path: "{{ user_bin_path }}"
       mode: "0775"
 
 - name: Enable lingering for current user

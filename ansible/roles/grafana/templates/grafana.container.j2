@@ -5,7 +5,7 @@ Documentation=https://grafana.com/docs/grafana/latest/
 Wants=network-online.target
 After=network-online.target
 
-RequiresMountsFor=/srv/monitoring/grafana/data
+RequiresMountsFor={{ monitoring_path }}/grafana/data
 
 [Container]
 # --- Image / Exec ---
@@ -24,8 +24,8 @@ NoNewPrivileges=true
 Memory={{ grafana_memory_limit }}
 
 # --- Storage ---
-Volume=/srv/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro,Z
-Volume=/srv/monitoring/grafana/data:/var/lib/grafana:Z
+Volume={{ monitoring_path }}/grafana/provisioning:/etc/grafana/provisioning:ro,Z
+Volume={{ monitoring_path }}/grafana/data:/var/lib/grafana:Z
 
 # --- Networking ---
 Network=grafana.network
@@ -34,7 +34,7 @@ Network=monitoring-backend.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
-EnvironmentFile=/srv/monitoring/grafana/grafana.env
+EnvironmentFile={{ monitoring_path }}/grafana/grafana.env
 
 HealthCmd=["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
 HealthInterval=60s

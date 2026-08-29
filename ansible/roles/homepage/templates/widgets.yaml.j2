@@ -12,11 +12,11 @@
 
 - resources:
       label: Frigate
-      disk: /mnt/frigate
+      disk: {{ frigate_mount }}
 
 - resources:
       label: Backup
-      disk: /mnt/backup
+      disk: {{ backup_mount }}
 
 - datetime:
       text_size: xl

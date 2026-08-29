@@ -63,7 +63,7 @@
 - name: Upload .socket file
   ansible.builtin.template:
     src: "caddy.socket.j2"
-    dest: "/home/{{ ansible_user }}/.config/systemd/user/caddy.socket"
+    dest: "{{ user_units_path }}/caddy.socket"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -72,7 +72,7 @@
 - name: Upload .container file
   ansible.builtin.template:
     src: "caddy.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/caddy.container"
+    dest: "{{ quadlet_path }}/caddy.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

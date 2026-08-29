@@ -79,7 +79,7 @@
 - name: Upload .network file
   ansible.builtin.template:
     src: "{{ item }}.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
+    dest: "{{ quadlet_path }}/{{ item }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -94,7 +94,7 @@
 - name: Upload Authelia .container file
   ansible.builtin.template:
     src: "authelia.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/authelia.container"
+    dest: "{{ quadlet_path }}/authelia.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -103,7 +103,7 @@
 - name: Upload Postgres and Redis .container files
   ansible.builtin.template:
     src: "{{ item }}.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/{{ item }}"
+    dest: "{{ quadlet_path }}/{{ item }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

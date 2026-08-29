@@ -12,7 +12,7 @@
 - name: Upload .network file
   ansible.builtin.template:
     src: "restic.network.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/restic.network"
+    dest: "{{ quadlet_path }}/restic.network"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -21,7 +21,7 @@
 - name: Upload .container file
   ansible.builtin.template:
     src: "restic.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/restic.container"
+    dest: "{{ quadlet_path }}/restic.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

@@ -5,7 +5,7 @@ Documentation=https://prometheus.io/docs/introduction/overview/
 Wants=network-online.target
 After=network-online.target
 
-RequiresMountsFor=/srv/monitoring/prometheus/data
+RequiresMountsFor={{ monitoring_path }}/prometheus/data
 
 [Container]
 # --- Image / Exec ---
@@ -30,8 +30,8 @@ NoNewPrivileges=true
 Memory={{ prometheus_memory_limit }}
 
 # --- Storage ---
-Volume=/srv/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
-Volume=/srv/monitoring/prometheus/data:/prometheus:Z
+Volume={{ monitoring_path }}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+Volume={{ monitoring_path }}/prometheus/data:/prometheus:Z
 
 # --- Networking ---
 PublishPort=127.0.0.1:9080:9090

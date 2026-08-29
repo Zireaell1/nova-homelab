@@ -29,7 +29,7 @@
     - path: "{{ stacks_path }}"
       mode: "0755"
 
-    - path: "/home/{{ ansible_user }}/.local/bin"
+    - path: "{{ user_bin_path }}"
       mode: "0700"
 
 - name: Upload Fish config

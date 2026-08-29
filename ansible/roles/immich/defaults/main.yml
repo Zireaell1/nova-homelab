@@ -1,7 +1,7 @@
 ---
 immich_memory_limit: "6g"
 
-immich_storage_path: "/srv/immich"
+immich_storage_path: "{{ immich_path }}"
 
 # https://github.com/immich-app/immich
 immich_image: "ghcr.io/immich-app/immich-server"

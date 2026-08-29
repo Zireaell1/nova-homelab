@@ -7,18 +7,18 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "/srv/monitoring/grafana"
-    - "/srv/monitoring/grafana/provisioning"
-    - "/srv/monitoring/grafana/provisioning/datasources"
-    - "/srv/monitoring/grafana/provisioning/dashboards"
-    - "/srv/monitoring/grafana/provisioning/alerting"
-    - "/srv/monitoring/grafana/provisioning/plugins"
-    - "/srv/monitoring/grafana/data"
+    - "{{ monitoring_path }}/grafana"
+    - "{{ monitoring_path }}/grafana/provisioning"
+    - "{{ monitoring_path }}/grafana/provisioning/datasources"
+    - "{{ monitoring_path }}/grafana/provisioning/dashboards"
+    - "{{ monitoring_path }}/grafana/provisioning/alerting"
+    - "{{ monitoring_path }}/grafana/provisioning/plugins"
+    - "{{ monitoring_path }}/grafana/data"
 
 - name: Upload .network file
   ansible.builtin.template:
     src: "grafana.network.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/grafana.network"
+    dest: "{{ quadlet_path }}/grafana.network"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -27,7 +27,7 @@
 - name: Upload .env file
   ansible.builtin.template:
     src: "grafana.env.j2"
-    dest: "/srv/monitoring/grafana/grafana.env"
+    dest: "{{ monitoring_path }}/grafana/grafana.env"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0600"
@@ -37,7 +37,7 @@
 - name: Upload provisioning/datasources/datasources.yml file
   ansible.builtin.template:
     src: "datasources.yml.j2"
-    dest: "/srv/monitoring/grafana/provisioning/datasources/datasources.yml"
+    dest: "{{ monitoring_path }}/grafana/provisioning/datasources/datasources.yml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -46,7 +46,7 @@
 - name: Upload provisioning/alerting/alerting.yml file
   ansible.builtin.template:
     src: "alerting.yml.j2"
-    dest: "/srv/monitoring/grafana/provisioning/alerting/alerting.yml"
+    dest: "{{ monitoring_path }}/grafana/provisioning/alerting/alerting.yml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -55,7 +55,7 @@
 - name: Upload provisioning/alerting/contact-points.yml file
   ansible.builtin.template:
     src: "contact-points.yml.j2"
-    dest: "/srv/monitoring/grafana/provisioning/alerting/contact-points.yml"
+    dest: "{{ monitoring_path }}/grafana/provisioning/alerting/contact-points.yml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -64,7 +64,7 @@
 - name: Upload provisioning/dashboards/dashboards.yml file
   ansible.builtin.template:
     src: "dashboards.yml.j2"
-    dest: "/srv/monitoring/grafana/provisioning/dashboards/dashboards.yml"
+    dest: "{{ monitoring_path }}/grafana/provisioning/dashboards/dashboards.yml"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -73,7 +73,7 @@
 - name: Sync dashboard files
   ansible.posix.synchronize:
     src: "files/dashboards/"
-    dest: "/srv/monitoring/grafana/provisioning/dashboards/"
+    dest: "{{ monitoring_path }}/grafana/provisioning/dashboards/"
     delete: true
     archive: true
     owner: false
@@ -86,7 +86,7 @@
 - name: Upload .container file
   ansible.builtin.template:
     src: "grafana.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/grafana.container"
+    dest: "{{ quadlet_path }}/grafana.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

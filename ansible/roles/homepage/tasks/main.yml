@@ -10,13 +10,13 @@
     - "{{ stacks_path }}/homepage"
     - "{{ stacks_path }}/homepage/config"
     - "{{ stacks_path }}/homepage/assets"
-    - /mnt/frigate/homepage_monitoring
-    - /mnt/backup/homepage_monitoring
+    - "{{ frigate_mount }}/homepage_monitoring"
+    - "{{ backup_mount }}/homepage_monitoring"
 
 - name: Upload .network file
   ansible.builtin.template:
     src: "homepage.network.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/homepage.network"
+    dest: "{{ quadlet_path }}/homepage.network"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
@@ -61,7 +61,7 @@
 - name: Upload .container file
   ansible.builtin.template:
     src: "homepage.container.j2"
-    dest: "/home/{{ ansible_user }}/.config/containers/systemd/homepage.container"
+    dest: "{{ quadlet_path }}/homepage.container"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
