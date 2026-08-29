@@ -89,7 +89,7 @@
 
 - name: Create directory for the Silabs Flasher tool
   ansible.builtin.file:
-    path: "{{ user_home }}/tools/universal-silabs-flasher"
+    path: "{{ user_tools }}/universal-silabs-flasher"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -99,6 +99,6 @@
 - name: Install universal-silabs-flasher inside a Python virtual environment
   ansible.builtin.pip:
     name: "universal-silabs-flasher=={{ zigbee2mqtt_silabs_flasher_version }}"
-    virtualenv: "{{ user_home }}/tools/universal-silabs-flasher/venv"
+    virtualenv: "{{ user_tools }}/universal-silabs-flasher/venv"
     virtualenv_command: "python3 -m venv"
     state: present

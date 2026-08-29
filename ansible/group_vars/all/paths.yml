@@ -1,20 +1,29 @@
 ---
 homelab_user: "{{ ansible_user }}"
+
 user_home: "/home/{{ homelab_user }}"
+
 stacks_path: "{{ user_home }}/stacks"
+user_config_path: "{{ user_home }}/.config"
+user_bin_path: "{{ user_home }}/.local/bin"
+user_backups_path: "{{ user_home }}/backups"
+user_tools: "{{ user_tools }}/tools"
+
+git_backup_dir: "{{ user_backups_path }}/git_repos"
+
 quadlet_path: "{{ user_config_path }}/containers/systemd"
 user_units_path: "{{ user_config_path }}/systemd/user"
-user_bin_path: "{{ user_home }}/.local/bin"
+
 monitoring_path: "/srv/monitoring"
 immich_path: "/srv/immich"
+
 backup_mount: "/mnt/backup"
 frigate_mount: "/mnt/frigate"
-alloy_metrics_directory: "/opt/alloy-metrics"
-user_backups_path: "{{ user_home }}/backups"
-git_backup_dir: "{{ user_backups_path }}/git_repos"
-user_config_path: "{{ user_config_path }}"
+
 local_backup_path: "{{ backup_mount }}/homelab"
 restic_server_path: "{{ backup_mount }}/rest-server-data"
 
+alloy_metrics_directory: "/opt/alloy-metrics"
+
 podman_user_env:
-  XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
+  XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] | default(1000, true) }}"
