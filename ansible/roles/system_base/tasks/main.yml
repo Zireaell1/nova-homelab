@@ -123,7 +123,14 @@
   loop:
     - render
     - dialout
-    - rgb
+
+- name: Ensure rgb system group exists with a stable GID
+  ansible.builtin.group:
+    name: rgb
+    gid: "480"
+    system: true
+    state: present
+  notify: Retrigger rgb devices
 
 - name: Assign user to groups
   ansible.builtin.user:
@@ -150,7 +157,9 @@
     owner: root
     group: root
     mode: "0644"
-  notify: Reload Udev rules
+  notify:
+    - Reload Udev rules
+    - Retrigger rgb devices
 
 - name: Check if Ghostty terminfo is already installed system-wide
   ansible.builtin.stat:
