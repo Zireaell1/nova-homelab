@@ -133,8 +133,6 @@
     state: started
     enabled: true
     scope: user
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
   loop:
     - authelia-postgres
     - authelia-redis

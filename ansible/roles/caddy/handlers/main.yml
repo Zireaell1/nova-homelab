@@ -6,8 +6,6 @@
     state: restarted
     enabled: true
     scope: user
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Reload caddy
@@ -15,6 +13,4 @@
     name: caddy.service
     state: reloaded
     scope: user
-  environment:
-    XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] }}"
   ignore_errors: "{{ ansible_check_mode }}"

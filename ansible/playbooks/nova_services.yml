@@ -2,6 +2,7 @@
 - name: Nova rootless services
   hosts: nova
   become: false
+  environment: "{{ podman_user_env }}"
   roles:
     # =====================================================
     # Runtime environment
