@@ -8,21 +8,14 @@ git_backup_repos:
     url: "https://github.com/Zireaell1/nova-eink-display.git"
 
 services:
-  homepage:
-    subdomain: ""
   files:
     subdomain: "files"
   alloy:
     subdomain: "alloy"
   authelia:
     subdomain: "auth"
-  authelia_postgres:
-    quadlet_name: "authelia-postgres.service"
-  authelia_redis:
-    quadlet_name: "authelia-redis.service"
   frigate:
     subdomain: "frigate"
-    quadlet_name: "frigate"
     backup:
       stop: false
       paths:
@@ -45,7 +38,6 @@ services:
     subdomain: "immich"
   vaultwarden:
     subdomain: "vault"
-    quadlet_name: "vaultwarden"
     backup:
       stop: true
       paths:
@@ -56,7 +48,6 @@ services:
     subdomain: "go2rtc"
   zigbee2mqtt:
     subdomain: "z2m"
-    quadlet_name: "zigbee2mqtt"
     backup:
       stop: true
       paths:
@@ -65,7 +56,6 @@ services:
         - "{{ stacks_path }}/zigbee2mqtt/config/groups.yaml"
   homeassistant:
     subdomain: "ha"
-    quadlet_name: "homeassistant"
     backup:
       stop: false
       paths:
