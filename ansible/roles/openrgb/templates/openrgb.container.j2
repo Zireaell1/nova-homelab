@@ -12,7 +12,7 @@ ContainerName=openrgb
 StopTimeout=20
 
 # --- Identity / Namespaces ---
-GroupAdd={{ getent_group.rgb[1] }}
+GroupAdd=keep-groups
 UserNS=keep-id:uid=0,gid=0
 
 # --- Security / Capabilities ---

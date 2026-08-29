@@ -15,8 +15,7 @@ ContainerName=frigate
 StopTimeout=120
 
 # --- Identity / Namespaces ---
-GroupAdd={{ getent_group.render[1] }}
-GroupAdd={{ getent_group.dialout[1] }}
+GroupAdd=keep-groups
 UserNS=keep-id:uid=0,gid=0
 
 # --- Security / Capabilities ---
