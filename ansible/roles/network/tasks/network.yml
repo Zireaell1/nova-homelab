@@ -34,6 +34,15 @@
     conn_name: "Wired connection 1"
     state: absent
 
+- name: Bind primary interface to the public zone
+  community.general.nmcli:
+    conn_name: "{{ primary_network_interface_name }}"
+    ifname: "{{ primary_network_interface_name }}"
+    zone: public
+    dns4_ignore_auto: true
+    state: present
+  notify: Apply primary network interface changes
+
 - name: Configure second isolated network interface
   community.general.nmcli:
     conn_name: "{{ secondary_network_interface_name }}"
