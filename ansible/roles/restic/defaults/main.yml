@@ -1,8 +1,6 @@
 ---
 restic_memory_limit: "2g"
 
-restic_data_path: "{{ backup_mount }}/rest-server-data"
-
 # https://hub.docker.com/r/restic/rest-server
 restic_image: "docker.io/restic/rest-server"
 

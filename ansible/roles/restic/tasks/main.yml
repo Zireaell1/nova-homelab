@@ -7,7 +7,7 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "{{ restic_data_path }}"
+    - "{{ restic_server_path }}"
 
 - name: Upload .network file
   ansible.builtin.template:

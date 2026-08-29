@@ -7,7 +7,7 @@
     group: "{{ ansible_user }}"
     mode: "0700"
   loop:
-    - "{{ backup_repo_critical }}"
+    - "{{ local_backup_path }}"
     - "{{ user_backups_path }}"
     - "{{ git_backup_dir }}"
     - "{{ user_config_path }}/rclone"
@@ -35,7 +35,7 @@
   ansible.builtin.command: restic snapshots
   environment:
     RESTIC_PASSWORD_FILE: "{{ backup_restic_password_file }}"
-    RESTIC_REPOSITORY: "{{ backup_repo_critical }}"
+    RESTIC_REPOSITORY: "{{ local_backup_path }}"
   register: backup_restic_critical_check
   failed_when: false
   changed_when: false
@@ -44,7 +44,7 @@
   ansible.builtin.command: restic init
   environment:
     RESTIC_PASSWORD_FILE: "{{ backup_restic_password_file }}"
-    RESTIC_REPOSITORY: "{{ backup_repo_critical }}"
+    RESTIC_REPOSITORY: "{{ local_backup_path }}"
   when: backup_restic_critical_check.rc != 0
   changed_when: true
 

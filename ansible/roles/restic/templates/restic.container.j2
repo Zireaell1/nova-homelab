@@ -5,7 +5,7 @@ Documentation=https://github.com/restic/rest-server
 Wants=network-online.target
 After=network-online.target
 
-RequiresMountsFor={{ restic_data_path }}
+RequiresMountsFor={{ restic_server_path }}
 
 [Container]
 # --- Image / Exec ---
@@ -24,7 +24,7 @@ NoNewPrivileges=true
 Memory={{ restic_memory_limit }}
 
 # --- Storage ---
-Volume={{ restic_data_path }}:/data:Z
+Volume={{ restic_server_path }}:/data:Z
 
 # --- Networking ---
 Network=restic.network

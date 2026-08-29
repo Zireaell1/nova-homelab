@@ -10,8 +10,8 @@ SCRIPT_START_TIME=$(date +%s)
 export RESTIC_PASSWORD_FILE="{{ backup_restic_password_file }}"
 export XDG_CONFIG_HOME="{{ user_config_path }}"
 
-REPO_CRITICAL="{{ backup_repo_critical }}"
-REPO_DEVICES_ROOT="{{ backup_repo_devices }}"
+REPO_CRITICAL="{{ local_backup_path }}"
+REPO_DEVICES_ROOT="{{ restic_server_path }}"
 RCLONE_TARGET="{{ backup_rclone_target }}"
 
 B2_QUOTA_BYTES="{{ backup_b2_quota_bytes }}"
