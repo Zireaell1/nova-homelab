@@ -62,8 +62,6 @@ services:
         - "{{ stacks_path }}/homeassistant/config/backups"
   peanut:
     subdomain: "peanut"
-  cockpit:
-    subdomain: "cockpit"
   switch:
     subdomain: "switch"
   mainsail:
