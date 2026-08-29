@@ -5,6 +5,12 @@
     state: present
     persistent: present
 
+- name: Load sch_fq module and make it persistent
+  community.general.modprobe:
+    name: sch_fq
+    state: present
+    persistent: present
+
 - name: Configure system-wide network and kernel parameters
   ansible.posix.sysctl:
     name: "{{ item.name }}"
