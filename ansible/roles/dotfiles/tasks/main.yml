@@ -8,7 +8,7 @@
     mode: "{{ item.mode }}"
   loop:
     # TODO permissions
-    - path: "{{ user_tools }}"
+    - path: "{{ user_tools_path }}"
       mode: "0755"
 
     - path: "{{ user_config_path }}/fish"

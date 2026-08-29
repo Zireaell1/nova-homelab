@@ -7,7 +7,7 @@ stacks_path: "{{ user_home }}/stacks"
 user_config_path: "{{ user_home }}/.config"
 user_bin_path: "{{ user_home }}/.local/bin"
 user_backups_path: "{{ user_home }}/backups"
-user_tools: "{{ user_tools }}/tools"
+user_tools_path: "{{ user_home }}/tools"
 
 git_backup_dir: "{{ user_backups_path }}/git_repos"
 
