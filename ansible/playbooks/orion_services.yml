@@ -2,6 +2,7 @@
 - name: Orion rootless services
   hosts: orion
   become: false
+  environment: "{{ podman_user_env }}"
   roles:
     # =====================================================
     # Services (Rootless)
