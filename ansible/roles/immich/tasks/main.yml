@@ -14,11 +14,6 @@
     - "{{ immich_storage_path }}"
     - "{{ immich_storage_path }}/data"
 
-- name: Resolve render GID
-  ansible.builtin.getent:
-    database: group
-    key: render
-
 - name: Upload secret files
   ansible.builtin.copy:
     content: "{{ item.value }}"
