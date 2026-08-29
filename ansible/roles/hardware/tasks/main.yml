@@ -48,7 +48,7 @@
   loop: "{{ hardware_target_lvs }}"
   when: item.manage_fs_and_mount | bool
 
-- name: Hand over {{ monitoring_path }} to the rootless user
+- name: Hand over monitoring path to the rootless user
   ansible.builtin.file:
     path: "{{ monitoring_path }}"
     state: directory
