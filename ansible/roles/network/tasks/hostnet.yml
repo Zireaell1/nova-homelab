@@ -10,11 +10,3 @@
     autoconnect: true
     may_fail4: false
     state: present
-
-- name: Block forwarded traffic toward the host-only address
-  ansible.posix.firewalld:
-    rich_rule: 'rule family="ipv4" destination address="{{ host_svc_address }}/32" drop'
-    zone: public
-    permanent: true
-    immediate: true
-    state: enabled
