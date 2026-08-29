@@ -33,7 +33,18 @@
     mode: "0644"
     setype: "container_file_t"
 
-- name: Download and extract latest HACS release
+- name: Remove superseded HA Android APKs
+  ansible.builtin.find:
+    paths: "{{ stacks_path }}/caddy/srv/homeassistant"
+    patterns: "home-assistant-android-*.apk"
+    excludes: "home-assistant-android-{{ homeassistant_android_version }}.apk"
+  register: homeassistant_old_apks
+
+- name: Prune superseded APKs
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ homeassistant_old_apks.files }}"
   ansible.builtin.unarchive:
     src: https://github.com/hacs/integration/releases/download/{{ homeassistant_hacs_version }}/hacs.zip
     dest: "{{ stacks_path }}/homeassistant/config/custom_components/hacs"
