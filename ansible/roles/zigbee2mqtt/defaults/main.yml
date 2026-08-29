@@ -6,7 +6,6 @@ zigbee2mqtt_image: "ghcr.io/koenkk/zigbee2mqtt"
 
 zigbee2mqtt_channel: 11
 zigbee2mqtt_adapter: "ember"
-zigbee2mqtt_adapter_path: "/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_348e0dcf501fef11abc857d0639e525b-if00-port0"
 
 # renovate: datasource=pypi depName=universal-silabs-flasher
 zigbee2mqtt_silabs_flasher_version: "1.1.0"
