@@ -28,6 +28,7 @@
     lv: "{{ item.name }}"
     size: "{{ item.size }}"
     resizefs: true
+    shrink: false
   loop: "{{ hardware_target_lvs }}"
 
 - name: Ensure XFS filesystem is formatted on required LVs
