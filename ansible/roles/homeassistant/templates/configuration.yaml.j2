@@ -103,26 +103,3 @@ schedule:
         to: "05:00:00"
       - from: "22:00:00"
         to: "24:00:00"
-
-{% raw %}
-template:
-  - sensor:
-      - name: "Dashboard Greeting"
-        unique_id: dashboard_greeting
-        state: >
-          {% set time = now().hour %}
-          {% if time < 5 %} Dobranoc 😴
-          {% elif time < 12 %} Dzień dobry ☀️
-          {% elif time < 18 %} Miłego popołudnia 🌤
-          {% elif time < 22 %} Dobry wieczór 🌙
-          {% else %} Spokojnego wieczoru 🌌
-          {% endif %}
-
-      - name: "Polish Date"
-        unique_id: polish_date
-        state: >
-          {% set days = {'Monday': 'poniedziałek', 'Tuesday': 'wtorek', 'Wednesday': 'środa', 'Thursday': 'czwartek', 'Friday': 'piątek', 'Saturday': 'sobota', 'Sunday': 'niedziela'} %}
-          {% set months = {'January': 'stycznia', 'February': 'lutego', 'March': 'marca', 'April': 'kwietnia', 'May': 'maja', 'June': 'czerwca', 'July': 'lipca', 'August': 'sierpnia', 'September': 'września', 'October': 'października', 'November': 'listopada', 'December': 'grudnia'} %}
-          {% set now = now() %}
-          {{ days[now.strftime('%A')] }}, {{ now.day }} {{ months[now.strftime('%B')] }} {{ now.strftime('%H:%M') }}
-{% endraw %}
