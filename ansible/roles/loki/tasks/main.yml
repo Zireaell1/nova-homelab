@@ -1,46 +1,14 @@
 ---
-- name: Verify directory structure
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-  loop:
-    - "{{ monitoring_path }}/loki"
-    - "{{ monitoring_path }}/loki/data"
-
-- name: Upload loki.yaml file
-  ansible.builtin.template:
-    src: "loki.yaml.j2"
-    dest: "{{ monitoring_path }}/loki/loki.yaml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart loki
-
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "loki.container.j2"
-    dest: "{{ quadlet_path }}/loki.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart loki
-
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ loki_image }}:{{ loki_version }}"
-    state: present
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: loki.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Loki
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: loki
+    podman_service_dirs:
+      - "{{ monitoring_path }}/loki"
+      - "{{ monitoring_path }}/loki/data"
+    podman_service_templates:
+      - src: loki.yaml.j2
+        dest: "{{ monitoring_path }}/loki/loki.yaml"
+    podman_service_quadlets: ["loki.container"]
+    podman_service_images: ["{{ loki_image }}:{{ loki_version }}"]
