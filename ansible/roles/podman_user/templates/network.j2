@@ -1,0 +1,15 @@
+[Unit]
+Description={{ item.description | default(item.name ~ ' network') }}
+
+[Network]
+NetworkName={{ item.name }}
+{% if item.internal | default(false) %}
+Internal=true
+{% endif %}
+{% if item.isolate | default(true) %}
+Options=isolate=true
+{% endif %}
+{% if item.subnet is defined %}
+Subnet={{ item.subnet }}
+Gateway={{ item.gateway }}
+{% endif %}

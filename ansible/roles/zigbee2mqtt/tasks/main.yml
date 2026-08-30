@@ -11,15 +11,6 @@
     - "{{ stacks_path }}/zigbee2mqtt/data"
     - "{{ stacks_path }}/zigbee2mqtt/config"
 
-- name: Upload .network file
-  ansible.builtin.template:
-    src: "zigbee2mqtt.network.j2"
-    dest: "{{ quadlet_path }}/zigbee2mqtt.network"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart zigbee2mqtt
-
 - name: Upload .env file
   ansible.builtin.template:
     src: "zigbee2mqtt.env.j2"

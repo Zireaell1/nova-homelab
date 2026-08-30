@@ -25,3 +25,12 @@
       The changes (e.g., muting healthcheck logs) require a container
       restart to take effect. Please restart your containers or reboot
       the server manually.
+
+- name: Show Podman network recreate warning
+  ansible.builtin.debug:
+    msg: >
+      [WARNING] One or more .network quadlets changed. Podman's generated
+      <name>-network.service runs `podman network create --ignore`, so an
+      EXISTING network is never modified — only newly created ones pick up
+      the change. To apply it, stop every container attached to the network,
+      `podman network rm <name>`, then start them again.

@@ -22,16 +22,35 @@
     mode: "0644"
   notify: Show Podman config restart warning
 
-- name: Deploy shared podman networks
+- name: Deploy podman network quadlets
   ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ quadlet_path }}/{{ item }}"
+    src: "network.j2"
+    dest: "{{ quadlet_path }}/{{ item.name }}.network"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-  loop:
-    - monitoring-backend.network
-    - home.network
+  loop: "{{ podman_networks }}"
+  loop_control:
+    label: "{{ item.name }}.network"
+  register: podman_user_networks
+  notify:
+    - Reload systemd user daemon
+    - Show Podman network recreate warning
+
+- name: Find orphaned network quadlets
+  ansible.builtin.find:
+    paths: "{{ quadlet_path }}"
+    patterns: "*.network"
+    excludes: "{{ podman_networks | map(attribute='name') | map('regex_replace', '$', '.network') | list }}"
+  register: podman_user_stale_networks
+
+- name: Remove orphaned network quadlets
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ podman_user_stale_networks.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
   notify: Reload systemd user daemon
 
 - name: Deploy Systemd Service file

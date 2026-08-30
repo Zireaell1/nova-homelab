@@ -10,15 +10,6 @@
     - "{{ stacks_path }}/peanut"
     - "{{ stacks_path }}/peanut/config"
 
-- name: Upload .network file
-  ansible.builtin.template:
-    src: "peanut.network.j2"
-    dest: "{{ quadlet_path }}/peanut.network"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart peanut
-
 - name: Upload .env file
   ansible.builtin.template:
     src: "peanut.env.j2"

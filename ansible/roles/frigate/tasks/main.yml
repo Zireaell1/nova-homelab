@@ -15,15 +15,6 @@
     - "{{ frigate_storage_path }}/clips"
     - "{{ frigate_storage_path }}/exports"
 
-- name: Upload .network file
-  ansible.builtin.template:
-    src: "frigate.network.j2"
-    dest: "{{ quadlet_path }}/frigate.network"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart frigate
-
 - name: Upload .env file
   ansible.builtin.template:
     src: "frigate.env.j2"

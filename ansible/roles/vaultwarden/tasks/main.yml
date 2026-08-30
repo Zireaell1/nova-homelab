@@ -10,15 +10,6 @@
     - "{{ stacks_path }}/vaultwarden"
     - "{{ stacks_path }}/vaultwarden/data"
 
-- name: Upload .network file
-  ansible.builtin.template:
-    src: "vaultwarden.network.j2"
-    dest: "{{ quadlet_path }}/vaultwarden.network"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart vaultwarden
-
 - name: Upload .env file
   ansible.builtin.template:
     src: "vaultwarden.env.j2"

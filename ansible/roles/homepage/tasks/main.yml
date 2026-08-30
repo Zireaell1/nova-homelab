@@ -13,15 +13,6 @@
     - "{{ frigate_mount }}/homepage_monitoring"
     - "{{ backup_mount }}/homepage_monitoring"
 
-- name: Upload .network file
-  ansible.builtin.template:
-    src: "homepage.network.j2"
-    dest: "{{ quadlet_path }}/homepage.network"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart homepage
-
 - name: Upload .env file
   ansible.builtin.template:
     src: "homepage.env.j2"

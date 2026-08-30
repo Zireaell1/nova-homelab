@@ -76,21 +76,6 @@
     mode: "0600"
   notify: Restart authelia
 
-- name: Upload .network file
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ quadlet_path }}/{{ item }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  loop:
-    - authelia.network
-    - authelia-backend.network
-  notify:
-    - Restart authelia
-    - Restart authelia-postgres
-    - Restart authelia-redis
-
 - name: Upload Authelia .container file
   ansible.builtin.template:
     src: "authelia.container.j2"

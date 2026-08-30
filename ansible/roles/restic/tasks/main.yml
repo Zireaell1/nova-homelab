@@ -9,15 +9,6 @@
   loop:
     - "{{ restic_server_path }}"
 
-- name: Upload .network file
-  ansible.builtin.template:
-    src: "restic.network.j2"
-    dest: "{{ quadlet_path }}/restic.network"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart restic
-
 - name: Upload .container file
   ansible.builtin.template:
     src: "restic.container.j2"

@@ -53,22 +53,6 @@
     - Restart immich
     - Restart immich-machine-learning
 
-- name: Upload .network files
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ quadlet_path }}/{{ item }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  loop:
-    - immich.network
-    - immich-backend.network
-  notify:
-    - Restart immich
-    - Restart immich-machine-learning
-    - Restart immich-postgres
-    - Restart immich-redis
-
 - name: Upload Immich .container file
   ansible.builtin.template:
     src: "immich.container.j2"
