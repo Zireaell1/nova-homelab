@@ -32,7 +32,6 @@
   loop: "{{ podman_networks }}"
   loop_control:
     label: "{{ item.name }}.network"
-  register: podman_user_networks
   notify:
     - Reload systemd user daemon
     - Show Podman network recreate warning

@@ -1,0 +1,102 @@
+---
+- name: Ensure rootless systemd paths exist for {{ podman_service_name }}
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+  loop:
+    - "{{ quadlet_path }}"
+    - "{{ user_units_path }}"
+
+- name: Ensure data directories exist for {{ podman_service_name }}
+  ansible.builtin.file:
+    path: "{{ item.path | default(item) }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "{{ item.mode | default('0755') }}"
+  loop: "{{ podman_service_dirs }}"
+  loop_control:
+    label: "{{ item.path | default(item) }}"
+
+- name: Deploy configuration for {{ podman_service_name }}
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "{{ item.mode | default('0644') }}"
+    force: "{{ item.force | default(true) }}"
+    validate: "{{ item.validate | default(omit) }}"
+  loop: "{{ podman_service_templates }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  no_log: "{{ item.no_log | default(false) }}"
+  register: podman_service_config
+
+- name: Deploy secret files for {{ podman_service_name }}
+  ansible.builtin.copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "{{ item.mode | default('0600') }}"
+  loop: "{{ podman_service_secrets }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  no_log: true
+  register: podman_service_secret_files
+
+- name: Deploy quadlet units for {{ podman_service_name }}
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ quadlet_path }}/{{ item }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  loop: "{{ podman_service_quadlets }}"
+  register: podman_service_quadlet_files
+
+- name: Deploy plain user units for {{ podman_service_name }}
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ user_units_path }}/{{ item }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  loop: "{{ podman_service_units }}"
+  register: podman_service_unit_files
+
+- name: Pull images for {{ podman_service_name }}
+  containers.podman.podman_image:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ podman_service_images }}"
+
+- name: Resolve restart requirement for {{ podman_service_name }}
+  ansible.builtin.set_fact:
+    podman_service_changed: >-
+      {{
+        (podman_service_config is changed) or
+        (podman_service_secret_files is changed) or
+        (podman_service_quadlet_files is changed) or
+        (podman_service_unit_files is changed) or
+        (podman_service_changed_extra | bool)
+      }}
+
+- name: Reload user systemd for {{ podman_service_name }}
+  ansible.builtin.systemd:
+    daemon_reload: true
+    scope: user
+  when: podman_service_changed | bool
+
+- name: Ensure units are enabled and in the desired state for {{ podman_service_name }}
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: "{{ 'restarted' if podman_service_changed | bool else 'started' }}"
+    enabled: true
+    scope: user
+  loop: "{{ podman_service_units_start | ternary(podman_service_units_start, [podman_service_name ~ '.service']) }}"
+  ignore_errors: "{{ ansible_check_mode }}"
