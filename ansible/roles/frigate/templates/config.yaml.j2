@@ -59,7 +59,6 @@ go2rtc:
       networks: [udp4, tcp4]
     candidates:
       - {{ vault_primary_ip }}:8555
-      - {{ vault_tailscale_ip }}:8555
 
 ffmpeg:
   hwaccel_args: preset-intel-qsv-h264
