@@ -10,5 +10,6 @@
     podman_service_templates:
       - src: loki.yaml.j2
         dest: "{{ monitoring_path }}/loki/loki.yaml"
+        mode: "0644"
     podman_service_quadlets: ["loki.container"]
     podman_service_images: ["{{ loki_image }}:{{ loki_version }}"]
