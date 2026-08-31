@@ -1,5 +1,5 @@
 ---
-- name: Verify directory structure
+- name: Verify Caddy build and static directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -7,41 +7,17 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "{{ stacks_path }}/caddy"
-    - "{{ stacks_path }}/caddy/data"
-    - "{{ stacks_path }}/caddy/config"
-    - "{{ stacks_path }}/caddy/srv"
     - "{{ stacks_path }}/caddy/caddy-build"
+    - "{{ stacks_path }}/caddy/srv"
 
-- name: Copy files to /srv
+- name: Copy static files served by Caddy
   ansible.builtin.copy:
     src: "srv/{{ item }}"
     dest: "{{ stacks_path }}/caddy/srv/{{ item }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-  loop:
-    - "windows-device-critical-backup.cmd"
-
-- name: Upload .env file
-  ansible.builtin.template:
-    src: "caddy.env.j2"
-    dest: "{{ stacks_path }}/caddy/caddy.env"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  no_log: true
-  notify: Restart caddy
-
-- name: Upload Caddyfile
-  ansible.builtin.template:
-    src: "Caddyfile.j2"
-    dest: "{{ stacks_path }}/caddy/Caddyfile"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart caddy
-  # TODO: Reload caddy
+  loop: "{{ caddy_static_files }}"
 
 - name: Upload Containerfile
   ansible.builtin.template:
@@ -52,40 +28,34 @@
     mode: "0644"
   register: caddy_containerfile
 
-- name: Build image with Cloudflare plugin
+- name: Build Caddy image with the Cloudflare DNS plugin
   containers.podman.podman_image:
     name: custom-caddy
     tag: "{{ caddy_version }}"
     path: "{{ stacks_path }}/caddy/caddy-build"
-    force: "{{ caddy_containerfile.changed }}"
-  notify: Restart caddy
+    force: "{{ caddy_containerfile is changed }}"
+  register: caddy_image
 
-- name: Upload .socket file
-  ansible.builtin.template:
-    src: "caddy.socket.j2"
-    dest: "{{ user_units_path }}/caddy.socket"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart caddy
-
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "caddy.container.j2"
-    dest: "{{ quadlet_path }}/caddy.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart caddy
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: caddy.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Caddy
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: caddy
+    podman_service_dirs:
+      - "{{ stacks_path }}/caddy"
+      - "{{ stacks_path }}/caddy/data"
+      - "{{ stacks_path }}/caddy/config"
+    podman_service_templates:
+      - src: Caddyfile.j2
+        dest: "{{ stacks_path }}/caddy/Caddyfile"
+        mode: "0644"
+      - src: caddy.env.j2
+        dest: "{{ stacks_path }}/caddy/caddy.env"
+        mode: "0600"
+        no_log: true
+    podman_service_quadlets: ["caddy.container"]
+    podman_service_units: ["caddy.socket"]
+    podman_service_units_start:
+      - caddy.socket
+      - caddy.service
+    podman_service_changed_extra: "{{ (caddy_containerfile is changed) or (caddy_image is changed) }}"

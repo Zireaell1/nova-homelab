@@ -6,3 +6,6 @@ caddy_memory_limit: 500m
 
 # renovate: datasource=docker depName=docker.io/library/caddy
 caddy_version: "2.11.4"
+
+caddy_static_files:
+  - windows-device-critical-backup.cmd
