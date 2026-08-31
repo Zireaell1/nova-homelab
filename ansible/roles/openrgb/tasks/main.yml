@@ -1,5 +1,5 @@
 ---
-- name: Verify directory structure
+- name: Verify OpenRGB build directory
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -7,17 +7,7 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "{{ stacks_path }}/openrgb"
     - "{{ stacks_path }}/openrgb/openrgb-build"
-
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "openrgb.container.j2"
-    dest: "{{ quadlet_path }}/openrgb.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart openrgb
 
 - name: Upload Containerfile
   ansible.builtin.template:
@@ -28,22 +18,20 @@
     mode: "0644"
   register: openrgb_containerfile
 
-- name: Build image
+- name: Build OpenRGB image
   containers.podman.podman_image:
     name: custom-openrgb
     tag: "latest"
     path: "{{ stacks_path }}/openrgb/openrgb-build"
-    force: "{{ openrgb_containerfile.changed }}"
-  notify: Restart openrgb
+    force: "{{ openrgb_containerfile is changed }}"
+  register: openrgb_image
 
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: openrgb.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy OpenRGB
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: openrgb
+    podman_service_dirs:
+      - "{{ stacks_path }}/openrgb"
+    podman_service_quadlets: ["openrgb.container"]
+    podman_service_changed_extra: "{{ (openrgb_containerfile is changed) or (openrgb_image is changed) }}"
