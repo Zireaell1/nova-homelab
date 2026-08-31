@@ -1,0 +1,31 @@
+---
+argument_specs:
+  main:
+    short_description: Deploy a rootless Podman service from quadlets
+    options:
+      podman_service_name:
+        type: str
+        required: true
+      podman_service_templates:
+        type: list
+        elements: dict
+        default: []
+        options:
+          src: { type: str, required: true }
+          dest: { type: path, required: true }
+          mode: { type: str, required: true }
+          no_log: { type: bool, default: false }
+          force: { type: bool, default: true }
+      podman_service_secrets:
+        type: list
+        elements: dict
+        default: []
+        options:
+          content: { type: str, required: true }
+          dest: { type: path, required: true }
+          mode: { type: str, default: "0600" }
+      podman_service_quadlets: { type: list, elements: str, default: [] }
+      podman_service_units: { type: list, elements: str, default: [] }
+      podman_service_images: { type: list, elements: str, default: [] }
+      podman_service_units_start: { type: list, elements: str, default: [] }
+      podman_service_changed_extra: { type: bool, default: false }
