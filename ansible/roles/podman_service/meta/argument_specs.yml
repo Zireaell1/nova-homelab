@@ -6,6 +6,10 @@ argument_specs:
       podman_service_name:
         type: str
         required: true
+      podman_service_dirs:
+        type: list
+        elements: path
+        default: []
       podman_service_templates:
         type: list
         elements: dict

@@ -18,8 +18,6 @@
     group: "{{ ansible_user }}"
     mode: "{{ item.mode | default('0755') }}"
   loop: "{{ podman_service_dirs }}"
-  loop_control:
-    label: "{{ item.path | default(item) }}"
 
 - name: Deploy configuration for {{ podman_service_name }}
   ansible.builtin.template:
@@ -44,8 +42,6 @@
     group: "{{ ansible_user }}"
     mode: "{{ item.mode | default('0600') }}"
   loop: "{{ podman_service_secrets }}"
-  loop_control:
-    label: "{{ item.dest }}"
   no_log: true
   register: podman_service_secret_files
 
