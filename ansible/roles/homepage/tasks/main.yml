@@ -1,5 +1,5 @@
 ---
-- name: Verify directory structure
+- name: Verify Homepage static directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -7,34 +7,7 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "{{ stacks_path }}/homepage"
-    - "{{ stacks_path }}/homepage/config"
     - "{{ stacks_path }}/homepage/assets"
-    - "{{ frigate_mount }}/homepage_monitoring"
-    - "{{ backup_mount }}/homepage_monitoring"
-
-- name: Upload .env file
-  ansible.builtin.template:
-    src: "homepage.env.j2"
-    dest: "{{ stacks_path }}/homepage/homepage.env"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  notify: Restart homepage
-
-- name: Upload Homepage files
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ stacks_path }}/homepage/config/{{ item }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  loop:
-    - bookmarks.yaml
-    - services.yaml
-    - settings.yaml
-    - widgets.yaml
-  notify: Restart homepage
 
 - name: Sync all assets
   ansible.posix.synchronize:
@@ -47,30 +20,35 @@
     rsync_opts:
       - "--chmod=D0755,F0644"
       - "--chown={{ ansible_user }}:{{ ansible_user }}"
-  notify: Restart homepage
+  register: homepage_sync_assets
 
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "homepage.container.j2"
-    dest: "{{ quadlet_path }}/homepage.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart homepage
-
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ homepage_image }}:{{ homepage_version }}"
-    state: present
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: homepage.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Homepage
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: homepage
+    podman_service_dirs:
+      - "{{ stacks_path }}/homepage"
+      - "{{ stacks_path }}/homepage/config"
+      - "{{ stacks_path }}/homepage/assets"
+      - "{{ frigate_mount }}/homepage_monitoring"
+      - "{{ backup_mount }}/homepage_monitoring"
+    podman_service_templates:
+      - src: homepage.env.j2
+        dest: "{{ stacks_path }}/homepage/homepage.env"
+        mode: "0644"
+      - src: bookmarks.yaml.j2
+        dest: "{{ stacks_path }}/homepage/config/bookmarks.yaml"
+        mode: "0644"
+      - src: services.yaml.j2
+        dest: "{{ stacks_path }}/homepage/config/services.yaml"
+        mode: "0644"
+      - src: settings.yaml.j2
+        dest: "{{ stacks_path }}/homepage/config/settings.yaml"
+        mode: "0644"
+      - src: widgets.yaml.j2
+        dest: "{{ stacks_path }}/homepage/config/widgets.yaml"
+        mode: "0644"
+    podman_service_quadlets: ["homepage.container"]
+    podman_service_images: ["{{ homepage_image }}:{{ homepage_version }}"]
+    podman_service_changed_extra: "{{ homepage_sync_assets is changed }}"
