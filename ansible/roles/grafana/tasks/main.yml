@@ -1,5 +1,5 @@
 ---
-- name: Verify directory structure
+- name: Verify Grafana static directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -9,57 +9,7 @@
   loop:
     - "{{ monitoring_path }}/grafana"
     - "{{ monitoring_path }}/grafana/provisioning"
-    - "{{ monitoring_path }}/grafana/provisioning/datasources"
     - "{{ monitoring_path }}/grafana/provisioning/dashboards"
-    - "{{ monitoring_path }}/grafana/provisioning/alerting"
-    - "{{ monitoring_path }}/grafana/provisioning/plugins"
-    - "{{ monitoring_path }}/grafana/data"
-
-- name: Upload .env file
-  ansible.builtin.template:
-    src: "grafana.env.j2"
-    dest: "{{ monitoring_path }}/grafana/grafana.env"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  no_log: true
-  notify: Restart grafana
-
-- name: Upload provisioning/datasources/datasources.yml file
-  ansible.builtin.template:
-    src: "datasources.yml.j2"
-    dest: "{{ monitoring_path }}/grafana/provisioning/datasources/datasources.yml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart grafana
-
-- name: Upload provisioning/alerting/alerting.yml file
-  ansible.builtin.template:
-    src: "alerting.yml.j2"
-    dest: "{{ monitoring_path }}/grafana/provisioning/alerting/alerting.yml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart grafana
-
-- name: Upload provisioning/alerting/contact-points.yml file
-  ansible.builtin.template:
-    src: "contact-points.yml.j2"
-    dest: "{{ monitoring_path }}/grafana/provisioning/alerting/contact-points.yml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart grafana
-
-- name: Upload provisioning/dashboards/dashboards.yml file
-  ansible.builtin.template:
-    src: "dashboards.yml.j2"
-    dest: "{{ monitoring_path }}/grafana/provisioning/dashboards/dashboards.yml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart grafana
 
 - name: Sync dashboard files
   ansible.posix.synchronize:
@@ -73,29 +23,38 @@
       - "--exclude=dashboards.yml"
       - "--chmod=D0755,F0644"
       - "--chown={{ ansible_user }}:{{ ansible_user }}"
+  register: grafana_sync_dashboards
 
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "grafana.container.j2"
-    dest: "{{ quadlet_path }}/grafana.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart grafana
-
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ grafana_image }}:{{ grafana_version }}"
-    state: present
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: grafana.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Grafana
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: grafana
+    podman_service_dirs:
+      - "{{ monitoring_path }}/grafana"
+      - "{{ monitoring_path }}/grafana/provisioning"
+      - "{{ monitoring_path }}/grafana/provisioning/datasources"
+      - "{{ monitoring_path }}/grafana/provisioning/dashboards"
+      - "{{ monitoring_path }}/grafana/provisioning/alerting"
+      - "{{ monitoring_path }}/grafana/provisioning/plugins"
+      - "{{ monitoring_path }}/grafana/data"
+    podman_service_templates:
+      - src: grafana.env.j2
+        dest: "{{ stacks_path }}/grafana/grafana.env"
+        mode: "0600"
+        no_log: true
+      - src: datasources.yml.j2
+        dest: "{{ monitoring_path }}/grafana/provisioning/datasources/datasources.yml"
+        mode: "0644"
+      - src: alerting.yml.j2
+        dest: "{{ monitoring_path }}/grafana/provisioning/alerting/alerting.yml"
+        mode: "0644"
+      - src: contact-points.yml.j2
+        dest: "{{ monitoring_path }}/grafana/provisioning/alerting/contact-points.yml"
+        mode: "0644"
+      - src: dashboards.yml.j2
+        dest: "{{ monitoring_path }}/grafana/provisioning/dashboards/dashboards.yml"
+        mode: "0644"
+    podman_service_quadlets: ["grafana.container"]
+    podman_service_images: ["{{ grafana_image }}:{{ grafana_version }}"]
+    podman_service_changed_extra: "{{ grafana_sync_dashboards is changed }}"
