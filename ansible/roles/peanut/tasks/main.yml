@@ -1,56 +1,19 @@
 ---
-- name: Verify directory structure
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-  loop:
-    - "{{ stacks_path }}/peanut"
-    - "{{ stacks_path }}/peanut/config"
-
-- name: Upload .env file
-  ansible.builtin.template:
-    src: "peanut.env.j2"
-    dest: "{{ stacks_path }}/peanut/peanut.env"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  notify: Restart peanut
-
-- name: Upload settings.yml file
-  ansible.builtin.template:
-    src: "settings.yml.j2"
-    dest: "{{ stacks_path }}/peanut/config/settings.yml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  no_log: true
-  notify: Restart peanut
-
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "peanut.container.j2"
-    dest: "{{ quadlet_path }}/peanut.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart peanut
-
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ peanut_image }}:{{ peanut_version }}"
-    state: present
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: peanut.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Peanut
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: peanut
+    podman_service_dirs:
+      - "{{ stacks_path }}/peanut"
+      - "{{ stacks_path }}/peanut/config"
+    podman_service_templates:
+      - src: peanut.env.j2
+        dest: "{{ stacks_path }}/peanut/peanut.env"
+        mode: "0644"
+      - src: settings.yml.j2
+        dest: "{{ stacks_path }}/peanut/config/settings.yml"
+        mode: "0600"
+        no_log: true
+    podman_service_quadlets: ["peanut.container"]
+    podman_service_images: ["{{ peanut_image }}:{{ peanut_version }}"]
