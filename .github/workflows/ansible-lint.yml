@@ -60,3 +60,49 @@ jobs:
           if bad:
               print("Self-referential variables:"); print(*bad, sep="\n"); sys.exit(1)
           EOF
+
+      - name: Reject register names that shadow defined variables
+        run: |
+          python3 - <<'EOF'
+          import yaml, glob, sys
+          defined = {}
+          for f in (glob.glob('ansible/roles/*/defaults/*.yml')
+                    + glob.glob('ansible/group_vars/**/*.yml', recursive=True)
+                    + glob.glob('ansible/host_vars/*.yml')):
+              d = yaml.safe_load(open(f))
+              if isinstance(d, dict):
+                  for k in d:
+                      defined.setdefault(k, []).append(f)
+          bad = []
+          for f in glob.glob('ansible/roles/*/tasks/*.yml'):
+              for t in (yaml.safe_load(open(f)) or []):
+                  if isinstance(t, dict) and t.get('register') in defined:
+                      bad.append(f"{f}: register: {t['register']} shadows {defined[t['register']]}")
+          if bad:
+              print("Registered variables shadowing defined vars:"); print(*bad, sep="\n"); sys.exit(1)
+          EOF
+
+      - name: Check podman_service template sources exist
+        run: |
+          python3 - <<'EOF'
+          import yaml, glob, os, sys
+          bad = []
+          for f in glob.glob('ansible/roles/*/tasks/main.yml'):
+              role = f.split('/')[2]
+              for t in (yaml.safe_load(open(f)) or []):
+                  if not isinstance(t, dict) or 'ansible.builtin.include_role' not in t:
+                      continue
+                  v = t.get('vars') or {}
+                  srcs = [e['src'] for e in (v.get('podman_service_templates') or [])
+                          if isinstance(e, dict) and 'src' in e]
+                  srcs += [n + '.j2' for n in (v.get('podman_service_quadlets') or [])]
+                  srcs += [n + '.j2' for n in (v.get('podman_service_units') or [])]
+                  for s in srcs:
+                      if '{{' in s:
+                          continue
+                      p = f'ansible/roles/{role}/templates/{s}'
+                      if not os.path.exists(p):
+                          bad.append(f"{role}: {s} -> {p}")
+          if bad:
+              print("Missing template sources:"); print(*bad, sep="\n"); sys.exit(1)
+          EOF
