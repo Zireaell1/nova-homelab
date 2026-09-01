@@ -13,7 +13,7 @@
         dest: "{{ stacks_path }}/mosquitto/config/mosquitto.conf"
         mode: "0644"
     podman_service_secrets:
-      content: "{{ vault_mosquitto_pwfile_content }}"
-      dest: "{{ stacks_path }}/mosquitto/config/pwfile"
+      - content: "{{ vault_mosquitto_pwfile_content }}"
+        dest: "{{ stacks_path }}/mosquitto/config/pwfile"
     podman_service_quadlets: ["mosquitto.container"]
     podman_service_images: ["{{ mosquitto_image }}:{{ mosquitto_version }}"]
