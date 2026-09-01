@@ -35,9 +35,9 @@
       - content: "{{ vault_authelia_users_database }}"
         dest: "{{ stacks_path }}/authelia/config/users_database.yml"
     podman_service_quadlets:
-      - authelia-postgres
-      - authelia-redis
-      - authelia
+      - authelia-postgres.container
+      - authelia-redis.container
+      - authelia.container
     podman_service_images:
       - "{{ authelia_image }}:{{ authelia_version }}"
       - "{{ authelia_redis_image }}:{{ authelia_redis_version }}"
