@@ -1,70 +1,27 @@
 ---
-- name: Verify directory structure
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-  loop:
-    - "{{ stacks_path }}/frigate"
-    - "{{ stacks_path }}/frigate/config"
-    - "{{ stacks_path }}/frigate/nginx"
-    - "{{ frigate_storage_path }}"
-    - "{{ frigate_storage_path }}/recordings"
-    - "{{ frigate_storage_path }}/clips"
-    - "{{ frigate_storage_path }}/exports"
-
-- name: Upload .env file
-  ansible.builtin.template:
-    src: "frigate.env.j2"
-    dest: "{{ stacks_path }}/frigate/frigate.env"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  no_log: true
-  notify: Restart frigate
-
-- name: Upload config.yaml file
-  ansible.builtin.template:
-    src: "config.yaml.j2"
-    dest: "{{ stacks_path }}/frigate/config/config.yaml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart frigate
-
-- name: Upload nginx.conf file
-  ansible.builtin.template:
-    src: "nginx.conf.j2"
-    dest: "{{ stacks_path }}/frigate/nginx/nginx.conf"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart frigate
-
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "frigate.container.j2"
-    dest: "{{ quadlet_path }}/frigate.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart frigate
-
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ frigate_image }}:{{ frigate_version }}"
-    state: present
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: frigate.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Frigate
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: frigate
+    podman_service_dirs:
+      - "{{ stacks_path }}/frigate"
+      - "{{ stacks_path }}/frigate/config"
+      - "{{ stacks_path }}/frigate/nginx"
+      - "{{ frigate_storage_path }}"
+      - "{{ frigate_storage_path }}/recordings"
+      - "{{ frigate_storage_path }}/clips"
+      - "{{ frigate_storage_path }}/exports"
+    podman_service_templates:
+      - src: frigate.env.j2
+        dest: "{{ stacks_path }}/frigate/frigate.env"
+        mode: "0600"
+        no_log: true
+      - src: config.yaml.j2
+        dest: "{{ stacks_path }}/frigate/config/config.yaml"
+        mode: "0644"
+      - src: nginx.yaml.j2
+        dest: "{{ stacks_path }}/frigate/nginx/nginx.conf"
+        mode: "0644"
+    podman_service_quadlets: ["frigate.container"]
+    podman_service_images: ["{{ frigate_image }}:{{ frigate_version }}"]
