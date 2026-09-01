@@ -1,125 +1,44 @@
 ---
-- name: Verify directory structure
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-  loop:
-    - "{{ stacks_path }}/authelia"
-    - "{{ stacks_path }}/authelia/config"
-    - "{{ stacks_path }}/authelia/secrets"
-    - "{{ stacks_path }}/authelia/postgres"
-    - "{{ stacks_path }}/authelia/redis"
-
-- name: Upload secret files
-  ansible.builtin.copy:
-    content: "{{ item.value }}"
-    dest: "{{ stacks_path }}/authelia/secrets/{{ item.name }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  loop:
-    - name: "HMAC_SECRET"
-      value: "{{ vault_authelia_hmac_secret }}"
-
-    - name: "JWT_SECRET"
-      value: "{{ vault_authelia_jwt_secret }}"
-
-    - name: "REDIS_PASSWORD"
-      value: "{{ vault_authelia_redis_password }}"
-
-    - name: "SESSION_SECRET"
-      value: "{{ vault_authelia_session_secret }}"
-
-    - name: "STORAGE_ENCRYPTION_KEY"
-      value: "{{ vault_authelia_storage_encryption_key }}"
-
-    - name: "STORAGE_PASSWORD"
-      value: "{{ vault_authelia_storage_password }}"
-
-    - name: "rsa.2048.key"
-      value: "{{ vault_authelia_rsa2048 }}"
-
-  no_log: true
-  notify:
-    - Restart authelia
-    - Restart authelia-postgres
-    - Restart authelia-redis
-
-- name: Upload users_database.yml file
-  ansible.builtin.copy:
-    content: "{{ vault_authelia_users_database }}"
-    dest: "{{ stacks_path }}/authelia/config/users_database.yml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  no_log: true
-  notify: Restart authelia
-
-- name: Upload configuration.yml file
-  ansible.builtin.template:
-    src: "configuration.yml.j2"
-    dest: "{{ stacks_path }}/authelia/config/configuration.yml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart authelia
-
-- name: Upload .env file
-  ansible.builtin.template:
-    src: "authelia.env.j2"
-    dest: "{{ stacks_path }}/authelia/authelia.env"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  notify: Restart authelia
-
-- name: Upload Authelia .container file
-  ansible.builtin.template:
-    src: "authelia.container.j2"
-    dest: "{{ quadlet_path }}/authelia.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart authelia
-
-- name: Upload Postgres and Redis .container files
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ quadlet_path }}/{{ item }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  loop:
-    - authelia-postgres.container
-    - authelia-redis.container
-  notify:
-    - Restart authelia-postgres
-    - Restart authelia-redis
-
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - "{{ authelia_image }}:{{ authelia_version }}"
-    - "{{ authelia_redis_image }}:{{ authelia_redis_version }}"
-    - "{{ authelia_postgres_image }}:{{ authelia_postgres_version }}"
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: "{{ item }}.service"
-    state: started
-    enabled: true
-    scope: user
-  loop:
-    - authelia-postgres
-    - authelia-redis
-    - authelia
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Authelia
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: authelia
+    podman_service_dirs:
+      - "{{ stacks_path }}/authelia"
+      - "{{ stacks_path }}/authelia/config"
+      - "{{ stacks_path }}/authelia/secrets"
+      - "{{ stacks_path }}/authelia/postgres"
+      - "{{ stacks_path }}/authelia/redis"
+    podman_service_templates:
+      - src: configuration.yml.j2
+        dest: "{{ stacks_path }}/authelia/config/configuration.yml"
+        mode: "0644"
+      - src: authelia.env.j2
+        dest: "{{ stacks_path }}/authelia/authelia.env"
+        mode: "0600"
+    podman_service_secrets:
+      - content: "{{ vault_authelia_hmac_secret }}"
+        dest: "{{ stacks_path }}/authelia/secrets/HMAC_SECRET"
+      - content: "{{ vault_authelia_jwt_secret }}"
+        dest: "{{ stacks_path }}/authelia/secrets/JWT_SECRET"
+      - content: "{{ vault_authelia_redis_password }}"
+        dest: "{{ stacks_path }}/authelia/secrets/REDIS_PASSWORD"
+      - content: "{{ vault_authelia_session_secret }}"
+        dest: "{{ stacks_path }}/authelia/secrets/SESSION_SECRET"
+      - content: "{{ vault_authelia_storage_encryption_key }}"
+        dest: "{{ stacks_path }}/authelia/secrets/STORAGE_ENCRYPTION_KEY"
+      - content: "{{ vault_authelia_storage_password }}"
+        dest: "{{ stacks_path }}/authelia/secrets/STORAGE_PASSWORD"
+      - content: "{{ vault_authelia_rsa2048 }}"
+        dest: "{{ stacks_path }}/authelia/secrets/rsa.2048.key"
+      - content: "{{ vault_authelia_users_database }}"
+        dest: "{{ stacks_path }}/authelia/config/users_database.yml"
+    podman_service_quadlets:
+      - authelia-postgres
+      - authelia-redis
+      - authelia
+    podman_service_images:
+      - "{{ authelia_image }}:{{ authelia_version }}"
+      - "{{ authelia_redis_image }}:{{ authelia_redis_version }}"
+      - "{{ authelia_postgres_image }}:{{ authelia_postgres_version }}"
