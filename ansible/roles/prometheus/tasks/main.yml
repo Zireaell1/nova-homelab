@@ -1,46 +1,15 @@
 ---
-- name: Verify directory structure
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-  loop:
-    - "{{ monitoring_path }}/prometheus"
-    - "{{ monitoring_path }}/prometheus/data"
-
-- name: Upload prometheus.yml file
-  ansible.builtin.template:
-    src: "prometheus.yml.j2"
-    dest: "{{ monitoring_path }}/prometheus/prometheus.yml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart prometheus
-
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "prometheus.container.j2"
-    dest: "{{ quadlet_path }}/prometheus.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart prometheus
-
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ prometheus_image }}:{{ prometheus_version }}"
-    state: present
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: prometheus.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Prometheus
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: prometheus
+    podman_service_dirs:
+      - "{{ monitoring_path }}/prometheus"
+      - "{{ monitoring_path }}/prometheus/data"
+    podman_service_templates:
+      - src: prometheus.yml.j2
+        dest: "{{ monitoring_path }}/prometheus/prometheus.yml"
+        mode: "0644"
+    podman_service_quadlets: ["prometheus.container"]
+    podman_service_images: ["{{ prometheus_image }}:{{ prometheus_version }}"]
