@@ -34,7 +34,7 @@
     tag: "{{ caddy_version }}"
     path: "{{ stacks_path }}/caddy/caddy-build"
     force: "{{ caddy_containerfile is changed }}"
-  register: caddy_image
+  register: caddy_image_build
 
 - name: Deploy Caddy
   ansible.builtin.include_role:
@@ -58,4 +58,4 @@
     podman_service_units_start:
       - caddy.socket
       - caddy.service
-    podman_service_changed_extra: "{{ (caddy_containerfile is changed) or (caddy_image is changed) }}"
+    podman_service_changed_extra: "{{ (caddy_containerfile is changed) or (caddy_image_build is changed) }}"

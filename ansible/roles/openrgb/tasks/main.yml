@@ -24,7 +24,7 @@
     tag: "latest"
     path: "{{ stacks_path }}/openrgb/openrgb-build"
     force: "{{ openrgb_containerfile is changed }}"
-  register: openrgb_image
+  register: openrgb_image_build
 
 - name: Deploy OpenRGB
   ansible.builtin.include_role:
@@ -34,4 +34,4 @@
     podman_service_dirs:
       - "{{ stacks_path }}/openrgb"
     podman_service_quadlets: ["openrgb.container"]
-    podman_service_changed_extra: "{{ (openrgb_containerfile is changed) or (openrgb_image is changed) }}"
+    podman_service_changed_extra: "{{ (openrgb_containerfile is changed) or (openrgb_image_build is changed) }}"
