@@ -12,11 +12,11 @@
 
 - name: Ensure data directories exist for {{ podman_service_name }}
   ansible.builtin.file:
-    path: "{{ item.path | default(item) }}"
+    path: "{{ item.path }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: "{{ item.mode | default('0755') }}"
+    mode: "0755"
   loop: "{{ podman_service_dirs }}"
 
 - name: Deploy configuration for {{ podman_service_name }}
@@ -94,5 +94,7 @@
     state: "{{ 'restarted' if podman_service_changed | bool else 'started' }}"
     enabled: true
     scope: user
-  loop: "{{ podman_service_units_start | ternary(podman_service_units_start, [podman_service_name ~ '.service']) }}"
+  loop: >-
+    {{ podman_service_units_start
+       or (podman_service_quadlets | map('replace', '.container', '.service') | list) }}
   ignore_errors: "{{ ansible_check_mode }}"
