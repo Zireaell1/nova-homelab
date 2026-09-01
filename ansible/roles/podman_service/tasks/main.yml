@@ -27,7 +27,7 @@
     dest: "{{ item.dest }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: "{{ item.mode | default('0644') }}"
+    mode: "{{ item.mode }}"
     force: "{{ item.force | default(true) }}"
     validate: "{{ item.validate | default(omit) }}"
   loop: "{{ podman_service_templates }}"
