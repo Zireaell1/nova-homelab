@@ -1,9 +1,0 @@
----
-- name: Restart openrgb
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: openrgb.service
-    state: restarted
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
