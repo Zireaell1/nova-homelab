@@ -15,6 +15,9 @@
     # =====================================================
     # Communication and security
     # =====================================================
+    - role: firewall
+      tags: ["network", "firewall"]
+
     - role: network
       tags: ["network", "communication"]
 

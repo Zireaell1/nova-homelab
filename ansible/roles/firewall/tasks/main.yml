@@ -1,0 +1,79 @@
+---
+- name: Ensure firewalld is installed
+  ansible.builtin.dnf:
+    name: firewalld
+    state: present
+
+- name: Ensure firewalld is running
+  ansible.builtin.systemd:
+    name: firewalld.service
+    state: started
+    enabled: true
+
+- name: Create custom firewalld zones
+  ansible.posix.firewalld:
+    zone: "{{ item.name }}"
+    state: present
+    permanent: true
+  loop: "{{ firewall_zones | rejectattr('builtin', 'defined') | list }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: Reload firewalld
+
+- name: Set firewalld zone targets
+  ansible.posix.firewalld:
+    zone: "{{ item.name }}"
+    target: "{{ item.target }}"
+    state: enabled
+    permanent: true
+  loop: "{{ firewall_zones | selectattr('target', 'defined') | list }}"
+  loop_control:
+    label: "{{ item.name }} -> {{ item.target }}"
+  notify: Reload firewalld
+
+- name: Allow services per zone
+  ansible.posix.firewalld:
+    zone: "{{ item.0.name }}"
+    service: "{{ item.1 }}"
+    state: enabled
+    permanent: true
+  loop: "{{ firewall_zones | subelements('services', skip_missing=true) }}"
+  loop_control:
+    label: "{{ item.0.name }}/{{ item.1 }}"
+  notify: Reload firewalld
+
+- name: Allow ports per zone
+  ansible.posix.firewalld:
+    zone: "{{ item.0.name }}"
+    port: "{{ item.1 }}"
+    state: enabled
+    permanent: true
+  loop: "{{ firewall_zones | subelements('ports', skip_missing=true) }}"
+  loop_control:
+    label: "{{ item.0.name }}/{{ item.1 }}"
+  notify: Reload firewalld
+
+- name: Apply firewalld rich rules
+  ansible.posix.firewalld:
+    zone: "{{ item.zone }}"
+    rich_rule: "{{ item.rule }}"
+    state: enabled
+    permanent: true
+  loop: "{{ firewall_rich_rules }}"
+  loop_control:
+    label: "{{ item.zone }}"
+  notify: Reload firewalld
+
+- name: Read the current default firewalld zone
+  ansible.builtin.command: firewall-cmd --get-default-zone
+  register: firewall_current_default
+  changed_when: false
+  check_mode: false
+
+- name: Set the default firewalld zone
+  ansible.builtin.command: "firewall-cmd --set-default-zone={{ firewall_default_zone }}"
+  when: firewall_current_default.stdout != firewall_default_zone
+  changed_when: true
+
+- name: Flush handlers so zones are loaded before NetworkManager binds interfaces
+  ansible.builtin.meta: flush_handlers

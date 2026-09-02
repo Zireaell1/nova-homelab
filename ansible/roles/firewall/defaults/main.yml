@@ -1,0 +1,28 @@
+---
+firewall_default_zone: public
+
+firewall_zones:
+  - name: public
+    builtin: true
+    services:
+      - cockpit # TODO: remove once Caddy proxies Cockpit
+      - ntp
+      - dns
+      - http
+      - https
+      - ssh
+      - dhcpv6-client
+    ports:
+      - "443/udp"
+      - "41641/udp"
+      - "8555/tcp"
+      - "8555/udp"
+
+  - name: isolated
+    target: DROP
+    services:
+      - ntp
+
+firewall_rich_rules:
+  - zone: public
+    rule: 'rule family="ipv4" destination address="{{ host_svc_address }}/32" drop'
