@@ -12,7 +12,7 @@
 
 - name: Ensure data directories exist for {{ podman_service_name }}
   ansible.builtin.file:
-    path: "{{ item.path }}"
+    path: "{{ item }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"

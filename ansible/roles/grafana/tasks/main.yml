@@ -40,7 +40,7 @@
       - "{{ monitoring_path }}/grafana/data"
     podman_service_templates:
       - src: grafana.env.j2
-        dest: "{{ stacks_path }}/grafana/grafana.env"
+        dest: "{{ monitoring_path }}/grafana/grafana.env"
         mode: "0600"
         no_log: true
       - src: datasources.yml.j2
