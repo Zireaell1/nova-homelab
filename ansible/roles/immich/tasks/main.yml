@@ -1,113 +1,38 @@
 ---
-- name: Verify directory structure
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-  loop:
-    - "{{ stacks_path }}/immich"
-    - "{{ stacks_path }}/immich/model-cache"
-    - "{{ stacks_path }}/immich/secrets"
-    - "{{ stacks_path }}/immich/postgres"
-    - "{{ immich_storage_path }}"
-    - "{{ immich_storage_path }}/data"
-
-- name: Upload secret files
-  ansible.builtin.copy:
-    content: "{{ item.value }}"
-    dest: "{{ stacks_path }}/immich/secrets/{{ item.name }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  loop:
-    - name: "STORAGE_PASSWORD"
-      value: "{{ vault_immich_storage_password }}"
-  no_log: true
-  notify:
-    - Restart immich
-    - Restart immich-postgres
-
-- name: Upload immich-config.json file
-  ansible.builtin.template:
-    src: "immich-config.json.j2"
-    dest: "{{ stacks_path }}/immich/immich-config.json"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart immich
-
-- name: Upload .env files
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ stacks_path }}/immich/{{ item }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  no_log: true
-  loop:
-    - immich.env
-    - immich-machine-learning.env
-  notify:
-    - Restart immich
-    - Restart immich-machine-learning
-
-- name: Upload Immich .container file
-  ansible.builtin.template:
-    src: "immich.container.j2"
-    dest: "{{ quadlet_path }}/immich.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart immich
-
-- name: Upload Immich Machine Learning .container file
-  ansible.builtin.template:
-    src: "immich-machine-learning.container.j2"
-    dest: "{{ quadlet_path }}/immich-machine-learning.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart immich-machine-learning
-
-- name: Upload Postgres and Redis .container files
-  ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "{{ quadlet_path }}/{{ item }}"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  loop:
-    - immich-postgres.container
-    - immich-redis.container
-  notify:
-    - Restart immich-postgres
-    - Restart immich-redis
-
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - "{{ immich_image }}:{{ immich_version }}"
-    - "{{ immich_machine_learning_image }}:{{ immich_machine_learning_version }}"
-    - "{{ immich_redis_image }}:{{ immich_redis_version }}"
-    - "{{ immich_postgres_image }}:{{ immich_postgres_version }}"
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: "{{ item }}.service"
-    state: started
-    enabled: true
-    scope: user
-  loop:
-    - immich-postgres
-    - immich-redis
-    - immich-machine-learning
-    - immich
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Immich
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: immich
+    podman_service_dirs:
+      - "{{ stacks_path }}/immich"
+      - "{{ stacks_path }}/immich/model-cache"
+      - "{{ stacks_path }}/immich/secrets"
+      - "{{ stacks_path }}/immich/postgres"
+      - "{{ immich_storage_path }}"
+      - "{{ immich_storage_path }}/data"
+    podman_service_secrets:
+      - content: "{{ vault_immich_storage_password }}"
+        dest: "{{ stacks_path }}/immich/secrets/STORAGE_PASSWORD"
+    podman_service_templates:
+      - src: immich-config.json.j2
+        dest: "{{ stacks_path }}/immich/immich-config.json"
+        mode: "0644"
+      - src: immich.env.j2
+        dest: "{{ stacks_path }}/immich/immich.env"
+        mode: "0600"
+        no_log: true
+      - src: immich-machine-learning.env.j2
+        dest: "{{ stacks_path }}/immich/immich-machine-learning.env"
+        mode: "0600"
+        no_log: true
+    podman_service_quadlets:
+      - immich-postgres.container
+      - immich-redis.container
+      - immich-machine-learning.container
+      - immich.container
+    podman_service_images:
+      - "{{ immich_postgres_image }}:{{ immich_postgres_version }}"
+      - "{{ immich_redis_image }}:{{ immich_redis_version }}"
+      - "{{ immich_machine_learning_image }}:{{ immich_machine_learning_version }}"
+      - "{{ immich_image }}:{{ immich_version }}"
