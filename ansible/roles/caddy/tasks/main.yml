@@ -8,12 +8,12 @@
     mode: "0755"
   loop:
     - "{{ stacks_path }}/caddy/caddy-build"
-    - "{{ stacks_path }}/caddy/srv"
+    - "{{ caddy_srv_path }}"
 
 - name: Copy static files served by Caddy
   ansible.builtin.copy:
     src: "srv/{{ item }}"
-    dest: "{{ stacks_path }}/caddy/srv/{{ item }}"
+    dest: "{{ caddy_srv_path }}/{{ item }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"

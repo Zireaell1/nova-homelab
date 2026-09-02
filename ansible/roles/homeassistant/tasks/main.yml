@@ -1,5 +1,5 @@
 ---
-- name: Verify directory structure
+- name: Verify Home Assistant seed directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -7,44 +7,8 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "{{ stacks_path }}/homeassistant"
-    - "{{ stacks_path }}/homeassistant/config"
-    - "{{ stacks_path }}/homeassistant/config/custom_components"
     - "{{ stacks_path }}/homeassistant/config/custom_components/hacs"
-    - "{{ stacks_path }}/homeassistant/config/www"
-    - "{{ stacks_path }}/homeassistant/config/blueprints"
-    - "{{ stacks_path }}/homeassistant/config/themes"
-    - "{{ stacks_path }}/homeassistant/config/ansible_managed"
-
-- name: Ensure Caddy download directory exists for HA app
-  ansible.builtin.file:
-    path: "{{ stacks_path }}/caddy/srv/homeassistant"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-
-- name: Download Home Assistant Android App (Minimal)
-  ansible.builtin.get_url:
-    url: "https://github.com/home-assistant/android/releases/download/{{ homeassistant_android_version }}/app-minimal-release.apk"
-    dest: "{{ stacks_path }}/caddy/srv/homeassistant/home-assistant-android-{{ homeassistant_android_version }}.apk"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-    setype: "container_file_t"
-
-- name: Remove superseded HA Android APKs
-  ansible.builtin.find:
-    paths: "{{ stacks_path }}/caddy/srv/homeassistant"
-    patterns: "home-assistant-android-*.apk"
-    excludes: "home-assistant-android-{{ homeassistant_android_version }}.apk"
-  register: homeassistant_old_apks
-
-- name: Prune superseded APKs
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: absent
-  loop: "{{ homeassistant_old_apks.files }}"
+    - "{{ caddy_srv_path }}/homeassistant"
 
 - name: Download and extract HACS release
   ansible.builtin.unarchive:
@@ -52,9 +16,9 @@
     dest: "{{ stacks_path }}/homeassistant/config/custom_components/hacs"
     remote_src: true
     creates: "{{ stacks_path }}/homeassistant/config/custom_components/hacs/manifest.json"
-  notify: Restart homeassistant
+  register: homeassistant_hacs
 
-- name: Ensure base UI files exist
+- name: Seed user-editable Home Assistant files
   ansible.builtin.copy:
     content: ""
     dest: "{{ stacks_path }}/homeassistant/config/{{ item }}"
@@ -66,48 +30,54 @@
     - automations.yaml
     - scripts.yaml
     - scenes.yaml
-  notify: Restart homeassistant
+  register: homeassistant_seed_files
 
-- name: Ensure Prometheus filter file exists
-  ansible.builtin.template:
-    src: "prometheus_filter.yaml.j2"
-    dest: "{{ stacks_path }}/homeassistant/config/ansible_managed/prometheus_filter.yaml"
+- name: Download Home Assistant Android App
+  ansible.builtin.get_url:
+    url: "https://github.com/home-assistant/android/releases/download/{{ homeassistant_android_version }}/app-minimal-release.apk"
+    dest: "{{ stacks_path }}/caddy/srv/homeassistant/home-assistant-android-{{ homeassistant_android_version }}.apk"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-  notify: Restart homeassistant
+    setype: "container_file_t"
 
-- name: Upload configuration.yaml file
-  ansible.builtin.template:
-    src: "configuration.yaml.j2"
-    dest: "{{ stacks_path }}/homeassistant/config/configuration.yaml"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart homeassistant
+- name: Find superseded Android APKs
+  ansible.builtin.find:
+    paths: "{{ caddy_srv_path }}/homeassistant"
+    patterns: "home-assistant-android-*.apk"
+    excludes: "home-assistant-android-{{ homeassistant_android_version }}.apk"
+  register: homeassistant_old_apks
 
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "homeassistant.container.j2"
-    dest: "{{ quadlet_path }}/homeassistant.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart homeassistant
+- name: Prune superseded Android APKs
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ homeassistant_old_apks.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
 
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ homeassistant_image }}:{{ homeassistant_version }}"
-    state: present
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: homeassistant.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
+- name: Deploy Home Assistant
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: homeassistant
+    podman_service_dirs:
+      - "{{ stacks_path }}/homeassistant"
+      - "{{ stacks_path }}/homeassistant/config"
+      - "{{ stacks_path }}/homeassistant/config/custom_components"
+      - "{{ stacks_path }}/homeassistant/config/www"
+      - "{{ stacks_path }}/homeassistant/config/blueprints"
+      - "{{ stacks_path }}/homeassistant/config/themes"
+      - "{{ stacks_path }}/homeassistant/config/ansible_managed"
+    podman_service_templates:
+      - src: configuration.yaml.j2
+        dest: "{{ stacks_path }}/homeassistant/config/configuration.yaml"
+        mode: "0644"
+      - src: prometheus_filter.yaml.j2
+        dest: "{{ stacks_path }}/homeassistant/config/ansible_managed/prometheus_filter.yaml"
+        mode: "0644"
+    podman_service_quadlets: ["homeassistant.container"]
+    podman_service_images:
+      ["{{ homeassistant_image }}:{{ homeassistant_version }}"]
+    podman_service_changed_extra: >-
+      {{ (homeassistant_hacs is changed) or (homeassistant_seed_files is changed) }}

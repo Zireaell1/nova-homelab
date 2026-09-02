@@ -9,6 +9,8 @@ user_bin_path: "{{ user_home }}/.local/bin"
 user_backups_path: "{{ user_home }}/backups"
 user_tools_path: "{{ user_home }}/tools"
 
+caddy_srv_path: "{{ stacks_path }}/caddy/srv"
+
 git_backup_dir: "{{ user_backups_path }}/git_repos"
 
 quadlet_path: "{{ user_config_path }}/containers/systemd"
