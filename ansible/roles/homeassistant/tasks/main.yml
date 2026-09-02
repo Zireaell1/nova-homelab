@@ -35,7 +35,7 @@
 - name: Download Home Assistant Android App
   ansible.builtin.get_url:
     url: "https://github.com/home-assistant/android/releases/download/{{ homeassistant_android_version }}/app-minimal-release.apk"
-    dest: "{{ stacks_path }}/caddy/srv/homeassistant/home-assistant-android-{{ homeassistant_android_version }}.apk"
+    dest: "{{ caddy_srv_path }}/homeassistant/home-assistant-android-{{ homeassistant_android_version }}.apk"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
