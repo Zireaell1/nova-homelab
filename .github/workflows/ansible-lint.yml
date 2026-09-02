@@ -106,3 +106,30 @@ jobs:
           if bad:
               print("Missing template sources:"); print(*bad, sep="\n"); sys.exit(1)
           EOF
+
+      - name: Check template destinations have a created parent directory
+        run: |
+          python3 - <<'EOF'
+          import yaml, glob, posixpath, sys
+          bad = []
+          for f in glob.glob('ansible/roles/*/tasks/main.yml'):
+              role, tasks = f.split('/')[2], (yaml.safe_load(open(f)) or [])
+              pre = set()
+              for t in tasks:
+                  if isinstance(t, dict) and 'ansible.builtin.file' in t \
+                     and t['ansible.builtin.file'].get('state') == 'directory':
+                      lp = t.get('loop') or []
+                      if isinstance(lp, list):
+                          pre |= {str(x) for x in lp}
+              for t in tasks:
+                  if not isinstance(t, dict) or 'ansible.builtin.include_role' not in t:
+                      continue
+                  v = t.get('vars') or {}
+                  dirs = set(v.get('podman_service_dirs') or []) | pre
+                  for e in (v.get('podman_service_templates') or []) + (v.get('podman_service_secrets') or []):
+                      parent = posixpath.dirname(str(e.get('dest')))
+                      if parent not in dirs:
+                          bad.append(f"{role}: {e.get('dest')} (parent {parent} not created)")
+          if bad:
+              print("Template destinations without a created parent:"); print(*bad, sep="\n"); sys.exit(1)
+          EOF
