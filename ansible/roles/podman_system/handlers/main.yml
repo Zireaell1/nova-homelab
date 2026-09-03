@@ -15,5 +15,7 @@
 
 - name: Restore container path SELinux contexts
   ansible.builtin.command: "restorecon -R -F {{ item }}"
+  args:
+    removes: "{{ item }}"
   loop: "{{ podman_system_container_paths }}"
   changed_when: true
