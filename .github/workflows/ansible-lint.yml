@@ -133,3 +133,38 @@ jobs:
           if bad:
               print("Template destinations without a created parent:"); print(*bad, sep="\n"); sys.exit(1)
           EOF
+
+      - name: Reject handlers that are never notified
+        run: |
+          python3 - <<'EOF'
+          import yaml, glob, sys
+
+          def collect(tasks, out):
+              for t in tasks or []:
+                  if not isinstance(t, dict):
+                      continue
+                  n = t.get('notify')
+                  if isinstance(n, str):
+                      out.add(n)
+                  elif isinstance(n, list):
+                      out |= set(n)
+                  for k in ('block', 'rescue', 'always'):
+                      if k in t:
+                          collect(t[k], out)
+
+          bad = []
+          for hf in glob.glob('ansible/roles/*/handlers/main.yml'):
+              role = hf.split('/')[2]
+              handlers = yaml.safe_load(open(hf)) or []
+              notified = set()
+              for sf in glob.glob(f'ansible/roles/{role}/tasks/*.yml') + [hf]:
+                  collect(yaml.safe_load(open(sf)), notified)
+              for h in handlers:
+                  if not isinstance(h, dict):
+                      continue
+                  name = h.get('name')
+                  if name and name not in notified and h.get('listen') not in notified:
+                      bad.append(f"{role}: {name}")
+          if bad:
+              print("Handlers defined but never notified:"); print(*bad, sep="\n"); sys.exit(1)
+          EOF
