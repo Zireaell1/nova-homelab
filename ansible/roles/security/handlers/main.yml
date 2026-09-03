@@ -10,7 +10,3 @@
     name: sshd
     state: reloaded
   ignore_errors: "{{ ansible_check_mode }}"
-
-- name: Apply Frigate SELinux policy
-  ansible.builtin.command: restorecon -R -F {{ frigate_mount }}/storage
-  changed_when: true

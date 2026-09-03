@@ -49,13 +49,6 @@
     mode: "0644"
   notify: Restart fail2ban
 
-- name: Define SELinux policy for Frigate directory
-  community.general.sefcontext:
-    target: "{{ frigate_mount }}/storage(/.*)?"
-    setype: container_file_t
-    state: present
-  notify: Apply Frigate SELinux policy
-
 - name: Flush handlers to apply system changes
   ansible.builtin.meta: flush_handlers
 

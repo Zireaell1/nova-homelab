@@ -12,3 +12,8 @@
       killing user@{{ ansible_facts['user_uid'] }}.service) for rootless
       Podman blkio stats to start populating.
   listen: Reload systemd daemon and warn about required reboot
+
+- name: Restore container path SELinux contexts
+  ansible.builtin.command: "restorecon -R -F {{ item }}"
+  loop: "{{ podman_system_container_paths }}"
+  changed_when: true

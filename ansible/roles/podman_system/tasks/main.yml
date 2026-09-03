@@ -36,3 +36,11 @@
       [Service]
       Delegate=cpu cpuset io memory pids
   notify: Reload systemd daemon and warn about required reboot
+
+- name: Label host paths for container access (SELinux)
+  community.general.sefcontext:
+    target: "{{ item }}(/.*)?"
+    setype: container_file_t
+    state: present
+  loop: "{{ podman_system_container_paths }}"
+  notify: Restore container path SELinux contexts
