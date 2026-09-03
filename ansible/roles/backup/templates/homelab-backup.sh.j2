@@ -267,7 +267,7 @@ if [ "$B2_QUOTA_BYTES" -gt 0 ]; then
     fi
 fi
 
-if [ $QUOTA_EXCEEDED -eq 0 ]; then
+if [ $QUOTA_EXCEEDED -eq 0 ] && [ $GLOBAL_SUCCESS -eq 1 ]; then
     rclone sync "$REPO_CRITICAL" "${RCLONE_TARGET}/homelab" --fast-list --transfers 8 || RCLONE_SUCCESS=0
 
     if [ -d "$REPO_DEVICES_ROOT" ]; then
