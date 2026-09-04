@@ -36,6 +36,7 @@ Timezone=
 
 [Service]
 Restart=always
+RestartSec=10
 TimeoutStartSec=900
 TimeoutStopSec=130
 
