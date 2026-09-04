@@ -14,5 +14,6 @@
       - src: vaultwarden.secrets.env.j2
         dest: "{{ stacks_path }}/vaultwarden/vaultwarden.secrets.env"
         mode: "0600"
+        no_log: true
     podman_service_quadlets: ["vaultwarden.container"]
     podman_service_images: ["{{ vaultwarden_image }}:{{ vaultwarden_version }}"]
