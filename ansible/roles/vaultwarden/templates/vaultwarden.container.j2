@@ -35,6 +35,7 @@ Network=vaultwarden.network
 Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.env
+EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.secrets.env
 
 HealthCmd=["/healthcheck.sh"]
 HealthInterval=60s

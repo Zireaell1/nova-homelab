@@ -13,8 +13,8 @@
       - "{{ frigate_storage_path }}/clips"
       - "{{ frigate_storage_path }}/exports"
     podman_service_templates:
-      - src: frigate.env.j2
-        dest: "{{ stacks_path }}/frigate/frigate.env"
+      - src: frigate.secrets.env.j2
+        dest: "{{ stacks_path }}/frigate/frigate.secrets.env"
         mode: "0600"
         no_log: true
       - src: config.yaml.j2

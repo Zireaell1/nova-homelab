@@ -49,8 +49,8 @@
       - src: Caddyfile.j2
         dest: "{{ stacks_path }}/caddy/Caddyfile"
         mode: "0644"
-      - src: caddy.env.j2
-        dest: "{{ stacks_path }}/caddy/caddy.env"
+      - src: caddy.secrets.env.j2
+        dest: "{{ stacks_path }}/caddy/caddy.secrets.env"
         mode: "0600"
         no_log: true
     podman_service_quadlets: ["caddy.container"]

@@ -34,9 +34,6 @@
       - "{{ frigate_mount }}/homepage_monitoring"
       - "{{ backup_mount }}/homepage_monitoring"
     podman_service_templates:
-      - src: homepage.env.j2
-        dest: "{{ stacks_path }}/homepage/homepage.env"
-        mode: "0644"
       - src: bookmarks.yaml.j2
         dest: "{{ stacks_path }}/homepage/config/bookmarks.yaml"
         mode: "0644"

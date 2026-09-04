@@ -38,7 +38,13 @@ Network=authelia-backend.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
-EnvironmentFile={{ stacks_path }}/authelia/authelia.env
+Environment=PAUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/secrets/JWT_SECRET
+Environment=PAUTHELIA_SESSION_SECRET_FILE=/secrets/SESSION_SECRET
+Environment=PAUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE=/secrets/STORAGE_PASSWORD
+Environment=PAUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/secrets/STORAGE_ENCRYPTION_KEY
+Environment=PAUTHELIA_SESSION_REDIS_PASSWORD_FILE=/secrets/REDIS_PASSWORD
+Environment=PAUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE=/secrets/HMAC_SECRET
+Environment=PX_AUTHELIA_CONFIG_FILTERS=template
 
 HealthCmd=["/app/healthcheck.sh"]
 HealthInterval=60s

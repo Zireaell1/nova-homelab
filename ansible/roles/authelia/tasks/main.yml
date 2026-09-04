@@ -14,9 +14,6 @@
       - src: configuration.yml.j2
         dest: "{{ stacks_path }}/authelia/config/configuration.yml"
         mode: "0644"
-      - src: authelia.env.j2
-        dest: "{{ stacks_path }}/authelia/authelia.env"
-        mode: "0600"
     podman_service_secrets:
       - content: "{{ vault_authelia_hmac_secret }}"
         dest: "{{ stacks_path }}/authelia/secrets/HMAC_SECRET"

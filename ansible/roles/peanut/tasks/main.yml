@@ -8,9 +8,6 @@
       - "{{ stacks_path }}/peanut"
       - "{{ stacks_path }}/peanut/config"
     podman_service_templates:
-      - src: peanut.env.j2
-        dest: "{{ stacks_path }}/peanut/peanut.env"
-        mode: "0644"
       - src: settings.yml.j2
         dest: "{{ stacks_path }}/peanut/config/settings.yml"
         mode: "0600"

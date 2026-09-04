@@ -37,7 +37,7 @@ AddHost=host.svc.internal:{{ host_svc_address }}
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
-EnvironmentFile={{ stacks_path }}/peanut/peanut.env
+Environment=AUTH_DISABLED=true
 
 HealthCmd=["node", "/app/healthcheck.mjs"]
 HealthInterval=60s

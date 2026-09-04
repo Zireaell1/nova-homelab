@@ -9,9 +9,6 @@
       - "{{ stacks_path }}/zigbee2mqtt/data"
       - "{{ stacks_path }}/zigbee2mqtt/config"
     podman_service_templates:
-      - src: zigbee2mqtt.env.j2
-        dest: "{{ stacks_path }}/zigbee2mqtt/zigbee2mqtt.env"
-        mode: "0644"
       - src: configuration.yaml.j2
         dest: "{{ stacks_path }}/zigbee2mqtt/config/configuration.yaml"
         mode: "0644"

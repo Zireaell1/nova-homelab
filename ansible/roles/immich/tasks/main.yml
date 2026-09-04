@@ -20,6 +20,9 @@
         mode: "0644"
       - src: immich.env.j2
         dest: "{{ stacks_path }}/immich/immich.env"
+        mode: "0644"
+      - src: immich.secrets.env.j2
+        dest: "{{ stacks_path }}/immich/immich.secrets.env"
         mode: "0600"
         no_log: true
       - src: immich-machine-learning.env.j2

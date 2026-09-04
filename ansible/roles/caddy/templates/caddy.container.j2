@@ -58,7 +58,7 @@ AddHost=host.svc.internal:{{ host_svc_address }}
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
-EnvironmentFile={{ stacks_path }}/caddy/caddy.env
+EnvironmentFile={{ stacks_path }}/caddy/caddy.secrets.env
 
 [Service]
 Restart=always
