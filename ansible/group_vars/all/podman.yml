@@ -1,4 +1,7 @@
 ---
+podman_user_env:
+  XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] | default(1000, true) }}"
+
 podman_unprivileged_port_start: 53
 
 podman_networks:

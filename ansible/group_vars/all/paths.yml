@@ -26,6 +26,3 @@ local_backup_path: "{{ backup_mount }}/homelab"
 restic_server_path: "{{ backup_mount }}/rest-server-data"
 
 textfile_metrics_path: "/opt/alloy-metrics"
-
-podman_user_env:
-  XDG_RUNTIME_DIR: "/run/user/{{ ansible_facts['user_uid'] | default(1000, true) }}"
