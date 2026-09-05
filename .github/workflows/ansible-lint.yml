@@ -191,3 +191,32 @@ jobs:
           if bad:
               print("Endpoint drift:"); print(*bad, sep="\n"); sys.exit(1)
           EOF
+
+      - name: Check quadlet [Service] policy
+        run: |
+          python3 - <<'EOF'
+          import re, glob, sys, os
+          bad = []
+          for f in glob.glob('ansible/roles/*/templates/*.container.j2'):
+              name = os.path.basename(f)
+              body = open(f).read()
+              svc = re.search(r'^\[Service\](.*?)(?=^\[|\Z)', body, re.M | re.S)
+              if not svc:
+                  continue
+              svc = svc.group(1)
+              if re.search(r'^Restart=', svc, re.M) and not re.search(r'^RestartSec=', svc, re.M):
+                  bad.append(f"{name}: Restart= without RestartSec=")
+              stop = re.search(r'^StopTimeout=(\d+)', body, re.M)
+              tstop = re.search(r'^TimeoutStopSec=(\d+)', svc, re.M)
+              if stop and tstop and int(tstop.group(1)) != int(stop.group(1)) + 10:
+                  bad.append(
+                      f"{name}: TimeoutStopSec={tstop.group(1)} should be "
+                      f"{int(stop.group(1)) + 10} (StopTimeout + 10)")
+              if stop and not tstop:
+                  bad.append(f"{name}: StopTimeout= without TimeoutStopSec=")
+              for key in ('StartLimitBurst', 'StartLimitIntervalSec'):
+                  if re.search(rf'^{key}=', svc, re.M):
+                      bad.append(f"{name}: {key} belongs in [Unit], not [Service]")
+          if bad:
+              print("Quadlet [Service] policy:"); print(*bad, sep="\n"); sys.exit(1)
+          EOF
