@@ -2,3 +2,8 @@
 alloy_enable_smartmon: false
 
 alloy_config_template: "config_orion.alloy.j2"
+
+rpi_base_static_hosts:
+  - "{{ service_endpoints['prometheus']['subdomain'] }}"
+  - "{{ service_endpoints['loki']['subdomain'] }}"
+  - "{{ service_endpoints['authelia']['subdomain'] }}"
