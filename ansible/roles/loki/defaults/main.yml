@@ -5,4 +5,4 @@ loki_memory_limit: "2g"
 loki_image: "docker.io/grafana/loki"
 
 # renovate: datasource=docker depName=docker.io/grafana/loki
-loki_version: "3.7.6"
+loki_version: "3.7.7"
