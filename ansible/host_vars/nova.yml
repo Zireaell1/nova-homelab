@@ -28,10 +28,12 @@ hardware_target_lvs:
     size: 10g
     mount_path: "{{ monitoring_path }}"
     manage_fs_and_mount: true
+    rootless: true
   - name: immich
     size: 50g
     mount_path: "{{ immich_path }}"
     manage_fs_and_mount: true
+    rootless: true
 
 hardware_vg_name: "fedora_nova-2"
 

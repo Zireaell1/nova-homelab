@@ -48,13 +48,17 @@
   loop: "{{ hardware_target_lvs }}"
   when: item.manage_fs_and_mount | bool
 
-- name: Hand over monitoring path to the rootless user
+- name: Hand over rootless-owned mount points
   ansible.builtin.file:
-    path: "{{ monitoring_path }}"
+    path: "{{ item.mount_path }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0755"
+  loop: "{{ hardware_target_lvs }}"
+  when: item.rootless | default(false)
+  loop_control:
+    label: "{{ item.mount_path }}"
 
 - name: Check if mountpoints exists
   ansible.builtin.file:
