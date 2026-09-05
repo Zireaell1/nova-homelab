@@ -20,7 +20,9 @@
     reload: true
     sysctl_file: /etc/sysctl.d/99-homelab-network.conf
   loop:
-    - { name: "net.ipv4.ip_unprivileged_port_start", value: "53" }
+    - name: "net.ipv4.ip_unprivileged_port_start"
+      value: "{{ podman_unprivileged_port_start }}"
+
     - { name: "net.ipv4.ip_forward", value: "1" }
     - { name: "net.ipv6.conf.all.forwarding", value: "1" }
 

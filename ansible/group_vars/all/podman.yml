@@ -1,4 +1,6 @@
 ---
+podman_unprivileged_port_start: 53
+
 podman_networks:
   - name: home
     description: Home Services and MQTT Network
