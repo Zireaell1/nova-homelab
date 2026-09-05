@@ -1,2 +1,4 @@
 ---
+timezone: "Europe/Warsaw"
+
 host_svc_address: "10.42.42.1"

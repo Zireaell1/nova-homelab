@@ -27,7 +27,7 @@ advanced:
       z2m:mqtt: warning
 frontend:
   enabled: true
-  url: https://{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}
+  url: https://{{ service_endpoints['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}
 homeassistant:
   enabled: true
 devices: devices.yaml

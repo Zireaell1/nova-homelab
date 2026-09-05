@@ -115,14 +115,14 @@ http:// {
 # Subdomains
 # ===============================================================================
 
-{{ services['authelia']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['authelia']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
 	reverse_proxy authelia:9091
 }
 
-{{ services['alloy']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['alloy']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -130,7 +130,7 @@ http:// {
 	reverse_proxy host.svc.internal:12345
 }
 
-{{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['vaultwarden']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import vault_headers
 
@@ -138,7 +138,7 @@ http:// {
 	reverse_proxy vaultwarden:8000
 }
 
-{{ services['loki']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['loki']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -146,7 +146,7 @@ http:// {
 	reverse_proxy loki:3100
 }
 
-{{ services['prometheus']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['prometheus']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -154,7 +154,7 @@ http:// {
 	reverse_proxy prometheus:9090
 }
 
-{{ services['grafana']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['grafana']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -162,7 +162,7 @@ http:// {
 	reverse_proxy grafana:3000
 }
 
-{{ services['restic']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['restic']['subdomain'] }}.{{ vault_domain }} {
 	import secure_headers
 
 	handle /metrics {
@@ -175,7 +175,7 @@ http:// {
 	}
 }
 
-{{ services['mainsail']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['mainsail']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -183,7 +183,7 @@ http:// {
 	reverse_proxy {{ vault_printer_ip }}:4409
 }
 
-{{ services['switch']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['switch']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -191,7 +191,7 @@ http:// {
 	reverse_proxy {{ vault_switch_ip }}:80
 }
 
-{{ services['go2rtc']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['go2rtc']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -199,7 +199,7 @@ http:// {
 	reverse_proxy frigate:1984
 }
 
-{{ services['frigate']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['frigate']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -228,7 +228,7 @@ http:// {
 	}
 }
 
-{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -236,7 +236,7 @@ http:// {
 	reverse_proxy zigbee2mqtt:8080
 }
 
-{{ services['pihole']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['pihole']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -245,7 +245,7 @@ http:// {
 	reverse_proxy host.svc.internal:8080
 }
 
-{{ services['peanut']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['peanut']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -253,7 +253,7 @@ http:// {
 	reverse_proxy peanut:8080
 }
 
-{{ services['homeassistant']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['homeassistant']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -267,7 +267,7 @@ http:// {
 	}
 }
 
-{{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['camera_doorbell']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -277,7 +277,7 @@ http:// {
 	}
 }
 
-{{ services['camera_front']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['camera_front']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -287,7 +287,7 @@ http:// {
 	}
 }
 
-{{ services['camera_back']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['camera_back']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -297,7 +297,7 @@ http:// {
 	}
 }
 
-{{ services['camera_entry']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['camera_entry']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 
@@ -307,7 +307,7 @@ http:// {
 	}
 }
 
-{{ services['files']['subdomain'] }}.{{ vault_domain }} {
+{{ service_endpoints['files']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
 

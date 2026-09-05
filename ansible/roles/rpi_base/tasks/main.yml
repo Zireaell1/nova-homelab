@@ -41,9 +41,9 @@
     line: "{{ vault_primary_ip }} {{ item }}.{{ vault_domain }}"
     state: present
   loop:
-    - "{{ services['prometheus']['subdomain'] }}"
-    - "{{ services['loki']['subdomain'] }}"
-    - "{{ services['authelia']['subdomain'] }}"
+    - "{{ service_endpoints['prometheus']['subdomain'] }}"
+    - "{{ service_endpoints['loki']['subdomain'] }}"
+    - "{{ service_endpoints['authelia']['subdomain'] }}"
 
 - name: Enable SPI interface
   ansible.builtin.lineinfile:

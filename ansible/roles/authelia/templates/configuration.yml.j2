@@ -33,7 +33,7 @@ access_control:
     # ===============================================================================
     # Manifests / Assets Bypass
     # ===============================================================================
-    - domain: '{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['prometheus']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -41,7 +41,7 @@ access_control:
       resources:
         - '^/favicon\.svg$'
 
-    - domain: '{{ services['go2rtc']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['go2rtc']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -49,7 +49,7 @@ access_control:
       resources:
         - '^/favicon\.ico$'
 
-    - domain: '{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -59,7 +59,7 @@ access_control:
         - '^/assets/.*\.png$'
         - '^/images/.*\.png$'
 
-    - domain: '{{ services['pihole']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['pihole']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -68,7 +68,7 @@ access_control:
         - '^/admin/img/favicons/manifest\.json$'
         - '^/admin/img/favicons/.*\.png$'
 
-    - domain: '{{ services['frigate']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['frigate']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -80,7 +80,7 @@ access_control:
     # Service Accounts / API
     # ===============================================================================
     # Restic Rest Server One-Factor Auth for backup scripts
-    - domain: '{{ services['restic']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['restic']['subdomain'] }}.{{ vault_domain }}'
       policy: 'one_factor'
       networks:
         - 'internal'
@@ -88,7 +88,7 @@ access_control:
         - ['group:backup']
 
     # Prometheus One-factor Auth for eink display
-    - domain: '{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['prometheus']['subdomain'] }}.{{ vault_domain }}'
       policy: 'one_factor'
       networks:
         - 'internal'
@@ -100,7 +100,7 @@ access_control:
         - ['group:screen-controller-group']
 
     # Loki One-factor Auth for logs endpoint
-    - domain: '{{ services['loki']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['loki']['subdomain'] }}.{{ vault_domain }}'
       policy: 'one_factor'
       networks:
         - 'internal'
@@ -110,7 +110,7 @@ access_control:
         - ['group:logs']
 
     # Prometheus One-factor Auth for metrics endpoint
-    - domain: '{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['prometheus']['subdomain'] }}.{{ vault_domain }}'
       policy: 'one_factor'
       networks:
         - 'internal'
@@ -123,7 +123,7 @@ access_control:
     # Exceptions
     # ===============================================================================
     # Vaultwarden Two-factor Auth (Admin Panel)
-    - domain: '{{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['vaultwarden']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -133,14 +133,14 @@ access_control:
         - ['group:admin']
 
     # Vaultwarden needs to be bypassed because of mobile app
-    - domain: '{{ services['vaultwarden']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['vaultwarden']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
         - 'tailscale'
 
     # HomeAssistant needs to be bypassed because of mobile app
-    - domain: '{{ services['homeassistant']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['homeassistant']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
       networks:
         - 'internal'
@@ -151,7 +151,7 @@ access_control:
     # User Services
     # ===============================================================================
     - domain:
-        - '{{ services['frigate']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['frigate']['subdomain'] }}.{{ vault_domain }}'
         - '{{ vault_domain }}'
       policy: 'two_factor'
       networks:
@@ -161,14 +161,14 @@ access_control:
         - ['group:user']
         - ['group:admin']
 
-    - domain: '{{ services['files']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['files']['subdomain'] }}.{{ vault_domain }}'
       policy: 'one_factor'
       networks:
         - 'dashboard'
       subject:
         - ['group:dashboard-group']
 
-    - domain: '{{ services['files']['subdomain'] }}.{{ vault_domain }}'
+    - domain: '{{ service_endpoints['files']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -181,13 +181,13 @@ access_control:
     # Admin Services
     # ===============================================================================
     - domain:
-        - '{{ services['alloy']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['grafana']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['go2rtc']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['pihole']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['peanut']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['alloy']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['grafana']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['prometheus']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['go2rtc']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['pihole']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['peanut']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -197,7 +197,7 @@ access_control:
 
     # Loki ready endpoint
     - domain:
-        - '{{ services['loki']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['loki']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -211,11 +211,11 @@ access_control:
     # Internal Only Admin Services
     # ===============================================================================
     - domain:
-        - '{{ services['switch']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['camera_front']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['camera_back']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['camera_doorbell']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ services['camera_entry']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['switch']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['camera_front']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['camera_back']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['camera_doorbell']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['camera_entry']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
@@ -234,7 +234,7 @@ session:
   cookies:
     - name: 'authelia_session'
       domain: '{{ vault_domain }}'
-      authelia_url: 'https://{{ services['authelia']['subdomain'] }}.{{ vault_domain }}'
+      authelia_url: 'https://{{ service_endpoints['authelia']['subdomain'] }}.{{ vault_domain }}'
   redis:
     host: 'authelia-redis'
     port: 6379

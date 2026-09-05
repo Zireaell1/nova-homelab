@@ -14,7 +14,7 @@ local.file "loki_auth" {
 
 prometheus.remote_write "remote_prom" {
     endpoint {
-        url = "https://{{ services['prometheus']['subdomain'] }}.{{ vault_domain }}/api/v1/write"
+        url = "https://{{ service_endpoints['prometheus']['subdomain'] }}.{{ vault_domain }}/api/v1/write"
 
         basic_auth {
             username = "{{ vault_prometheus_service_account_username }}"
@@ -25,7 +25,7 @@ prometheus.remote_write "remote_prom" {
 
 loki.write "remote_loki" {
     endpoint {
-        url = "https://{{ services['loki']['subdomain'] }}.{{ vault_domain }}/loki/api/v1/push"
+        url = "https://{{ service_endpoints['loki']['subdomain'] }}.{{ vault_domain }}/loki/api/v1/push"
 
         basic_auth {
             username = "{{ vault_loki_service_account_username }}"

@@ -1,0 +1,24 @@
+---
+service_endpoints:
+  homepage: { root: true }
+  authelia: { subdomain: auth }
+  alloy: { subdomain: alloy }
+  vaultwarden: { subdomain: vault }
+  loki: { subdomain: logs }
+  prometheus: { subdomain: prometheus }
+  grafana: { subdomain: grafana }
+  mainsail: { subdomain: mainsail }
+  switch: { subdomain: switch }
+  go2rtc: { subdomain: go2rtc }
+  zigbee2mqtt: { subdomain: z2m }
+  peanut: { subdomain: peanut }
+  frigate: { subdomain: frigate }
+  restic: { subdomain: backup }
+  homeassistant: { subdomain: ha }
+  pihole: { subdomain: pihole }
+  files: { subdomain: files }
+  immich: { subdomain: immich }
+  camera_doorbell: { subdomain: camera-doorbell }
+  camera_front: { subdomain: camera-front }
+  camera_back: { subdomain: camera-back }
+  camera_entry: { subdomain: camera-entry }

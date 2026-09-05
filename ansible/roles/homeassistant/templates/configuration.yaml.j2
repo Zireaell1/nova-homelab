@@ -25,8 +25,8 @@ homeassistant:
   time_zone: {{ timezone }}
   currency: PLN
 
-  external_url: https://{{ services['homeassistant']['subdomain'] }}.{{ vault_domain }}
-  internal_url: https://{{ services['homeassistant']['subdomain'] }}.{{ vault_domain }}
+  external_url: https://{{ service_endpoints['homeassistant']['subdomain'] }}.{{ vault_domain }}
+  internal_url: https://{{ service_endpoints['homeassistant']['subdomain'] }}.{{ vault_domain }}
 
 frontend:
   themes: !include_dir_merge_named themes

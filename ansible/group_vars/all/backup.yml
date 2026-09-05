@@ -1,0 +1,29 @@
+---
+git_backup_repos:
+  - name: "nova-homelab.git"
+    url: "https://github.com/Zireaell1/nova-homelab.git"
+  - name: "nova-eink-display.git"
+    url: "https://github.com/Zireaell1/nova-eink-display.git"
+
+backup_targets:
+  - name: frigate
+    paths:
+      - "{{ frigate_mount }}/storage/exports"
+  - name: restic
+    paths:
+      - "{{ git_backup_dir }}"
+  - name: homeassistant
+    paths:
+      - "{{ stacks_path }}/homeassistant/config/backups"
+  - name: vaultwarden
+    stop: true
+    paths:
+      - "{{ stacks_path }}/vaultwarden/data"
+    excludes:
+      - "{{ stacks_path }}/vaultwarden/data/icon_cache"
+  - name: zigbee2mqtt
+    stop: true
+    paths:
+      - "{{ stacks_path }}/zigbee2mqtt/data"
+      - "{{ stacks_path }}/zigbee2mqtt/config/devices.yaml"
+      - "{{ stacks_path }}/zigbee2mqtt/config/groups.yaml"

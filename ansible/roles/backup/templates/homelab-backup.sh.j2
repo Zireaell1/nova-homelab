@@ -34,22 +34,18 @@ INCLUDE_FILE=$(mktemp /tmp/restic_includes.XXXXXX)
 EXCLUDE_FILE=$(mktemp /tmp/restic_excludes.XXXXXX)
 
 cat << 'EOF' > "$INCLUDE_FILE"
-{% for svc_name, svc_vars in services.items() %}
-{% if 'backup' in svc_vars and svc_vars.backup.get('paths') %}
-{% for path in svc_vars.backup.paths %}
+{% for t in backup_targets %}
+{% for path in t.paths | default([]) %}
 {{ path }}
 {% endfor %}
-{% endif %}
 {% endfor %}
 EOF
 
 cat << 'EOF' > "$EXCLUDE_FILE"
-{% for svc_name, svc_vars in services.items() %}
-{% if 'backup' in svc_vars and svc_vars.backup.get('excludes') %}
-{% for path in svc_vars.backup.excludes %}
+{% for t in backup_targets %}
+{% for path in t.excludes | default([]) %}
 {{ path }}
 {% endfor %}
-{% endif %}
 {% endfor %}
 EOF
 
@@ -60,10 +56,8 @@ echo "$SCRIPT_START_TIME" > "$CANARY_FILE"
 echo "$CANARY_FILE" >> "$INCLUDE_FILE"
 
 SERVICES_TO_STOP=(
-{% for svc_name, svc_vars in services.items() %}
-{% if 'backup' in svc_vars and svc_vars.backup.get('stop', false) %}
-  "{{ svc_vars.get('quadlet_name', svc_name ~ '.service') }}"
-{% endif %}
+{% for t in backup_targets if t.stop | default(false) %}
+  "{{ t.name }}.service"
 {% endfor %}
 )
 
@@ -156,19 +150,13 @@ homelab_backup_snapshot_count $snapshot_count
 
 # HELP homelab_backup_path_info Information about included and excluded paths per service
 # TYPE homelab_backup_path_info gauge
-{% for svc_name, svc_vars in services.items() %}
-{% if 'backup' in svc_vars %}
-{% if svc_vars.backup.get('paths') %}
-{% for path in svc_vars.backup.paths %}
-homelab_backup_path_info{service="{{ svc_name }}", path="{{ path }}", type="include"} 1
+{% for t in backup_targets %}
+{% for path in t.paths | default([]) %}
+homelab_backup_path_info{service="{{ t.name }}", path="{{ path }}", type="include"} 1
 {% endfor %}
-{% endif %}
-{% if svc_vars.backup.get('excludes') %}
-{% for path in svc_vars.backup.excludes %}
-homelab_backup_path_info{service="{{ svc_name }}", path="{{ path }}", type="exclude"} 1
+{% for path in t.excludes | default([]) %}
+homelab_backup_path_info{service="{{ t.name }}", path="{{ path }}", type="exclude"} 1
 {% endfor %}
-{% endif %}
-{% endif %}
 {% endfor %}
 EOF
 
