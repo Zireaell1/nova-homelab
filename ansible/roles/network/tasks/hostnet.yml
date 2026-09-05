@@ -1,5 +1,5 @@
 ---
-- name: Create host-only service interface for containers
+- name: Create host-only service bus
   community.general.nmcli:
     conn_name: podhost
     ifname: podhost
