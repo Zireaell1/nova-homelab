@@ -20,7 +20,7 @@
 
 - name: Ensure custom metrics directory exists
   ansible.builtin.file:
-    path: "{{ alloy_metrics_directory }}"
+    path: "{{ textfile_metrics_path }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "alloy"
