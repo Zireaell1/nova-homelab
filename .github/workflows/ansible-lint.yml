@@ -220,3 +220,30 @@ jobs:
           if bad:
               print("Quadlet [Service] policy:"); print(*bad, sep="\n"); sys.exit(1)
           EOF
+
+      - name: Reject notify targets with no matching handler
+        run: |
+          python3 - <<'EOF'
+          import yaml, glob, sys, os
+          def walk(tasks):
+              for t in tasks or []:
+                  yield t
+                  for k in ('block', 'rescue', 'always'):
+                      yield from walk(t.get(k))
+          bad = []
+          for role in glob.glob('ansible/roles/*'):
+              defined = set()
+              for hf in glob.glob(f'{role}/handlers/*.yml'):
+                  for h in walk(yaml.safe_load(open(hf))):
+                      if h.get('name'): defined.add(h['name'])
+                      for l in ([h['listen']] if isinstance(h.get('listen'), str)
+                                else h.get('listen', [])): defined.add(l)
+              for tf in glob.glob(f'{role}/tasks/*.yml'):
+                  for t in walk(yaml.safe_load(open(tf))):
+                      n = t.get('notify')
+                      for target in ([n] if isinstance(n, str) else n or []):
+                          if target not in defined:
+                              bad.append(f"{os.path.basename(role)}: notify '{target}' has no handler")
+          if bad:
+              print("Dangling notify targets:"); print(*bad, sep="\n"); sys.exit(1)
+          EOF
