@@ -2,32 +2,20 @@
 podman_unprivileged_port_start: 53
 
 podman_networks:
-  - name: home
-    description: Home Services and MQTT Network
-    internal: true
-  - name: monitoring-backend
-    description: Monitoring Backend Network
-    internal: true
-
-  - { name: authelia, description: Authelia Network }
-  - { name: frigate, description: Frigate Network }
-  - { name: grafana, description: Grafana Network }
-  - { name: homeassistant, description: HomeAssistant Network }
-  - { name: homepage, description: Homepage Network }
-  - { name: immich, description: Immich Network }
-  - { name: loki, description: Loki Network }
-  - { name: peanut, description: Peanut Network }
-  - { name: prometheus, description: Prometheus Network }
-  - { name: vaultwarden, description: Vaultwarden Network }
-  - { name: zigbee2mqtt, description: Zigbee2MQTT Network }
-
-  - name: authelia-backend
-    description: Authelia Backend Network
-    internal: true
-
-  - name: immich-backend
-    description: Immich Backend Network
-    internal: true
-
-  - { name: openrgb, description: OpenRGB Network, internal: true }
-  - { name: restic, description: Restic Rest Server Network, internal: true }
+  - { name: home, internal: true }
+  - { name: monitoring-backend, internal: true }
+  - { name: authelia }
+  - { name: frigate }
+  - { name: grafana }
+  - { name: homeassistant }
+  - { name: homepage }
+  - { name: immich }
+  - { name: loki }
+  - { name: peanut }
+  - { name: prometheus }
+  - { name: vaultwarden }
+  - { name: zigbee2mqtt }
+  - { name: authelia-backend, internal: true }
+  - { name: immich-backend, internal: true }
+  - { name: openrgb, internal: true }
+  - { name: restic, internal: true }
