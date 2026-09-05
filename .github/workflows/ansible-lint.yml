@@ -168,3 +168,26 @@ jobs:
           if bad:
               print("Handlers defined but never notified:"); print(*bad, sep="\n"); sys.exit(1)
           EOF
+
+      - name: Check every endpoint has a route and an auth rule
+        run: |
+          python3 - <<'EOF'
+          import yaml, sys
+          REG = 'ansible/group_vars/all/services.yml'
+          KEY = 'services'
+          ep = yaml.safe_load(open(REG))[KEY]
+          caddy = open('ansible/roles/caddy/templates/Caddyfile.j2').read()
+          authelia = open('ansible/roles/authelia/templates/configuration.yml.j2').read()
+          bad = []
+          for name, e in ep.items():
+              if (e or {}).get('root'):
+                  c_ref, a_ref = "\n{{ vault_domain }} {", "domain: '{{ vault_domain }}'"
+              else:
+                  c_ref = a_ref = f"{KEY}['{name}']"
+              if c_ref not in caddy:
+                  bad.append(f"{name}: in registry but no block in Caddyfile.j2")
+              if a_ref not in authelia:
+                  bad.append(f"{name}: in registry but no access_control rule")
+          if bad:
+              print("Endpoint drift:"); print(*bad, sep="\n"); sys.exit(1)
+          EOF
