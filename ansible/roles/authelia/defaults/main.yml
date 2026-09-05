@@ -21,4 +21,4 @@ authelia_redis_memory_limit: "500m"
 authelia_redis_image: "docker.io/library/redis"
 
 # renovate: datasource=docker depName=authelia-redis packageName=docker.io/library/redis
-authelia_redis_version: "8.10.0"
+authelia_redis_version: "8.10.1"
