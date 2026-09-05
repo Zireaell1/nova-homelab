@@ -40,4 +40,4 @@
     # Runtime environment
     # =====================================================
     - role: podman_system
-      tags: ["podman_system", "runtime_root"]
+      tags: ["podman_system", "foundation"]

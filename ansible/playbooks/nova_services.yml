@@ -8,17 +8,17 @@
     # Runtime environment
     # =====================================================
     - role: podman_user
-      tags: ["podman_user", "runtime_rootless"]
+      tags: ["podman_user", "runtime"]
 
     - role: dotfiles
-      tags: ["dotfiles", "runtime_rootless"]
+      tags: ["dotfiles", "runtime"]
 
     # =====================================================
     # Services
     # =====================================================
     # --- DNS ---
     - role: pihole
-      tags: ["pihole", "services", "dns"]
+      tags: ["pihole", "services"]
 
     # --- IoT and hardware bridges ---
     - role: mosquitto
@@ -32,7 +32,7 @@
 
     # --- Backup server ---
     - role: restic
-      tags: ["restic", "services", "backup_server"]
+      tags: ["restic", "services"]
 
     # --- Observability stack ---
     - role: prometheus
@@ -64,4 +64,4 @@
     # Backup scripts (Rootless)
     # =====================================================
     - role: backup
-      tags: ["backup", "services"]
+      tags: ["backup", "maintenance"]
