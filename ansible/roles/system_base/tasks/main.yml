@@ -150,17 +150,6 @@
     name: "{{ ansible_user }}"
     shell: "{{ system_base_shell }}"
 
-- name: Upload custom Udev rules for ASRock RGB
-  ansible.builtin.template:
-    src: "asrock-rgb.rules.j2"
-    dest: "/etc/udev/rules.d/99-asrock-rgb.rules"
-    owner: root
-    group: root
-    mode: "0644"
-  notify:
-    - Reload Udev rules
-    - Retrigger rgb devices
-
 - name: Check if Ghostty terminfo is already installed system-wide
   ansible.builtin.stat:
     path: /usr/share/terminfo/x/xterm-ghostty

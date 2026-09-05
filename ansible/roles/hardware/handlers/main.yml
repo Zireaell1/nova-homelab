@@ -11,3 +11,13 @@
     state: restarted
     daemon_reload: true
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Reload Udev rules
+  ansible.builtin.command:
+    argv: [udevadm, control, --reload-rules]
+  changed_when: true
+
+- name: Retrigger rgb devices
+  ansible.builtin.command:
+    argv: [udevadm, trigger, --subsystem-match=hidraw, --action=change]
+  changed_when: true
