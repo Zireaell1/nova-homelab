@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -uo pipefail
+set -Eeuo pipefail
 
 # ==========================================
 # 1. CONFIGURATION
@@ -13,99 +13,117 @@ export XDG_CONFIG_HOME="{{ user_config_path }}"
 REPO_CRITICAL="{{ local_backup_path }}"
 REPO_DEVICES_ROOT="{{ restic_server_path }}"
 RCLONE_TARGET="{{ backup_rclone_target }}"
+CANARY_FILE="{{ backup_canary_file }}"
+PROM_TARGET_DIR="{{ textfile_metrics_path }}"
+LOCK_FILE="${XDG_RUNTIME_DIR:-/tmp}/homelab-backup.lock"
 
 B2_QUOTA_BYTES="{{ backup_b2_quota_bytes }}"
-
-CANARY_FILE="/tmp/homelab_canary.txt"
 
 GLOBAL_SUCCESS=1
 RCLONE_SUCCESS=1
 PRUNE_SUCCESS=1
 QUOTA_EXCEEDED=0
+INTERRUPTED=0
 
 LOCAL_BACKUP_DURATION=0
 CLOUD_SYNC_DURATION=0
 PRUNE_DURATION=0
 
-# ==========================================
-# 2. GENERATE DYNAMIC PATH LISTS
-# ==========================================
-INCLUDE_FILE=$(mktemp /tmp/restic_includes.XXXXXX)
-EXCLUDE_FILE=$(mktemp /tmp/restic_excludes.XXXXXX)
+INCLUDE_FILE=""
+EXCLUDE_FILE=""
 
-cat << 'EOF' > "$INCLUDE_FILE"
-{% for t in backup_targets %}
-{% for path in t.paths | default([]) %}
-{{ path }}
-{% endfor %}
-{% endfor %}
-EOF
-
-cat << 'EOF' > "$EXCLUDE_FILE"
-{% for t in backup_targets %}
-{% for path in t.excludes | default([]) %}
-{{ path }}
-{% endfor %}
-{% endfor %}
-EOF
-
-sed -i '/^[[:space:]]*$/d' "$INCLUDE_FILE" "$EXCLUDE_FILE"
-
-echo "[INFO] Generating Canary file for integrity testing..."
-echo "$SCRIPT_START_TIME" > "$CANARY_FILE"
-echo "$CANARY_FILE" >> "$INCLUDE_FILE"
-
-SERVICES_TO_STOP=(
-{% for t in backup_targets if t.stop | default(false) %}
-  "{{ t.name }}.service"
-{% endfor %}
-)
+STOPPED=()
 
 # ==========================================
-# 3. TRAP CLEANUP & METRICS
+# 2. HELPERS
 # ==========================================
-cleanup_and_start() {
-    local script_end_time=$(date +%s)
-    local duration=$((script_end_time - SCRIPT_START_TIME))
+log()  { echo    "[INFO] $*"; }
+warn() { echo    "[WARNING] $*"; }
+err()  { echo >&2 "[ERROR] $*"; }
 
-    local repo_size_bytes=0
-    if [ -d "$REPO_CRITICAL" ]; then
-        repo_size_bytes=$(du -sb "$REPO_CRITICAL" | cut -f1)
+on_err() {
+    err "Unhandled failure at line ${1} (exit ${2}) -- aborting."
+    GLOBAL_SUCCESS=0
+}
+trap 'on_err "${LINENO}" "$?"' ERR
+
+on_signal() {
+    INTERRUPTED=1
+    warn "Received a termination signal; unwinding."
+}
+trap on_signal INT TERM
+
+abort_if_interrupted() {
+    if [ "$INTERRUPTED" -eq 1 ]; then
+        GLOBAL_SUCCESS=0
+        err "Interrupted -- not starting the next stage."
+        exit 1
     fi
+}
 
-    local snapshot_count=0
+# ==========================================
+# 3. SERVICES
+# ==========================================
+stop_services() {
+    local svc
+    for svc in "${SERVICES_TO_STOP[@]}"; do
+        log "Stopping ${svc}"
+        if systemctl --user stop "$svc"; then
+            STOPPED+=("$svc")
+        else
+            err "Could not stop ${svc} -- refusing to snapshot it live."
+            GLOBAL_SUCCESS=0
+            return 1
+        fi
+    done
+    return 0
+}
+
+start_services() {
+    local svc
+    local remaining=()
+    for svc in "${STOPPED[@]}"; do
+        if systemctl --user start "$svc"; then
+            log "Started ${svc}"
+        else
+            err "Failed to start ${svc}"
+            GLOBAL_SUCCESS=0
+            remaining+=("$svc")
+        fi
+    done
+    STOPPED=("${remaining[@]+"${remaining[@]}"}")
+}
+
+# ==========================================
+# 4. METRICS
+# ==========================================
+write_metrics() {
+    local end_time="$1" duration="$2" exit_code="$3"
+    local repo_size_bytes=0 snapshot_count=0 b2_size_bytes=0
+    local tmp
+
     if [ -d "$REPO_CRITICAL" ]; then
+        repo_size_bytes=$(du -sb "$REPO_CRITICAL" 2>/dev/null | cut -f1 || echo 0)
         export RESTIC_REPOSITORY="$REPO_CRITICAL"
         snapshot_count=$(restic snapshots --json 2>/dev/null | jq length 2>/dev/null || echo 0)
     fi
 
-    local b2_size_bytes=0
-    echo "[INFO] Fetching cloud size metrics from B2..."
-    if b2_info=$(rclone size "${RCLONE_TARGET}/homelab" --json 2>/dev/null); then
-        b2_size_bytes=$(echo "$b2_info" | jq -r '.bytes' 2>/dev/null || echo 0)
+    if [ "$INTERRUPTED" -eq 0 ]; then
+        local b2_info
+        if b2_info=$(rclone size "${RCLONE_TARGET}/homelab" --json \
+                        --contimeout 10s --timeout 60s --retries 1 2>/dev/null); then
+            b2_size_bytes=$(echo "$b2_info" | jq -r '.bytes' 2>/dev/null || echo 0)
+        fi
     fi
 
-    echo "[INFO] Running final cleanup procedure (Trap)..."
-
-    if [ {% raw %}${#SERVICES_TO_STOP[@]}{% endraw %} -gt 0 ]; then
-        echo "[INFO] Restarting systemd services..."
-        for service in "${SERVICES_TO_STOP[@]}"; do
-            systemctl --user start "$service" || echo "[WARNING] Failed to start $service"
-        done
+    if [ ! -d "$PROM_TARGET_DIR" ]; then
+        warn "Metrics directory ${PROM_TARGET_DIR} does not exist; metrics not saved."
+        return 0
     fi
 
-    rm -f "$INCLUDE_FILE" "$EXCLUDE_FILE" "$CANARY_FILE"
+    tmp="${PROM_TARGET_DIR}/.homelab_backup.prom.$$"
 
-    if [ $GLOBAL_SUCCESS -eq 1 ] && [ $RCLONE_SUCCESS -eq 1 ] && [ $QUOTA_EXCEEDED -eq 0 ]; then
-        echo "[SUCCESS] Backup routine completed successfully in ${duration}s."
-    else
-        echo "[CRITICAL] Script encountered errors or hit quota limit. Check logs. Duration: ${duration}s."
-    fi
-
-    local PROM_TMP_FILE="/tmp/homelab_backup.prom"
-    local PROM_TARGET_DIR="{{ textfile_metrics_path }}"
-
-    cat <<EOF > "$PROM_TMP_FILE"
+    cat <<EOF > "$tmp"
 # HELP homelab_backup_success Whether the local Restic backup succeeded (1) or failed (0)
 # TYPE homelab_backup_success gauge
 homelab_backup_success $GLOBAL_SUCCESS
@@ -122,6 +140,14 @@ homelab_backup_prune_success $PRUNE_SUCCESS
 # TYPE homelab_backup_quota_exceeded gauge
 homelab_backup_quota_exceeded $QUOTA_EXCEEDED
 
+# HELP homelab_backup_services_down Services stopped for the snapshot that did not come back
+# TYPE homelab_backup_services_down gauge
+homelab_backup_services_down ${#STOPPED[@]}
+
+# HELP homelab_backup_exit_code Exit status of the backup script
+# TYPE homelab_backup_exit_code gauge
+homelab_backup_exit_code $exit_code
+
 # HELP homelab_backup_duration_seconds Time taken for the total backup script to run
 # TYPE homelab_backup_duration_seconds gauge
 homelab_backup_duration_seconds $duration
@@ -134,7 +160,7 @@ homelab_backup_stage_duration_seconds{stage="prune"} $PRUNE_DURATION
 
 # HELP homelab_backup_last_run_timestamp_seconds Timestamp of the last backup run
 # TYPE homelab_backup_last_run_timestamp_seconds gauge
-homelab_backup_last_run_timestamp_seconds $script_end_time
+homelab_backup_last_run_timestamp_seconds $end_time
 
 # HELP homelab_backup_repo_size_bytes Size of the homelab backup repository in bytes
 # TYPE homelab_backup_repo_size_bytes gauge
@@ -160,54 +186,122 @@ homelab_backup_path_info{service="{{ t.name }}", path="{{ path }}", type="exclud
 {% endfor %}
 EOF
 
-    if [ -d "$PROM_TARGET_DIR" ]; then
-        mv "$PROM_TMP_FILE" "${PROM_TARGET_DIR}/homelab_backup.prom"
-    else
-        echo "[WARNING] Prometheus textfile directory $PROM_TARGET_DIR does not exist. Metrics not saved."
-    fi
-
-    if [ $GLOBAL_SUCCESS -eq 0 ] || [ $RCLONE_SUCCESS -eq 0 ] || [ $PRUNE_SUCCESS -eq 0 ]; then
-        exit 1
-    else
-        exit 0
-    fi
+    mv -f "$tmp" "${PROM_TARGET_DIR}/homelab_backup.prom"
 }
 
-trap cleanup_and_start EXIT INT TERM
-
 # ==========================================
-# 4. PRE-FLIGHT CHECKS
+# 5. CLEANUP
 # ==========================================
-echo "[INFO] Running pre-flight checks..."
+cleanup() {
+    local rc=$?
+    trap - EXIT ERR INT TERM
 
-if [ -s "$INCLUDE_FILE" ]; then
-    export RESTIC_REPOSITORY="$REPO_CRITICAL"
-    if ! restic snapshots >/dev/null 2>&1; then
-        echo >&2 "[ERROR] Repository $REPO_CRITICAL does not exist, is corrupted, or password is incorrect!"
-        GLOBAL_SUCCESS=0
-        exit 1
+    if [ "${#STOPPED[@]}" -gt 0 ]; then
+        log "Restarting services held for the snapshot..."
+        start_services
     fi
-else
-    echo "[INFO] No paths defined for backup. Exiting."
+
+    [ -n "$INCLUDE_FILE" ] && rm -f "$INCLUDE_FILE"
+    [ -n "$EXCLUDE_FILE" ] && rm -f "$EXCLUDE_FILE"
+
+    local end_time duration
+    end_time=$(date +%s)
+    duration=$((end_time - SCRIPT_START_TIME))
+
+    if [ "$GLOBAL_SUCCESS" -eq 1 ] && [ "$RCLONE_SUCCESS" -eq 1 ] \
+       && [ "$PRUNE_SUCCESS" -eq 1 ] && [ "$QUOTA_EXCEEDED" -eq 0 ]; then
+        log "Backup routine completed successfully in ${duration}s."
+        rc=0
+    else
+        err "Backup finished with errors after ${duration}s."
+        [ "$rc" -eq 0 ] && rc=1
+    fi
+
+    if [ "${#STOPPED[@]}" -gt 0 ]; then
+        err "STILL DOWN: ${STOPPED[*]} -- these need manual attention."
+    fi
+
+    write_metrics "$end_time" "$duration" "$rc" || warn "Failed to write metrics."
+
+    exit "$rc"
+}
+trap cleanup EXIT
+
+# ==========================================
+# 6. SINGLE-INSTANCE LOCK
+# ==========================================
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+    log "Another backup run holds the lock; exiting."
+    trap - EXIT
     exit 0
 fi
 
 # ==========================================
-# 5. PRE-HOOK: STOP SERVICES
+# 7. BUILD PATH LISTS
 # ==========================================
-if [ {% raw %}${#SERVICES_TO_STOP[@]}{% endraw %} -gt 0 ]; then
-    echo "[INFO] Stopping stateful services (Rootless Quadlets)..."
-    for service in "${SERVICES_TO_STOP[@]}"; do
-        systemctl --user stop "$service"
-    done
+INCLUDE_FILE=$(mktemp /tmp/restic_includes.XXXXXX)
+EXCLUDE_FILE=$(mktemp /tmp/restic_excludes.XXXXXX)
+
+cat << 'EOF' > "$INCLUDE_FILE"
+{% for t in backup_targets %}
+{% for path in t.paths | default([]) %}
+{{ path }}
+{% endfor %}
+{% endfor %}
+EOF
+
+cat << 'EOF' > "$EXCLUDE_FILE"
+{% for t in backup_targets %}
+{% for path in t.excludes | default([]) %}
+{{ path }}
+{% endfor %}
+{% endfor %}
+EOF
+
+sed -i '/^[[:space:]]*$/d' "$INCLUDE_FILE" "$EXCLUDE_FILE"
+
+if [ ! -s "$INCLUDE_FILE" ]; then
+    err "backup_targets produced no paths -- refusing to write an empty snapshot."
+    GLOBAL_SUCCESS=0
+    exit 1
+fi
+
+log "Writing canary to ${CANARY_FILE}"
+mkdir -p "$(dirname "$CANARY_FILE")"
+echo "$SCRIPT_START_TIME" > "$CANARY_FILE"
+echo "$CANARY_FILE" >> "$INCLUDE_FILE"
+
+SERVICES_TO_STOP=(
+{% for t in backup_targets if t.stop | default(false) %}
+  "{{ t.name }}.service"
+{% endfor %}
+)
+
+# ==========================================
+# 8. PRE-FLIGHT
+# ==========================================
+log "Running pre-flight checks..."
+export RESTIC_REPOSITORY="$REPO_CRITICAL"
+
+restic unlock || warn "restic unlock reported a problem; continuing."
+
+if ! restic snapshots >/dev/null 2>&1; then
+    err "Repository ${REPO_CRITICAL} is missing, corrupt, or the password is wrong."
+    GLOBAL_SUCCESS=0
+    exit 1
 fi
 
 # ==========================================
-# 6. BACKUP: CRITICAL DATA
+# 9. QUIESCE AND SNAPSHOT
 # ==========================================
-echo "[INFO] Running Restic backup for critical data..."
+if [ "${#SERVICES_TO_STOP[@]}" -gt 0 ]; then
+    log "Stopping stateful services..."
+    stop_services || exit 1
+fi
+
+log "Running Restic backup for critical data..."
 LOCAL_BACKUP_START=$(date +%s)
-export RESTIC_REPOSITORY="$REPO_CRITICAL"
 
 restic backup \
     --files-from "$INCLUDE_FILE" \
@@ -215,73 +309,76 @@ restic backup \
     --compression max \
     --verbose=1 || GLOBAL_SUCCESS=0
 
-echo "[INFO] Verifying repository integrity..."
+LOCAL_BACKUP_DURATION=$(( $(date +%s) - LOCAL_BACKUP_START ))
+
+if [ "${#STOPPED[@]}" -gt 0 ]; then
+    log "Snapshot complete; restarting services..."
+    start_services
+fi
+
+abort_if_interrupted
+
+# ==========================================
+# 10. INTEGRITY CHECK
+# ==========================================
+log "Verifying repository integrity..."
 restic check --read-data-subset=10% || {
-    echo "[ERROR] Repository check failed!"
+    err "Repository check failed."
     GLOBAL_SUCCESS=0
 }
 
-LOCAL_BACKUP_END=$(date +%s)
-LOCAL_BACKUP_DURATION=$((LOCAL_BACKUP_END - LOCAL_BACKUP_START))
-
-if [ {% raw %}${#SERVICES_TO_STOP[@]}{% endraw %} -gt 0 ]; then
-    echo "[INFO] Local backups finished. Fast restarting services..."
-    for service in "${SERVICES_TO_STOP[@]}"; do
-        systemctl --user start "$service"
-    done
-    SERVICES_TO_STOP=()
-fi
+abort_if_interrupted
 
 # ==========================================
-# 7. CLOUD SYNC (Rclone)
+# 11. CLOUD SYNC
 # ==========================================
-echo "[INFO] Syncing local repositories to the cloud..."
+log "Syncing local repositories to the cloud..."
 CLOUD_SYNC_START=$(date +%s)
 
 if [ "$B2_QUOTA_BYTES" -gt 0 ]; then
-    echo "[INFO] Checking quota limits before cloud sync (Max: $B2_QUOTA_BYTES bytes)..."
+    log "Checking quota (max ${B2_QUOTA_BYTES} bytes)..."
     LOCAL_SIZE_CRITICAL=$(du -sb "$REPO_CRITICAL" 2>/dev/null | cut -f1 || echo 0)
-
-    LOCAL_SIZE_DEVICES_CLOUD=$(find "$REPO_DEVICES_ROOT" -mindepth 2 -maxdepth 2 -type d -name "cloud" -exec du -sb {} + 2>/dev/null | awk '{s+=$1} END {print s+0}')
-
+    LOCAL_SIZE_DEVICES_CLOUD=$(find "$REPO_DEVICES_ROOT" -mindepth 2 -maxdepth 2 \
+        -type d -name "cloud" -exec du -sb {} + 2>/dev/null | awk '{s+=$1} END {print s+0}')
     TOTAL_PROJECTED_SIZE=$((LOCAL_SIZE_CRITICAL + LOCAL_SIZE_DEVICES_CLOUD))
 
     if [ "$TOTAL_PROJECTED_SIZE" -gt "$B2_QUOTA_BYTES" ]; then
-        echo "[ERROR] Projected cloud size ($TOTAL_PROJECTED_SIZE bytes) exceeds limit ($B2_QUOTA_BYTES bytes)!"
+        err "Projected cloud size (${TOTAL_PROJECTED_SIZE}) exceeds the limit (${B2_QUOTA_BYTES})."
         QUOTA_EXCEEDED=1
         RCLONE_SUCCESS=0
     else
-        echo "[INFO] Projected size ($TOTAL_PROJECTED_SIZE bytes) is within quota. Proceeding..."
+        log "Projected size (${TOTAL_PROJECTED_SIZE}) is within quota."
     fi
 fi
 
-if [ $QUOTA_EXCEEDED -eq 0 ] && [ $GLOBAL_SUCCESS -eq 1 ]; then
-    rclone sync "$REPO_CRITICAL" "${RCLONE_TARGET}/homelab" --fast-list --transfers 8 || RCLONE_SUCCESS=0
-
-    if [ -d "$REPO_DEVICES_ROOT" ]; then
-        echo "[INFO] Syncing external device repositories (all users, cloud tier only)..."
-        rclone sync "$REPO_DEVICES_ROOT" "${RCLONE_TARGET}/devices" \
-            --include "/*/cloud/**" \
-            --fast-list --transfers 8 || RCLONE_SUCCESS=0
-    fi
+if [ "$QUOTA_EXCEEDED" -eq 0 ] && [ "$GLOBAL_SUCCESS" -eq 1 ]; then
+    rclone sync "$REPO_CRITICAL" "${RCLONE_TARGET}/homelab" \
+        --fast-list --transfers 8 || RCLONE_SUCCESS=0
 else
-    echo "[WARNING] Skipping Rclone sync to prevent exceeding B2 quota."
+    warn "Skipping the homelab repo sync."
 fi
 
-CLOUD_SYNC_END=$(date +%s)
-CLOUD_SYNC_DURATION=$((CLOUD_SYNC_END - CLOUD_SYNC_START))
+if [ "$QUOTA_EXCEEDED" -eq 0 ] && [ -d "$REPO_DEVICES_ROOT" ]; then
+    log "Syncing external device repositories (cloud tier only)..."
+    rclone sync "$REPO_DEVICES_ROOT" "${RCLONE_TARGET}/devices" \
+        --include "/*/cloud/**" \
+        --fast-list --transfers 8 || RCLONE_SUCCESS=0
+fi
+
+CLOUD_SYNC_DURATION=$(( $(date +%s) - CLOUD_SYNC_START ))
+
+abort_if_interrupted
 
 # ==========================================
-# 8. RETENTION (Pruning)
+# 12. RETENTION
 # ==========================================
-echo "[INFO] Running retention policy (Prune)..."
+log "Running retention policy..."
 PRUNE_START=$(date +%s)
-export RESTIC_REPOSITORY="$REPO_CRITICAL"
 
 restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 6 || {
+    err "Prune failed."
     GLOBAL_SUCCESS=0
     PRUNE_SUCCESS=0
 }
 
-PRUNE_END=$(date +%s)
-PRUNE_DURATION=$((PRUNE_END - PRUNE_START))
+PRUNE_DURATION=$(( $(date +%s) - PRUNE_START ))

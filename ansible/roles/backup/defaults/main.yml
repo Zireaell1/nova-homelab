@@ -5,3 +5,6 @@ backup_rclone_target: "{{ backup_rclone_remote_name }}:{{ vault_backup_rclone_bu
 backup_restic_password_file: "{{ user_config_path }}/restic/.repo_pass"
 
 backup_b2_quota_bytes: 9000000000
+
+backup_canary_file: "{{ user_backups_path }}/canary.txt"
+backup_canary_max_age: 172800
