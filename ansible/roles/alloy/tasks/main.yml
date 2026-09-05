@@ -29,6 +29,11 @@
 - name: Smartmon block
   when: alloy_enable_smartmon
   block:
+    - name: Install smartmontools
+      ansible.builtin.package:
+        name: smartmontools
+        state: present
+
     - name: Deploy smartmon script
       ansible.builtin.copy:
         src: smartmon.sh
