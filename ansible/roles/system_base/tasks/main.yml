@@ -129,7 +129,6 @@
     gid: "480"
     system: true
     state: present
-  notify: Retrigger rgb devices
 
 - name: Assign user to groups
   ansible.builtin.user:
