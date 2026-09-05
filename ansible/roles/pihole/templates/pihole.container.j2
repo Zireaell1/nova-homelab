@@ -35,6 +35,7 @@ PublishPort={{ host_svc_address }}:8080:80
 Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/pihole/pihole.env
+EnvironmentFile={{ stacks_path }}/pihole/pihole.secrets.env
 
 HealthCmd=["/bin/sh", "-c", "dig -p $(pihole-FTL --config dns.port) +short +norecurse +retry=0 @127.0.0.1 pi.hole || exit 1"]
 HealthInterval=60s
