@@ -55,7 +55,4 @@
         no_log: true
     podman_service_quadlets: ["caddy.container"]
     podman_service_units: ["caddy.socket"]
-    podman_service_units_start:
-      - caddy.socket
-      - caddy.service
     podman_service_changed_extra: "{{ (caddy_containerfile is changed) or (caddy_image_build is changed) }}"
