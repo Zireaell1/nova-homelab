@@ -59,6 +59,8 @@
 	header {
 		X-Content-Type-Options "nosniff"
 		X-XSS-Protection "0"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		-Server
 		-X-Powered-By
