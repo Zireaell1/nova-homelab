@@ -8,3 +8,30 @@ system_base_zellij_filename: "zellij-no-web-x86_64-unknown-linux-musl.tar.gz"
 system_base_zellij_link: "{{ system_base_zellij_base_url }}/v{{ system_base_zellij_version }}/{{ system_base_zellij_filename }}"
 
 system_base_shell: "/usr/bin/fish"
+
+system_base_masked_units:
+  - bluetooth.service
+  - passim.service
+  - pcscd.socket
+  - pcscd.service
+  - abrtd.service
+  - abrt-journal-core.service
+  - abrt-oops.service
+  - abrt-vmcore.service
+  - abrt-xorg.service
+  - sssd.service
+  - sssd-kcm.service
+  - sssd-kcm.socket
+  - iscsid.socket
+  - iscsid.service
+  - iscsi.service
+  - iscsiuio.socket
+  - iscsi-onboot.service
+  - multipathd.service
+  - multipathd.socket
+  # - plymouth-start.service
+  # - plymouth-quit-wait.service
+  - ModemManager.service
+  - wpa_supplicant.service
+  - avahi-daemon.socket
+  - avahi-daemon.service
