@@ -3,9 +3,11 @@
   ansible.builtin.systemd:
     name: alloy.service
     state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Restart smartmon service
   ansible.builtin.systemd:
     name: smartmon.service
     state: restarted
     daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
