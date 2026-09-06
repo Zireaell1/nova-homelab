@@ -95,6 +95,9 @@
     enabled: true
     scope: user
   loop: >-
-    {{ podman_service_units_start
-       or (podman_service_quadlets | map('replace', '.container', '.service') | list) }}
+    {{ podman_service_units
+       + (podman_service_quadlets
+          | select('search', '\.container$')
+          | map('regex_replace', '\.container$', '.service')
+          | list) }}
   ignore_errors: "{{ ansible_check_mode }}"
