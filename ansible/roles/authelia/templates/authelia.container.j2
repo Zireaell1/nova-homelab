@@ -29,7 +29,7 @@ Memory={{ authelia_memory_limit }}
 
 # --- Storage ---
 Volume={{ stacks_path }}/authelia/config:/config:Z
-Volume={{ stacks_path }}/authelia/secrets:/secrets:ro,z
+Volume={{ stacks_path }}/authelia/secrets:/secrets:ro,Z
 
 # --- Networking ---
 Network=authelia.network

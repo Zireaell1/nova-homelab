@@ -24,7 +24,7 @@ Memory={{ authelia_postgres_memory_limit }}
 
 # --- Storage ---
 Volume={{ stacks_path }}/authelia/postgres:/var/lib/postgresql:Z
-Volume={{ stacks_path }}/authelia/secrets/STORAGE_PASSWORD:/STORAGE_PASSWORD:ro,z
+Volume={{ stacks_path }}/authelia/pgsecrets/STORAGE_PASSWORD:/STORAGE_PASSWORD:ro,Z
 
 # --- Networking ---
 Network=authelia-backend.network

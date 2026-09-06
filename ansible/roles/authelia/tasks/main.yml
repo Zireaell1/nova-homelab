@@ -8,6 +8,7 @@
       - "{{ stacks_path }}/authelia"
       - "{{ stacks_path }}/authelia/config"
       - "{{ stacks_path }}/authelia/secrets"
+      - "{{ stacks_path }}/authelia/pgsecrets"
       - "{{ stacks_path }}/authelia/postgres"
       - "{{ stacks_path }}/authelia/redis"
     podman_service_templates:
@@ -27,6 +28,8 @@
         dest: "{{ stacks_path }}/authelia/secrets/STORAGE_ENCRYPTION_KEY"
       - content: "{{ vault_authelia_storage_password }}"
         dest: "{{ stacks_path }}/authelia/secrets/STORAGE_PASSWORD"
+      - content: "{{ vault_authelia_storage_password }}"
+        dest: "{{ stacks_path }}/authelia/pgsecrets/STORAGE_PASSWORD"
       - content: "{{ vault_authelia_rsa2048 }}"
         dest: "{{ stacks_path }}/authelia/secrets/rsa.2048.key"
       - content: "{{ vault_authelia_users_database }}"
