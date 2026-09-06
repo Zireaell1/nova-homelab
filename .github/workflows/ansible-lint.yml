@@ -247,3 +247,34 @@ jobs:
           if bad:
               print("Dangling notify targets:"); print(*bad, sep="\n"); sys.exit(1)
           EOF
+
+      - name: All Jinja templates must parse
+        run: |
+          python3 - <<'EOF'
+          import jinja2, glob, sys
+          env, bad = jinja2.Environment(), []
+          files = glob.glob('ansible/roles/*/templates/**/*.j2', recursive=True)
+          for f in files:
+              try:
+                  env.parse(open(f, encoding='utf-8').read())
+              except jinja2.TemplateSyntaxError as e:
+                  bad.append(f"{f}:{e.lineno}: {e.message}")
+          if bad:
+              print("Templates that will not render:"); print(*bad, sep="\n"); sys.exit(1)
+          print(f"{len(files)} templates parse")
+          EOF
+
+      - name: backup_targets stop names must resolve to a quadlet
+        run: |
+          python3 - <<'EOF'
+          import yaml, glob, sys, os
+          quadlets = {os.path.basename(f)[:-3]
+                      for f in glob.glob('ansible/roles/*/templates/*.container.j2')}
+          targets = yaml.safe_load(open('ansible/group_vars/all/backup.yml'))['backup_targets']
+          bad = [f"{t['name']}: stop: true but no {t['name']}.container quadlet exists"
+                 for t in targets if t.get('stop')
+                 and f"{t['name']}.container" not in quadlets]
+          if bad:
+              print("backup_targets referencing units that do not exist:")
+              print(*bad, sep="\n"); sys.exit(1)
+          EOF
