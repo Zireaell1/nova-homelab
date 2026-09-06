@@ -10,17 +10,17 @@
     - "{{ monitoring_path }}/grafana"
     - "{{ monitoring_path }}/grafana/provisioning"
     - "{{ monitoring_path }}/grafana/provisioning/dashboards"
+    - "{{ monitoring_path }}/grafana/dashboards"
 
 - name: Sync dashboard files
   ansible.posix.synchronize:
     src: "files/dashboards/"
-    dest: "{{ monitoring_path }}/grafana/provisioning/dashboards/"
+    dest: "{{ monitoring_path }}/grafana/dashboards/"
     delete: true
     archive: true
     owner: false
     group: false
     rsync_opts:
-      - "--exclude=dashboards.yml"
       - "--chmod=D0755,F0644"
       - "--chown={{ ansible_user }}:{{ ansible_user }}"
   register: grafana_sync_dashboards

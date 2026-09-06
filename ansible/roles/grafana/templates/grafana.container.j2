@@ -25,6 +25,7 @@ Memory={{ grafana_memory_limit }}
 
 # --- Storage ---
 Volume={{ monitoring_path }}/grafana/provisioning:/etc/grafana/provisioning:ro,Z
+Volume={{ monitoring_path }}/grafana/dashboards:/var/lib/grafana/dashboards:ro,Z
 Volume={{ monitoring_path }}/grafana/data:/var/lib/grafana:Z
 
 # --- Networking ---
