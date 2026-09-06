@@ -8,7 +8,7 @@ git_backup_repos:
 backup_targets:
   - name: frigate
     paths:
-      - "{{ frigate_mount }}/storage/exports"
+      - "{{ frigate_storage_path }}/exports"
   - name: restic
     paths:
       - "{{ git_backup_dir }}"

@@ -1,8 +1,6 @@
 ---
 frigate_memory_limit: "6g"
 
-frigate_storage_path: "{{ frigate_mount }}/storage"
-
 # https://github.com/blakeblackshear/frigate
 frigate_image: "ghcr.io/blakeblackshear/frigate"
 

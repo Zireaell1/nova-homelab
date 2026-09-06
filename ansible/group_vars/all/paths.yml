@@ -22,6 +22,8 @@ immich_path: "/srv/immich"
 backup_mount: "/mnt/backup"
 frigate_mount: "/mnt/frigate"
 
+frigate_storage_path: "{{ frigate_mount }}/storage"
+
 local_backup_path: "{{ backup_mount }}/homelab"
 restic_server_path: "{{ backup_mount }}/rest-server-data"
 
