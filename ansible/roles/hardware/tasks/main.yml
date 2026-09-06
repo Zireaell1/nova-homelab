@@ -36,7 +36,7 @@
     fstype: xfs
     dev: "/dev/{{ hardware_vg_name }}/{{ item.name }}"
   loop: "{{ hardware_target_lvs }}"
-  when: item.manage_fs_and_mount | bool
+  when: item.manage_fs_and_mount | default(false) | bool
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Ensure required LVs are in fstab and mounted
@@ -46,7 +46,7 @@
     fstype: xfs
     state: mounted
   loop: "{{ hardware_target_lvs }}"
-  when: item.manage_fs_and_mount | bool
+  when: item.manage_fs_and_mount | default(false) | bool
 
 - name: Hand over rootless-owned mount points
   ansible.builtin.file:
