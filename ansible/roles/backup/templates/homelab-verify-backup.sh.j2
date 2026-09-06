@@ -16,7 +16,7 @@ CANARY_PATH="{{ backup_canary_file }}"
 MAX_AGE="{{ backup_canary_max_age }}"
 
 PROM_TARGET_DIR="{{ textfile_metrics_path }}"
-PROM_TMP_FILE="/tmp/homelab_backup_verify.prom"
+PROM_TMP_FILE="${PROM_TARGET_DIR}/.homelab_backup_verify.prom.$$"
 
 SUCCESS=0
 CANARY_TIMESTAMP=0

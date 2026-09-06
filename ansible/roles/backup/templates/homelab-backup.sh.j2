@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Homelab backup: restic to a local repo, rclone to B2.
+#
 
 set -Eeuo pipefail
 
@@ -29,9 +32,15 @@ LOCAL_BACKUP_DURATION=0
 CLOUD_SYNC_DURATION=0
 PRUNE_DURATION=0
 
+LOCAL_SIZE_HOMELAB=0
+LOCAL_SIZE_DEVICES_CLOUD=0
+LOCAL_SIZE_DEVICES_LOCAL=0
+DEVICES_UNKNOWN_TIERS=0
+
 INCLUDE_FILE=""
 EXCLUDE_FILE=""
 
+# Services we stopped and have not yet successfully restarted.
 STOPPED=()
 
 # ==========================================
@@ -62,7 +71,47 @@ abort_if_interrupted() {
 }
 
 # ==========================================
-# 3. SERVICES
+# 3. SIZE ACCOUNTING
+# ==========================================
+# The rest-server layout is <user>/<tier>/<device>, where the tier decides
+# whether the data ever leaves the house (see the client script in
+# roles/caddy/files/srv/windows-device-critical-backup.cmd):
+#
+#   LOCAL_SIZE_HOMELAB        Nova's own repo
+#   LOCAL_SIZE_DEVICES_CLOUD  <user>/cloud/*  -- synced to B2, counts against quota
+#   LOCAL_SIZE_DEVICES_LOCAL  <user>/local/*  -- stays on this machine forever
+#
+measure_local() {
+    LOCAL_SIZE_HOMELAB=0
+    LOCAL_SIZE_DEVICES_CLOUD=0
+    LOCAL_SIZE_DEVICES_LOCAL=0
+    DEVICES_UNKNOWN_TIERS=0
+
+    if [ -d "$REPO_CRITICAL" ]; then
+        LOCAL_SIZE_HOMELAB=$(du -sb "$REPO_CRITICAL" 2>/dev/null | cut -f1) \
+            || LOCAL_SIZE_HOMELAB=0
+    fi
+
+    if [ -d "$REPO_DEVICES_ROOT" ]; then
+        LOCAL_SIZE_DEVICES_CLOUD=$(find "$REPO_DEVICES_ROOT" -mindepth 2 -maxdepth 2 \
+            -type d -name "cloud" -exec du -sb {} + 2>/dev/null \
+            | awk '{s+=$1} END {print s+0}') || LOCAL_SIZE_DEVICES_CLOUD=0
+        LOCAL_SIZE_DEVICES_LOCAL=$(find "$REPO_DEVICES_ROOT" -mindepth 2 -maxdepth 2 \
+            -type d -name "local" -exec du -sb {} + 2>/dev/null \
+            | awk '{s+=$1} END {print s+0}') || LOCAL_SIZE_DEVICES_LOCAL=0
+        DEVICES_UNKNOWN_TIERS=$(find "$REPO_DEVICES_ROOT" -mindepth 2 -maxdepth 2 \
+            -type d ! -name "cloud" ! -name "local" 2>/dev/null \
+            | wc -l) || DEVICES_UNKNOWN_TIERS=0
+    fi
+
+    [ -n "$LOCAL_SIZE_HOMELAB" ]       || LOCAL_SIZE_HOMELAB=0
+    [ -n "$LOCAL_SIZE_DEVICES_CLOUD" ] || LOCAL_SIZE_DEVICES_CLOUD=0
+    [ -n "$LOCAL_SIZE_DEVICES_LOCAL" ] || LOCAL_SIZE_DEVICES_LOCAL=0
+    [ -n "$DEVICES_UNKNOWN_TIERS" ]    || DEVICES_UNKNOWN_TIERS=0
+}
+
+# ==========================================
+# 4. SERVICES
 # ==========================================
 stop_services() {
     local svc
@@ -95,22 +144,23 @@ start_services() {
 }
 
 # ==========================================
-# 4. METRICS
+# 5. METRICS
 # ==========================================
 write_metrics() {
     local end_time="$1" duration="$2" exit_code="$3"
-    local repo_size_bytes=0 snapshot_count=0 b2_size_bytes=0
+    local snapshot_count=0 b2_size_bytes=0
     local tmp
 
+    measure_local
+
     if [ -d "$REPO_CRITICAL" ]; then
-        repo_size_bytes=$(du -sb "$REPO_CRITICAL" 2>/dev/null | cut -f1 || echo 0)
         export RESTIC_REPOSITORY="$REPO_CRITICAL"
         snapshot_count=$(restic snapshots --json 2>/dev/null | jq length 2>/dev/null || echo 0)
     fi
 
     if [ "$INTERRUPTED" -eq 0 ]; then
         local b2_info
-        if b2_info=$(rclone size "${RCLONE_TARGET}/homelab" --json \
+        if b2_info=$(rclone size "${RCLONE_TARGET}" --json \
                         --contimeout 10s --timeout 60s --retries 1 2>/dev/null); then
             b2_size_bytes=$(echo "$b2_info" | jq -r '.bytes' 2>/dev/null || echo 0)
         fi
@@ -142,7 +192,7 @@ homelab_backup_quota_exceeded $QUOTA_EXCEEDED
 
 # HELP homelab_backup_services_down Services stopped for the snapshot that did not come back
 # TYPE homelab_backup_services_down gauge
-homelab_backup_services_down ${#STOPPED[@]}
+homelab_backup_services_down {% raw %}${#STOPPED[@]}{% endraw %}
 
 # HELP homelab_backup_exit_code Exit status of the backup script
 # TYPE homelab_backup_exit_code gauge
@@ -162,13 +212,23 @@ homelab_backup_stage_duration_seconds{stage="prune"} $PRUNE_DURATION
 # TYPE homelab_backup_last_run_timestamp_seconds gauge
 homelab_backup_last_run_timestamp_seconds $end_time
 
-# HELP homelab_backup_repo_size_bytes Size of the homelab backup repository in bytes
+# HELP homelab_backup_repo_size_bytes Local disk used per repository; the series do not overlap
 # TYPE homelab_backup_repo_size_bytes gauge
-homelab_backup_repo_size_bytes $repo_size_bytes
+homelab_backup_repo_size_bytes{repo="homelab"} $LOCAL_SIZE_HOMELAB
+homelab_backup_repo_size_bytes{repo="devices_cloud"} $LOCAL_SIZE_DEVICES_CLOUD
+homelab_backup_repo_size_bytes{repo="devices_local"} $LOCAL_SIZE_DEVICES_LOCAL
 
-# HELP homelab_backup_b2_size_bytes Size of the synced backup in B2 cloud in bytes
+# HELP homelab_backup_devices_unknown_tiers Device repo directories that are neither cloud nor local
+# TYPE homelab_backup_devices_unknown_tiers gauge
+homelab_backup_devices_unknown_tiers $DEVICES_UNKNOWN_TIERS
+
+# HELP homelab_backup_b2_size_bytes Total size of the B2 bucket (all tiers)
 # TYPE homelab_backup_b2_size_bytes gauge
 homelab_backup_b2_size_bytes $b2_size_bytes
+
+# HELP homelab_backup_b2_quota_bytes Configured ceiling the projected cloud size is compared against
+# TYPE homelab_backup_b2_quota_bytes gauge
+homelab_backup_b2_quota_bytes $B2_QUOTA_BYTES
 
 # HELP homelab_backup_snapshot_count Total number of snapshots in the critical repository
 # TYPE homelab_backup_snapshot_count gauge
@@ -190,13 +250,13 @@ EOF
 }
 
 # ==========================================
-# 5. CLEANUP
+# 6. CLEANUP
 # ==========================================
 cleanup() {
     local rc=$?
     trap - EXIT ERR INT TERM
 
-    if [ "${#STOPPED[@]}" -gt 0 ]; then
+    if [ "{% raw %}${#STOPPED[@]}{% endraw %}" -gt 0 ]; then
         log "Restarting services held for the snapshot..."
         start_services
     fi
@@ -208,16 +268,15 @@ cleanup() {
     end_time=$(date +%s)
     duration=$((end_time - SCRIPT_START_TIME))
 
-    if [ "$GLOBAL_SUCCESS" -eq 1 ] && [ "$RCLONE_SUCCESS" -eq 1 ] \
+    if [ "$rc" -eq 0 ] && [ "$GLOBAL_SUCCESS" -eq 1 ] && [ "$RCLONE_SUCCESS" -eq 1 ] \
        && [ "$PRUNE_SUCCESS" -eq 1 ] && [ "$QUOTA_EXCEEDED" -eq 0 ]; then
         log "Backup routine completed successfully in ${duration}s."
-        rc=0
     else
         err "Backup finished with errors after ${duration}s."
         [ "$rc" -eq 0 ] && rc=1
     fi
 
-    if [ "${#STOPPED[@]}" -gt 0 ]; then
+    if [ "{% raw %}${#STOPPED[@]}{% endraw %}" -gt 0 ]; then
         err "STILL DOWN: ${STOPPED[*]} -- these need manual attention."
     fi
 
@@ -228,7 +287,7 @@ cleanup() {
 trap cleanup EXIT
 
 # ==========================================
-# 6. SINGLE-INSTANCE LOCK
+# 7. SINGLE-INSTANCE LOCK
 # ==========================================
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
@@ -238,7 +297,7 @@ if ! flock -n 9; then
 fi
 
 # ==========================================
-# 7. BUILD PATH LISTS
+# 8. BUILD PATH LISTS
 # ==========================================
 INCLUDE_FILE=$(mktemp /tmp/restic_includes.XXXXXX)
 EXCLUDE_FILE=$(mktemp /tmp/restic_excludes.XXXXXX)
@@ -279,7 +338,7 @@ SERVICES_TO_STOP=(
 )
 
 # ==========================================
-# 8. PRE-FLIGHT
+# 9. PRE-FLIGHT
 # ==========================================
 log "Running pre-flight checks..."
 export RESTIC_REPOSITORY="$REPO_CRITICAL"
@@ -293,9 +352,9 @@ if ! restic snapshots >/dev/null 2>&1; then
 fi
 
 # ==========================================
-# 9. QUIESCE AND SNAPSHOT
+# 10. QUIESCE AND SNAPSHOT
 # ==========================================
-if [ "${#SERVICES_TO_STOP[@]}" -gt 0 ]; then
+if [ "{% raw %}${#SERVICES_TO_STOP[@]}{% endraw %}" -gt 0 ]; then
     log "Stopping stateful services..."
     stop_services || exit 1
 fi
@@ -311,7 +370,7 @@ restic backup \
 
 LOCAL_BACKUP_DURATION=$(( $(date +%s) - LOCAL_BACKUP_START ))
 
-if [ "${#STOPPED[@]}" -gt 0 ]; then
+if [ "{% raw %}${#STOPPED[@]}{% endraw %}" -gt 0 ]; then
     log "Snapshot complete; restarting services..."
     start_services
 fi
@@ -319,7 +378,7 @@ fi
 abort_if_interrupted
 
 # ==========================================
-# 10. INTEGRITY CHECK
+# 11. INTEGRITY CHECK
 # ==========================================
 log "Verifying repository integrity..."
 restic check --read-data-subset=10% || {
@@ -330,17 +389,15 @@ restic check --read-data-subset=10% || {
 abort_if_interrupted
 
 # ==========================================
-# 11. CLOUD SYNC
+# 12. CLOUD SYNC
 # ==========================================
 log "Syncing local repositories to the cloud..."
 CLOUD_SYNC_START=$(date +%s)
 
 if [ "$B2_QUOTA_BYTES" -gt 0 ]; then
     log "Checking quota (max ${B2_QUOTA_BYTES} bytes)..."
-    LOCAL_SIZE_CRITICAL=$(du -sb "$REPO_CRITICAL" 2>/dev/null | cut -f1 || echo 0)
-    LOCAL_SIZE_DEVICES_CLOUD=$(find "$REPO_DEVICES_ROOT" -mindepth 2 -maxdepth 2 \
-        -type d -name "cloud" -exec du -sb {} + 2>/dev/null | awk '{s+=$1} END {print s+0}')
-    TOTAL_PROJECTED_SIZE=$((LOCAL_SIZE_CRITICAL + LOCAL_SIZE_DEVICES_CLOUD))
+    measure_local
+    TOTAL_PROJECTED_SIZE=$((LOCAL_SIZE_HOMELAB + LOCAL_SIZE_DEVICES_CLOUD))
 
     if [ "$TOTAL_PROJECTED_SIZE" -gt "$B2_QUOTA_BYTES" ]; then
         err "Projected cloud size (${TOTAL_PROJECTED_SIZE}) exceeds the limit (${B2_QUOTA_BYTES})."
@@ -370,7 +427,7 @@ CLOUD_SYNC_DURATION=$(( $(date +%s) - CLOUD_SYNC_START ))
 abort_if_interrupted
 
 # ==========================================
-# 12. RETENTION
+# 13. RETENTION
 # ==========================================
 log "Running retention policy..."
 PRUNE_START=$(date +%s)
