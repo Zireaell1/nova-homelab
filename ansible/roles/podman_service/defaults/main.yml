@@ -6,5 +6,4 @@ podman_service_secrets: []
 podman_service_quadlets: []
 podman_service_units: []
 podman_service_images: []
-podman_service_units_start: []
 podman_service_changed_extra: false

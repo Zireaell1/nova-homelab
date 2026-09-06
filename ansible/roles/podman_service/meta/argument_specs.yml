@@ -32,5 +32,4 @@ argument_specs:
       podman_service_quadlets: { type: list, elements: str, default: [] }
       podman_service_units: { type: list, elements: str, default: [] }
       podman_service_images: { type: list, elements: str, default: [] }
-      podman_service_units_start: { type: list, elements: str, default: [] }
       podman_service_changed_extra: { type: bool, default: false }
