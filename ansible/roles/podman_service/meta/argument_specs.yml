@@ -20,6 +20,7 @@ argument_specs:
           mode: { type: str, required: true }
           no_log: { type: bool, default: false }
           force: { type: bool, default: true }
+          validate: { type: str, required: false }
       podman_service_secrets:
         type: list
         elements: dict
