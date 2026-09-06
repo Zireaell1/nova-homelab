@@ -37,6 +37,15 @@
       Delegate=cpu cpuset io memory pids
   notify: Reload systemd daemon and warn about required reboot
 
+- name: Ensure container-labelled host paths exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+  loop: "{{ podman_system_container_paths }}"
+
 - name: Label host paths for container access (SELinux)
   community.general.sefcontext:
     target: "{{ item }}(/.*)?"
