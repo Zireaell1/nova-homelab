@@ -27,8 +27,10 @@ Memory={{ pihole_memory_limit }}
 Volume={{ stacks_path }}/pihole/etc-pihole:/etc/pihole:Z
 
 # --- Networking ---
-PublishPort=53:53/tcp
-PublishPort=53:53/udp
+PublishPort=127.0.0.1:53:53/tcp
+PublishPort=127.0.0.1:53:53/udp
+PublishPort={{ vault_primary_ip }}:53:53/tcp
+PublishPort={{ vault_primary_ip }}:53:53/udp
 PublishPort={{ host_svc_address }}:8080:80
 
 # --- Configuration / Env ---
