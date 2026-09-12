@@ -2,9 +2,6 @@
 Description=Restic Rest Server
 Documentation=https://github.com/restic/rest-server
 
-Wants=network-online.target
-After=network-online.target
-
 RequiresMountsFor={{ restic_server_path }}
 
 [Container]

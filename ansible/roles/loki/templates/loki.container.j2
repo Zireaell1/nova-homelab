@@ -2,9 +2,6 @@
 Description=Loki
 Documentation=https://grafana.com/docs/loki/latest/
 
-Wants=network-online.target
-After=network-online.target
-
 RequiresMountsFor={{ monitoring_path }}/loki/data
 
 [Container]

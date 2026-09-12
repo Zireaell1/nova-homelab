@@ -2,9 +2,6 @@
 Description=Prometheus
 Documentation=https://prometheus.io/docs/introduction/overview/
 
-Wants=network-online.target
-After=network-online.target
-
 RequiresMountsFor={{ monitoring_path }}/prometheus/data
 
 [Container]

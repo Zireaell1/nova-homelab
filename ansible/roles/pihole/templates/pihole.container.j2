@@ -2,9 +2,6 @@
 Description=Pi-Hole
 Documentation=https://docs.pi-hole.net/
 
-Wants=network-online.target
-After=network-online.target
-
 RequiresMountsFor={{ stacks_path }}/pihole/etc-pihole
 
 [Container]

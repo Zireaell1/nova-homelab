@@ -2,9 +2,6 @@
 Description=
 Documentation=
 
-Wants=network-online.target
-After=network-online.target
-
 RequiresMountsFor=
 
 [Container]

@@ -2,9 +2,6 @@
 Description=Immich
 Documentation=https://docs.immich.app/
 
-Wants=network-online.target
-After=network-online.target
-
 Wants=immich-postgres.service immich-redis.service
 After=immich-postgres.service immich-redis.service
 

@@ -2,9 +2,6 @@
 Description=HomeAssistant
 Documentation=https://www.home-assistant.io/
 
-Wants=network-online.target
-After=network-online.target
-
 RequiresMountsFor={{ stacks_path }}/homeassistant/config
 
 [Container]

@@ -2,9 +2,6 @@
 Description=Frigate
 Documentation=https://docs.frigate.video/
 
-Wants=network-online.target
-After=network-online.target
-
 RequiresMountsFor={{ stacks_path }}/frigate/config
 RequiresMountsFor={{ frigate_storage_path }}
 

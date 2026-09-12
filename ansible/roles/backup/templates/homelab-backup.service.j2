@@ -1,7 +1,5 @@
 [Unit]
 Description=Restic & Rclone Homelab Backup
-After=network-online.target
-Wants=network-online.target
 
 RequiresMountsFor={{ backup_mount }}
 ConditionPathIsMountPoint={{ backup_mount }}
