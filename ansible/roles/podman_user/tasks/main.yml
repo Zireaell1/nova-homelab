@@ -75,7 +75,7 @@
     dest: "{{ user_config_path }}/prometheus-podman-exporter/podman-exporter.conf"
     mode: "0644"
     content: |
-      PODMAN_EXPORTER_OPTS="--collector.enable-all --web.listen-address=127.0.0.1:9882"
+      PODMAN_EXPORTER_OPTS="--collector.enable-all --collector.enhance-metrics --web.listen-address=127.0.0.1:9882"
   notify: Restart prometheus-podman-exporter
 
 - name: Repoint EnvironmentFile to user-owned config
