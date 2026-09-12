@@ -9,6 +9,14 @@ Image={{ immich_postgres_image }}:{{ immich_postgres_version }}
 ContainerName=immich-postgres
 StopTimeout=20
 
+# --- Identity / Namespaces ---
+User=999:999
+UserNS=keep-id:uid=999,gid=999
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+
 # --- Resource Limits ---
 Memory={{ immich_postgres_memory_limit }}
 ShmSize=128m
