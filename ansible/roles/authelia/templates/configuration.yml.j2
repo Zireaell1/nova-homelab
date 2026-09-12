@@ -147,6 +147,20 @@ access_control:
         - 'tailscale'
         - 'dashboard'
 
+    # Mainsail bypass
+    - domain: '{{ service_endpoints['mainsail']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'bypass'
+      networks:
+        - 'internal'
+        - 'tailscale'
+
+    # Immich needs to be bypassed because of mobile app
+    - domain: '{{ service_endpoints['immich']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'bypass'
+      networks:
+        - 'internal'
+        - 'tailscale'
+
     # ===============================================================================
     # User Services
     # ===============================================================================

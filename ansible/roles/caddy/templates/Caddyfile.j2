@@ -181,7 +181,7 @@ http:// {
 	import standard
 	import secure_headers
 
-	# TODO: import authelia_middleware_basic
+	import authelia_middleware_basic
 	reverse_proxy {{ vault_printer_ip }}:4409
 }
 
@@ -236,6 +236,14 @@ http:// {
 
 	import authelia_middleware_basic
 	reverse_proxy zigbee2mqtt:8080
+}
+
+{{ service_endpoints['immich']['subdomain'] }}.{{ vault_domain }} {
+	import standard
+	import secure_headers
+
+	import authelia_middleware_basic
+	reverse_proxy immich:2283
 }
 
 {{ service_endpoints['pihole']['subdomain'] }}.{{ vault_domain }} {
