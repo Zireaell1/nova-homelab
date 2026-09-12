@@ -58,6 +58,12 @@ Timezone={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/caddy/caddy.secrets.env
 
+HealthCmd=["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9091/metrics"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
 [Service]
 Restart=always
 RestartSec=10
