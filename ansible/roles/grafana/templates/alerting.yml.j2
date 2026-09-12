@@ -63,6 +63,391 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: ups_on_battery
+          title: UPS On Battery
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: ups_input_voltage < ups_output_voltage_nominal * 0.8
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 1m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Mains lost -- input {{ '{{' }} $values.A {{ '}}' }}V against a {{ '{{' }} $labels.instance {{ '}}' }} nominal. Running on battery."
+            description: "Self-calibrating against ups_output_voltage_nominal, so it needs no hardcoded mains voltage."
+          notification_settings:
+            receiver: Discord
+
+        - uid: ups_battery_low
+          title: UPS Battery Low
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: ups_battery_charge < ups_battery_charge_low
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Battery at {{ '{{' }} $values.A {{ '}}' }}% -- past the UPS's own low-battery threshold. Shutdown is imminent."
+          notification_settings:
+            receiver: Discord
+
+        - uid: ups_runtime_low
+          title: UPS Runtime Low
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: ups_battery_runtime < 300
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Only {{ '{{' }} $values.A {{ '}}' }}s of runtime left on battery."
+          notification_settings:
+            receiver: Discord
+
+        - uid: scrape_target_down
+          title: Scrape Target Down
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: up == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 10m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Prometheus cannot scrape {{ '{{' }} $labels.job {{ '}}' }} at {{ '{{' }} $labels.instance {{ '}}' }}."
+            description: "Covers every exporter at once, including the monitoring stack itself."
+          notification_settings:
+            receiver: Discord
+
+        - uid: caddy_upstream_unhealthy
+          title: Caddy Upstream Unhealthy
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: caddy_reverse_proxy_upstreams_healthy == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Caddy marked upstream {{ '{{' }} $labels.upstream {{ '}}' }} unhealthy."
+          notification_settings:
+            receiver: Discord
+
+        - uid: caddy_config_reload_failed
+          title: Caddy Config Reload Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: caddy_config_last_reload_successful == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Caddy is serving the previous config -- the last load attempt failed."
+          notification_settings:
+            receiver: Discord
+
+        - uid: frigate_camera_down
+          title: Frigate Camera Down
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: frigate_camera_fps == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Camera {{ '{{' }} $labels.camera_name {{ '}}' }} is producing no frames."
+            description: "Frigate keeps running with a dead camera, so nothing else reports this."
+          notification_settings:
+            receiver: Discord
+
+
+    - orgId: 1
+      name: 5m-eval
+      folder: Ansible Provisioned Alerts
+      interval: 5m
+      rules:
+        - uid: systemd_unit_failed
+          title: Systemd Unit Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: node_systemd_unit_state{state="failed"} == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Host unit {{ '{{' }} $labels.name {{ '}}' }} is in the failed state."
+            description: "The only coverage for native daemons -- nut, tailscaled, fail2ban, alloy, smartd -- which podman metrics cannot see."
+          notification_settings:
+            receiver: Discord
+
+        - uid: smart_health_failed
+          title: SMART Health Assessment Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: smartmon_device_smart_healthy == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} reports its overall SMART self-assessment as failed."
+            description: "A lagging indicator by design: the drive only says this once a threshold is crossed. smart_sectors_degrading is the leading one."
+          notification_settings:
+            receiver: Discord
+
+        - uid: smart_sectors_degrading
+          title: SMART Sectors Degrading
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: '{__name__=~"smartmon_(reallocated_sector_ct|current_pending_sector|offline_uncorrectable)_raw_value"} > 0'
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }}: {{ '{{' }} $labels.__name__ {{ '}}' }} is {{ '{{' }} $values.A {{ '}}' }}."
+            description: "Any non-zero value here is the earliest warning of a failing disk, well before the health assessment flips."
+          notification_settings:
+            receiver: Discord
+
+        - uid: authelia_auth_failures
+          title: Authelia Authentication Failures
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: sum(rate(authelia_authn_duration_count{success="false"}[5m])) > 0.2
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Failed authentications running at {{ '{{' }} $values.A {{ '}}' }}/s over 5 minutes."
+            description: "With Home Assistant, Vaultwarden and mainsail all on bypass, Authelia's own metrics are where a credential attack shows first."
+          notification_settings:
+            receiver: Discord
+
+        - uid: tailscale_unhealthy
+          title: Tailscale Reporting Unhealthy
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: tailscaled_health_messages > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "tailscaled is reporting {{ '{{' }} $values.A {{ '}}' }} health message(s)."
+            description: "Run `tailscale status` for the text; this only exposes the count."
+          notification_settings:
+            receiver: Discord
+
+        - uid: prometheus_rule_eval_failing
+          title: Prometheus Rule Evaluation Failing
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: increase(prometheus_rule_evaluation_failures_total[15m]) > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ '{{' }} $labels.rule_group {{ '}}' }} failed to evaluate."
+            description: "Meta-alert: a rule that cannot evaluate silently stops alerting. This is the one that tells you the alerting itself broke."
+          notification_settings:
+            receiver: Discord
+
     - orgId: 1
       name: 15m-eval
       folder: Ansible Provisioned Alerts
@@ -376,5 +761,64 @@ groups:
             severity: warning
           annotations:
             summary: "Last backup took {{ '{{' }} $values.A {{ '}}' }}s, against the 1h TimeoutStartSec on homelab-backup.service."
+          notification_settings:
+            receiver: Discord
+
+        - uid: filesystem_will_fill
+          title: Filesystem Will Fill
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|ramfs|overlay"}[6h], 21600) < 0 and node_filesystem_avail_bytes / node_filesystem_size_bytes < 0.2
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 30m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.mountpoint {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} is trending to full within 6 hours."
+            description: "The <20% guard stops a 6h dip on a mostly-empty filesystem from firing."
+          notification_settings:
+            receiver: Discord
+
+        - uid: filesystem_critical
+          title: Filesystem Almost Full
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: node_filesystem_avail_bytes{fstype!~"tmpfs|ramfs|overlay"} / node_filesystem_size_bytes < 0.05
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 10m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ '{{' }} $labels.mountpoint {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} is under 5% free."
           notification_settings:
             receiver: Discord
