@@ -822,3 +822,61 @@ groups:
             summary: "{{ '{{' }} $labels.mountpoint {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} is under 5% free."
           notification_settings:
             receiver: Discord
+
+        - uid: device_backup_stale
+          title: Device Backup Stale
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - homelab_device_backup_last_snapshot_timestamp_seconds > 259200
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.user {{ '}}' }}/{{ '{{' }} $labels.tier {{ '}}' }}/{{ '{{' }} $labels.device {{ '}}' }} has not backed up in over 3 days."
+            description: "72h rather than 30h: these are client machines that get switched off for a weekend. Freshness is all that is observable server-side -- rest-server holds each repo encrypted under the client's own password."
+          notification_settings:
+            receiver: Discord
+
+        - uid: device_backup_collector_failed
+          title: Device Backup Collector Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_device_backup_collector_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The device freshness collector could not read the restic repository root."
+            description: "Usually means /mnt/backup is not mounted. noDataState stays OK because backup_has_not_run already owns the case where the textfile stops being written at all."
+          notification_settings:
+            receiver: Discord
