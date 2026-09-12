@@ -27,5 +27,354 @@ groups:
           noDataState: OK
           execErrState: Error
           isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Container {{ '{{' }} $labels.name {{ '}}' }} exited with code {{ '{{' }} $values.A {{ '}}' }}."
+          notification_settings:
+            receiver: Discord
+
+        - uid: podman_container_unhealthy
+          title: Podman Container Unhealthy
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: podman_container_health == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Container {{ '{{' }} $labels.name {{ '}}' }} has been failing its healthcheck for 5 minutes."
+          notification_settings:
+            receiver: Discord
+
+    - orgId: 1
+      name: 15m-eval
+      folder: Ansible Provisioned Alerts
+      interval: 15m
+      rules:
+        - uid: backup_has_not_run
+          title: Backup Has Not Run
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - homelab_backup_last_run_timestamp_seconds > 108000
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: Alerting
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "No backup has completed in over 30 hours (or the metrics stopped being written)."
+            description: "Check `systemctl --user status homelab-backup.timer` and whether {{ backup_mount }} is mounted -- ConditionPathIsMountPoint makes an unmounted disk a successful skip, which produces no metrics at all."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_services_not_restarted
+          title: Backup Left Services Stopped
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_services_down > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ '{{' }} $values.A {{ '}}' }} service(s) stopped for the snapshot did not come back up."
+            description: "The backup run caused an outage. Check `systemctl --user list-units --state=failed` and the journal for homelab-backup.service."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_local_failed
+          title: Local Backup Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "The nightly restic backup to {{ local_backup_path }} failed."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_cloud_sync_failed
+          title: Cloud Sync Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_cloud_sync_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "The rclone sync to B2 failed -- the offsite copy is not current."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_verify_failed
+          title: Cloud Backup Verification Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_verify_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Could not restore the canary from B2, or it was older than the {{ backup_canary_max_age }}s limit."
+            description: "This is the only end-to-end proof the offsite copy is restorable. Device repos are not covered -- rest-server holds those encrypted under each client's own password."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_canary_ageing
+          title: Cloud Canary Ageing
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_verify_canary_age_seconds > 86400
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The canary in B2 is over 24h old -- the offsite copy is falling behind."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_quota_exceeded
+          title: Cloud Quota Exceeded
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_quota_exceeded == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Projected cloud size exceeded backup_b2_quota_bytes -- the sync was skipped."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_cloud_quota_pressure
+          title: Cloud Quota Pressure
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_b2_size_bytes / homelab_backup_b2_quota_bytes > 0.85 and homelab_backup_b2_quota_bytes > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "B2 bucket is over 85% of the configured quota."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_prune_failed
+          title: Backup Prune Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_prune_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "restic forget --prune failed -- retention is drifting and the repo will keep growing."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_devices_unknown_tier
+          title: Device Repo In Unknown Tier
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_devices_unknown_tiers > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $values.A {{ '}}' }} device repo dir(s) are in neither the cloud nor local tier, so they sync nowhere."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_duration_near_timeout
+          title: Backup Approaching Its Timeout
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_duration_seconds > 2700
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Last backup took {{ '{{' }} $values.A {{ '}}' }}s, against the 1h TimeoutStartSec on homelab-backup.service."
           notification_settings:
             receiver: Discord
