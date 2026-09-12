@@ -5,7 +5,7 @@ authelia_memory_limit: "1g"
 authelia_image: "docker.io/authelia/authelia"
 
 # renovate: datasource=docker depName=authelia packageName=docker.io/authelia/authelia
-authelia_version: "4.39.20"
+authelia_version: "4.39.22"
 
 authelia_postgres_memory_limit: "500m"
 
