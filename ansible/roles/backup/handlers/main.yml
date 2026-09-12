@@ -12,3 +12,10 @@
     scope: user
     state: restarted
     daemon_reload: true
+
+- name: Restart device-backup-freshness timer
+  ansible.builtin.systemd:
+    name: device-backup-freshness.timer
+    scope: user
+    state: restarted
+    daemon_reload: true

@@ -1,0 +1,9 @@
+Description=Export restic client repository freshness metrics
+
+RequiresMountsFor={{ backup_mount }}
+ConditionPathIsMountPoint={{ backup_mount }}
+
+[Service]
+Type=oneshot
+ExecStart={{ user_bin_path }}/device-backup-freshness.sh
+TimeoutStartSec=300

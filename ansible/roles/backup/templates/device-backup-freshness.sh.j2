@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+REPO_ROOT="{{ restic_server_path }}"
+PROM_DIR="{{ textfile_metrics_path }}"
+PROM_FILE="${PROM_DIR}/homelab_device_backup.prom"
+PROM_TMP="${PROM_DIR}/.homelab_device_backup.prom.$$"
+
+SUCCESS=1
+REPO_COUNT=0
+
+cleanup() {
+    trap - EXIT
+    rm -f "$PROM_TMP"
+}
+trap cleanup EXIT
+
+on_err() {
+    echo >&2 "[ERROR] Unhandled failure at line ${1} (exit ${2})."
+    SUCCESS=0
+}
+trap 'on_err "${LINENO}" "$?"' ERR
+
+emit_header() {
+    cat <<'EOF'
+# HELP homelab_device_backup_last_snapshot_timestamp_seconds Unix time of the newest snapshot file in a client repository
+# TYPE homelab_device_backup_last_snapshot_timestamp_seconds gauge
+# HELP homelab_device_backup_snapshot_count Number of snapshots retained in a client repository
+# TYPE homelab_device_backup_snapshot_count gauge
+# HELP homelab_device_backup_size_bytes On-disk size of a client repository
+# TYPE homelab_device_backup_size_bytes gauge
+# HELP homelab_device_backup_repos Number of client repositories discovered
+# TYPE homelab_device_backup_repos gauge
+# HELP homelab_device_backup_collector_success Whether this collector completed without error (1) or not (0)
+# TYPE homelab_device_backup_collector_success gauge
+EOF
+}
+
+emit_repos() {
+    local repo user tier device newest count size
+
+    while IFS= read -r -d '' repo; do
+        [ -d "${repo}/snapshots" ] || continue
+
+        device="$(basename "$repo")"
+        tier="$(basename "$(dirname "$repo")")"
+        user="$(basename "$(dirname "$(dirname "$repo")")")"
+
+        case "$tier" in
+            cloud | local) ;;
+            *) continue ;;
+        esac
+
+        REPO_COUNT=$((REPO_COUNT + 1))
+
+        newest="$(find "${repo}/snapshots" -type f -printf '%T@\n' 2>/dev/null \
+            | sort -rn | head -n1 | cut -d. -f1)" || newest=""
+        [ -n "$newest" ] || newest=0
+
+        count="$(find "${repo}/snapshots" -type f 2>/dev/null | wc -l)" || count=0
+        size="$(du -sb "$repo" 2>/dev/null | cut -f1)" || size=0
+        [ -n "$size" ] || size=0
+
+        local labels="user=\"${user}\",tier=\"${tier}\",device=\"${device}\""
+        echo "homelab_device_backup_last_snapshot_timestamp_seconds{${labels}} ${newest}"
+        echo "homelab_device_backup_snapshot_count{${labels}} ${count}"
+        echo "homelab_device_backup_size_bytes{${labels}} ${size}"
+    done < <(find "$REPO_ROOT" -mindepth 3 -maxdepth 3 -type d -print0 2>/dev/null)
+}
+
+main() {
+    if [ ! -d "$REPO_ROOT" ]; then
+        echo >&2 "[ERROR] Repository root ${REPO_ROOT} does not exist."
+        SUCCESS=0
+    fi
+
+    mkdir -p "$PROM_DIR"
+
+    {
+        emit_header
+        if [ "$SUCCESS" -eq 1 ]; then
+            emit_repos
+        fi
+        echo "homelab_device_backup_repos ${REPO_COUNT}"
+        echo "homelab_device_backup_collector_success ${SUCCESS}"
+    } > "$PROM_TMP"
+
+    mv -f "$PROM_TMP" "$PROM_FILE"
+    chmod 0644 "$PROM_FILE"
+
+    echo "[INFO] Exported ${REPO_COUNT} client repositories."
+}
+
+main "$@"

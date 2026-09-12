@@ -122,6 +122,33 @@
     mode: "0644"
   notify: Restart homelab-verify-backup timer
 
+- name: Generate device freshness script from Jinja2 template (with Bash validation)
+  ansible.builtin.template:
+    src: "device-backup-freshness.sh.j2"
+    dest: "{{ user_bin_path }}/device-backup-freshness.sh"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0700"
+    validate: "bash -n %s"
+
+- name: Deploy device freshness Systemd Service file
+  ansible.builtin.template:
+    src: "device-backup-freshness.service.j2"
+    dest: "{{ user_units_path }}/device-backup-freshness.service"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  notify: Restart device-backup-freshness timer
+
+- name: Deploy device freshness Systemd Timer file
+  ansible.builtin.template:
+    src: "device-backup-freshness.timer.j2"
+    dest: "{{ user_units_path }}/device-backup-freshness.timer"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  notify: Restart device-backup-freshness timer
+
 - name: Flush handlers to restart Timers if configurations changed
   ansible.builtin.meta: flush_handlers
 
@@ -135,4 +162,5 @@
   loop:
     - homelab-backup.timer
     - homelab-verify-backup.timer
+    - device-backup-freshness.timer
   ignore_errors: "{{ ansible_check_mode }}"
