@@ -11,4 +11,4 @@ zigbee2mqtt_adapter: "ember"
 zigbee2mqtt_silabs_flasher_version: "1.1.0"
 
 # renovate: datasource=docker depName=ghcr.io/koenkk/zigbee2mqtt
-zigbee2mqtt_version: "2.13.0"
+zigbee2mqtt_version: "2.14.1"
