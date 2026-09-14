@@ -13,7 +13,7 @@ StopTimeout=20
 Exec=--config.file=/etc/prometheus/prometheus.yml \
      --log.level=warn \
      --storage.tsdb.path=/prometheus \
-     --storage.tsdb.retention.time=30d \
+     --storage.tsdb.retention.time=60d \
      --web.enable-remote-write-receiver
 
 # --- Identity / Namespaces ---
@@ -40,6 +40,8 @@ Network=home.network
 Network=peanut.network
 Network=authelia.network
 Network=restic.network
+
+AddHost=host.svc.internal:{{ host_svc_address }}
 
 # --- Configuration / Env ---
 Timezone={{ timezone }}
