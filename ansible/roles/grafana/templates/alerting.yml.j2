@@ -17,7 +17,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: podman_container_exit_code > 0
+                expr: (podman_container_exit_code > 0) * on(id) group_left(name) podman_container_info
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -45,7 +45,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: podman_container_health == 1
+                expr: (podman_container_health == 1) * on(id) group_left(name) podman_container_info
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -88,7 +88,7 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Mains lost -- input {{ '{{' }} $values.A {{ '}}' }}V against a {{ '{{' }} $labels.instance {{ '}}' }} nominal. Running on battery."
+            summary: "Mains lost -- input {{ '{{' }} $values.A {{ '}}' }}V, under 80% of the UPS's nominal. Running on battery."
             description: "Self-calibrating against ups_output_voltage_nominal, so it needs no hardcoded mains voltage."
           notification_settings:
             receiver: Discord
@@ -471,14 +471,43 @@ groups:
                 maxDataPoints: 43200
                 range: false
                 refId: A
-          noDataState: Alerting
+          noDataState: OK
           execErrState: Error
           isPaused: false
           labels:
             severity: critical
           annotations:
-            summary: "No backup has completed in over 30 hours (or the metrics stopped being written)."
+            summary: "No backup has completed in over 30 hours."
             description: "Check `systemctl --user status homelab-backup.timer` and whether {{ backup_mount }} is mounted -- ConditionPathIsMountPoint makes an unmounted disk a successful skip, which produces no metrics at all."
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_metrics_absent
+          title: Backup Metrics Absent
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: absent(homelab_backup_last_run_timestamp_seconds)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "homelab_backup_last_run_timestamp_seconds has disappeared entirely."
+            description: "The textfile collector keeps serving the last .prom file, so this means node_exporter lost {{ textfile_metrics_path }} or stopped -- not that a backup was skipped. A skipped run shows up as `backup_has_not_run` instead."
           notification_settings:
             receiver: Discord
 
@@ -877,6 +906,6 @@ groups:
             severity: warning
           annotations:
             summary: "The device freshness collector could not read the restic repository root."
-            description: "Usually means /mnt/backup is not mounted. noDataState stays OK because backup_has_not_run already owns the case where the textfile stops being written at all."
+            description: "Usually means /mnt/backup is not mounted. noDataState stays OK because backup_metrics_absent owns the case where the textfile stops being written at all."
           notification_settings:
             receiver: Discord

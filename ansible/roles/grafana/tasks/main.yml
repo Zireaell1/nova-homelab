@@ -55,6 +55,9 @@
       - src: contact-points.yml.j2
         dest: "{{ monitoring_path }}/grafana/provisioning/alerting/contact-points.yml"
         mode: "0644"
+      - src: notification-templates.yml.j2
+        dest: "{{ monitoring_path }}/grafana/provisioning/alerting/notification-templates.yml"
+        mode: "0644"
       - src: dashboards.yml.j2
         dest: "{{ monitoring_path }}/grafana/provisioning/dashboards/dashboards.yml"
         mode: "0644"

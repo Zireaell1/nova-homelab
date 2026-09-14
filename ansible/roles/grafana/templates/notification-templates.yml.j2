@@ -1,0 +1,26 @@
+apiVersion: 1
+
+templates:
+    - orgId: 1
+      name: nova
+      template: |
+{% raw %}
+        {{ define "nova.title" }}{{ if eq .Status "firing" }}[{{ if eq .CommonLabels.severity "critical" }}CRITICAL{{ else }}WARNING{{ end }}] FIRING{{ if gt (len .Alerts.Firing) 1 }} x{{ len .Alerts.Firing }}{{ end }}{{ else }}RESOLVED{{ end }} - {{ with .CommonLabels.rulename }}{{ . }}{{ else }}{{ .GroupLabels.alertname }}{{ end }}{{ end }}
+
+        {{ define "nova.alert" }}
+        {{ .Annotations.summary }}
+        {{- with .Labels.Remove (stringSlice "alertname" "severity" "grafana_folder" "rulename") }}
+        -# {{ range .SortedPairs }}{{ .Name }}=`{{ .Value }}` {{ end }}
+        {{- end }}
+        {{ end }}
+
+        {{ define "nova.message" }}
+        {{- range .Alerts.Firing }}{{ template "nova.alert" . }}{{ end }}
+        {{- with .Alerts.Resolved }}{{ if $.Alerts.Firing }}
+        **Resolved**{{ end }}
+        {{- range . }}{{ template "nova.alert" . }}{{ end }}{{ end }}
+        {{- with .CommonAnnotations.description }}
+        > {{ . }}
+        {{- end }}
+        {{- end }}
+{% endraw %}

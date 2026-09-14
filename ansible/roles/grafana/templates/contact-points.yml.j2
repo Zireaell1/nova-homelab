@@ -9,4 +9,7 @@ contactPoints:
           settings:
             url: "${VAR_DISCORD_WEBHOOK_URL}"
             use_discord_username: true
+            use_embed_description: true
+            title: '{% raw %}{{ template "nova.title" . }}{% endraw %}'
+            message: '{% raw %}{{ template "nova.message" . }}{% endraw %}'
           disableResolveMessage: false
