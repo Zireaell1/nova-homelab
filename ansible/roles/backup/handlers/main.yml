@@ -5,6 +5,7 @@
     scope: user
     state: restarted
     daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Restart homelab-verify-backup timer
   ansible.builtin.systemd:
@@ -12,6 +13,7 @@
     scope: user
     state: restarted
     daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Restart device-backup-freshness timer
   ansible.builtin.systemd:
@@ -19,3 +21,4 @@
     scope: user
     state: restarted
     daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
