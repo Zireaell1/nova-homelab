@@ -81,6 +81,12 @@
         (podman_service_unit_files is changed) or
         (podman_service_changed_extra | bool)
       }}
+    podman_service_sockets_changed: >-
+      {{ podman_service_unit_files.results | default([])
+         | selectattr('changed')
+         | map(attribute='item')
+         | select('search', '\.socket$')
+         | list }}
 
 - name: Reload user systemd for {{ podman_service_name }}
   ansible.builtin.systemd:
@@ -91,7 +97,12 @@
 - name: Ensure units are enabled and in the desired state for {{ podman_service_name }}
   ansible.builtin.systemd:
     name: "{{ item }}"
-    state: "{{ 'restarted' if podman_service_changed | bool else 'started' }}"
+    state: >-
+      {{ 'restarted'
+         if (podman_service_changed | bool
+             and (not item.endswith('.socket')
+                  or item in podman_service_sockets_changed))
+         else 'started' }}
     enabled: true
     scope: user
   loop: >-
