@@ -58,7 +58,7 @@
   loop: "{{ hardware_target_lvs }}"
   when: item.rootless | default(false)
   loop_control:
-    label: "{{ item.mount_path }}"
+    label: "{{ item.mount_path | default(item.name) }}"
 
 - name: Check if mountpoints exists
   ansible.builtin.file:
