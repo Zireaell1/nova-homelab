@@ -15,8 +15,68 @@ loki.write "local_loki" {
 }
 
 loki.source.journal "system" {
-    forward_to    = [loki.write.local_loki.receiver]
+    forward_to    = [loki.process.journal.receiver]
     relabel_rules = loki.relabel.journal.rules
+}
+
+loki.process "journal" {
+    forward_to = [loki.write.local_loki.receiver]
+
+    stage.match {
+        selector = `{job="os", syslog_identifier="kernel"}`
+        stage.regex {
+            expression = `(?P<kernel_io_error>Buffer I/O error|blk_update_request: I/O error|EXT4-fs error|XFS \(.+\): (corruption|metadata I/O error|Internal error)|failed command: (READ|WRITE) FPDMA)`
+        }
+        stage.metrics {
+            metric.counter {
+                name              = "kernel_io_errors_total"
+                description       = "Kernel I/O or filesystem error lines in the journal"
+                source            = "kernel_io_error"
+                action            = "inc"
+                max_idle_duration = "24h"
+            }
+        }
+    }
+
+    stage.match {
+        selector = `{syslog_identifier="setroubleshoot"} != "upsmon from using the dac_override"`
+        stage.regex {
+            expression = `(?P<selinux_denial>SELinux is preventing)`
+        }
+        stage.metrics {
+            metric.counter {
+                name              = "selinux_denials_total"
+                description       = "SELinux denials reported by setroubleshootd"
+                source            = "selinux_denial"
+                action            = "inc"
+                max_idle_duration = "24h"
+            }
+        }
+    }
+
+    stage.match {
+        selector = `{container="zigbee2mqtt"}`
+        stage.regex {
+            expression = `(?P<z2m_error>Coordinator failed|Failed to connect to the adapter|Adapter disconnected|Error while starting zigbee-herdsman)`
+        }
+        stage.metrics {
+            metric.counter {
+                name              = "zigbee2mqtt_errors_total"
+                description       = "Zigbee2MQTT adapter and coordinator errors"
+                source            = "z2m_error"
+                action            = "inc"
+                max_idle_duration = "24h"
+            }
+        }
+    }
+
+    stage.match {
+        selector = `{unit="tailscaled.service"}`
+        stage.drop {
+            expression          = `magicsock: endpoints changed`
+            drop_counter_reason = "tailscale_endpoint_churn"
+        }
+    }
 }
 
 loki.relabel "journal" {
