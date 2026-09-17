@@ -448,6 +448,35 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: kernel_io_errors
+          title: Kernel I/O Or Filesystem Errors
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: loki_process_custom_kernel_io_errors_total > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ '{{' }} $values.A {{ '}}' }} kernel I/O or filesystem error line(s) in the journal -- a disk is failing or a filesystem is damaged."
+            description: "Counted by the Alloy log pipeline from kernel journal lines (Buffer I/O error, blk_update_request, EXT4-fs error, XFS corruption/metadata errors, failed FPDMA commands). This catches a disk going bad hours before smart_sectors_degrading does, and it is the only signal here that sees filesystem corruption at all. The counter is dropped 24h after the last error (max_idle_duration), so the alert self-resolves; an Alloy restart also clears it."
+          notification_settings:
+            receiver: Discord
+
     - orgId: 1
       name: 15m-eval
       folder: Ansible Provisioned Alerts
@@ -907,5 +936,92 @@ groups:
           annotations:
             summary: "The device freshness collector could not read the restic repository root."
             description: "Usually means /mnt/backup is not mounted. noDataState stays OK because backup_metrics_absent owns the case where the textfile stops being written at all."
+          notification_settings:
+            receiver: Discord
+
+        - uid: alloy_not_reporting
+          title: Alloy Not Reporting
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: absent(up{job="alloy", instance="{{ host_svc_address }}:12345"})
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Alloy on nova has stopped reporting -- every host metric, both backup collectors and the textfile metrics are now blind."
+            description: "Alloy generates its own `up` series, so a dead Alloy makes them go stale rather than drop to 0 and `scrape_target_down` cannot fire for it. This watches for the series disappearing instead. Orion's Alloy is deliberately not covered -- it feeds the e-ink screen only. The instance matcher renders from `host_svc_address`, the same variable the Alloy config uses, so the two cannot drift apart."
+          notification_settings:
+            receiver: Discord
+
+        - uid: selinux_denials
+          title: SELinux Denials
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: loki_process_custom_selinux_denials_total > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "setroubleshootd reported {{ '{{' }} $values.A {{ '}}' }} SELinux denial(s)."
+            description: "SELinux is Enforcing, so a denial means something was actually blocked -- most often a container path that was never labelled container_file_t, or a new service. Check `ausearch -m AVC -ts recent` and `sealert -a /var/log/audit/audit.log`. Value is denials since the counter appeared; it vanishes 24h after the last one. Raise the threshold if deploys make this chatty."
+          notification_settings:
+            receiver: Discord
+
+        - uid: zigbee2mqtt_errors
+          title: Zigbee2MQTT Adapter Errors
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: loki_process_custom_zigbee2mqtt_errors_total > 2
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Zigbee2MQTT has logged {{ '{{' }} $values.A {{ '}}' }} adapter or coordinator errors."
+            description: "Threshold is 2 rather than 0 because Restart=always makes a single transient adapter error self-healing -- three or more means the coordinator is genuinely unhappy or the USB device has dropped. Partly covers the gap left by zigbee2mqtt having no container healthcheck yet (Q-03)."
           notification_settings:
             receiver: Discord
