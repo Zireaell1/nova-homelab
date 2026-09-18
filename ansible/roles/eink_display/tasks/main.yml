@@ -18,11 +18,21 @@
     force: true
   notify: Restart eink-display
 
-- name: Ensure uv is installed via pipx
+- name: Detect the uv version currently installed for {{ ansible_user }}
+  ansible.builtin.command: "{{ user_bin_path }}/uv --version"
+  register: eink_display_uv_check
+  changed_when: false
+  failed_when: false
+
+- name: Ensure the pinned uv is installed via pipx
   ansible.builtin.command:
-    cmd: pipx install uv=={{ eink_display_uv_version }}
-  args:
-    creates: "{{ user_bin_path }}/uv"
+    cmd: "pipx install --force uv=={{ eink_display_uv_version }}"
+  vars:
+    eink_display_uv_words: "{{ (eink_display_uv_check.stdout | default('', true)).split() }}"
+  when: >-
+    eink_display_uv_words | length < 2
+    or eink_display_uv_words[1] != eink_display_uv_version
+  changed_when: true
 
 - name: Install/Sync Python dependencies using uv
   ansible.builtin.command:
