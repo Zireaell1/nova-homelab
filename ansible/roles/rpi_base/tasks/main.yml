@@ -15,6 +15,14 @@
     state: present
     update_cache: true
 
+- name: Ensure the service user can reach SPI and GPIO
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups:
+      - spi
+      - gpio
+    append: true
+
 - name: Verify if config directories exist
   ansible.builtin.file:
     path: "{{ item.path }}"
