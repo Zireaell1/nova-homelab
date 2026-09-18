@@ -76,6 +76,15 @@
     dest: "{{ eink_display_path }}/eink-display.env"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
+    mode: "0644"
+  notify: Restart eink-display
+
+- name: Deploy secret environment variables
+  ansible.builtin.template:
+    src: eink-display.secrets.env.j2
+    dest: "{{ eink_display_path }}/eink-display.secrets.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
   no_log: true
   notify: Restart eink-display

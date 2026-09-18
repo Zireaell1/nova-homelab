@@ -11,6 +11,7 @@ WorkingDirectory={{ eink_display_path }}
 
 Environment="PATH={{ eink_display_path }}/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 EnvironmentFile={{ eink_display_path }}/eink-display.env
+EnvironmentFile={{ eink_display_path }}/eink-display.secrets.env
 
 ExecStart={{ eink_display_path }}/.venv/bin/nova-eink-display
 
