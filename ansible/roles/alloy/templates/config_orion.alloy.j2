@@ -20,6 +20,16 @@ prometheus.remote_write "remote_prom" {
             username = "{{ vault_prometheus_service_account_username }}"
             password = local.file.prom_auth.content
         }
+
+        queue_config {
+            min_shards           = 1
+            max_shards           = 1
+            capacity             = 15000
+            max_samples_per_send = 5000
+            batch_send_deadline  = "60s"
+        }
+
+        enable_http2 = true
     }
 }
 
@@ -31,6 +41,9 @@ loki.write "remote_loki" {
             username = "{{ vault_loki_service_account_username }}"
             password = local.file.loki_auth.content
         }
+
+        batch_wait = "30s"
+        batch_size = "2MiB"
     }
 }
 
@@ -97,5 +110,5 @@ prometheus.scrape "host_metrics" {
     )
     forward_to = [prometheus.remote_write.remote_prom.receiver]
 
-    scrape_interval = "15s"
+    scrape_interval = "60s"
 }
