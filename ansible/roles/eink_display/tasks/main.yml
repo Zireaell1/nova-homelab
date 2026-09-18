@@ -70,19 +70,6 @@
       - "--chown={{ ansible_user }}:{{ ansible_user }}"
   notify: Restart eink-display
 
-- name: Sync all fonts
-  ansible.posix.synchronize:
-    src: "files/fonts/"
-    dest: "{{ eink_display_path }}/assets/fonts/"
-    delete: true
-    archive: true
-    owner: false
-    group: false
-    rsync_opts:
-      - "--chmod=D0755,F0644"
-      - "--chown={{ ansible_user }}:{{ ansible_user }}"
-  notify: Restart eink-display
-
 - name: Deploy environment variables
   ansible.builtin.template:
     src: eink-display.env.j2
