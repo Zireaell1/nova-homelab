@@ -1,7 +1,10 @@
 [Unit]
 Description=Nova eink display
+StartLimitIntervalSec=300
+StartLimitBurst=5
 
 [Service]
+Type=exec
 SyslogIdentifier=eink-display
 
 WorkingDirectory={{ eink_display_path }}
@@ -9,10 +12,15 @@ WorkingDirectory={{ eink_display_path }}
 Environment="PATH={{ eink_display_path }}/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 EnvironmentFile={{ eink_display_path }}/eink-display.env
 
-ExecStart={{ eink_display_path }}/.venv/bin/python src/nova_eink_display/main.py
+ExecStart={{ eink_display_path }}/.venv/bin/nova-eink-display
 
 Restart=always
 RestartSec=10
+
+TimeoutStopSec=30
+
+MemoryMax=192M
+Nice=5
 
 [Install]
 WantedBy=default.target
