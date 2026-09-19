@@ -275,6 +275,14 @@ http:// {
 	}
 }
 
+{{ service_endpoints['eink']['subdomain'] }}.{{ vault_domain }} {
+	import standard
+	import secure_headers
+
+	import authelia_middleware_basic
+	reverse_proxy {{ hostvars['orion']['ansible_host'] }}:{{ eink_display_preview_port }}
+}
+
 {{ service_endpoints['camera_doorbell']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers

@@ -22,3 +22,4 @@ service_endpoints:
   camera_front: { subdomain: camera-front }
   camera_back: { subdomain: camera-back }
   camera_entry: { subdomain: camera-entry }
+  eink: { subdomain: eink }
