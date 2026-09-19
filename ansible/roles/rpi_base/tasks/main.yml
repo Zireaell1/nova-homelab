@@ -22,6 +22,7 @@
       - spi
       - gpio
     append: true
+  notify: Abort playbook if device group membership changed (manual reboot required)
 
 - name: Verify if config directories exist
   ansible.builtin.file:
@@ -57,3 +58,6 @@
     line: "dtparam=spi=on"
     state: present
   notify: Abort playbook if SPI was just enabled (manual reboot required)
+
+- name: Flush rpi_base handlers
+  ansible.builtin.meta: flush_handlers
