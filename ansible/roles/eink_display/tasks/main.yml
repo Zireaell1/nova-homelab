@@ -45,18 +45,6 @@
     eink_display_uv_sync_result.stderr is search('Installing|Installed|Uninstalled|Updated')
   notify: Restart eink-display
 
-- name: Create assets directories
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-  loop:
-    - "{{ eink_display_path }}/assets"
-    - "{{ eink_display_path }}/assets/fonts"
-    - "{{ eink_display_path }}/assets/images"
-
 - name: Sync all images
   ansible.posix.synchronize:
     src: "files/images/"
@@ -66,7 +54,7 @@
     owner: false
     group: false
     rsync_opts:
-      - "--chmod=D0755,F0644"
+      - "--chmod=D0775,F0644"
       - "--chown={{ ansible_user }}:{{ ansible_user }}"
   notify: Restart eink-display
 
