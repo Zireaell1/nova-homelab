@@ -166,6 +166,7 @@ access_control:
     # ===============================================================================
     - domain:
         - '{{ service_endpoints['frigate']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['eink']['subdomain'] }}.{{ vault_domain }}'
         - '{{ vault_domain }}'
       policy: 'two_factor'
       networks:
