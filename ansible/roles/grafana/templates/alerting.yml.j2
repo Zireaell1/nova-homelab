@@ -266,6 +266,35 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: eink_hardware_fallback
+          title: E-Ink Display Hardware Unavailable
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: eink_display_fallback == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "The e-ink panel could not be initialised -- frames are being written to a PNG, not to the glass."
+            description: "EPDDisplay() raised at start-up and the app fell back to SimulatedDisplay, which it does deliberately so a loose ribbon cable cannot take the service down. Every other eink metric keeps counting as though the panel were real, so without this alert the dashboard looks healthy. Check the HAT seating and `journalctl -t eink-display` for the traceback. eink_simulated alone is not enough to alert on: it is also 1 when SIMULATE=true, which is the normal state on a laptop."
+          notification_settings:
+            receiver: Discord
 
     - orgId: 1
       name: 5m-eval
@@ -474,6 +503,124 @@ groups:
           annotations:
             summary: "{{ '{{' }} $values.A {{ '}}' }} kernel I/O or filesystem error line(s) in the journal -- a disk is failing or a filesystem is damaged."
             description: "Counted by the Alloy log pipeline from kernel journal lines (Buffer I/O error, blk_update_request, EXT4-fs error, XFS corruption/metadata errors, failed FPDMA commands). This catches a disk going bad hours before smart_sectors_degrading does, and it is the only signal here that sees filesystem corruption at all. The counter is dropped 24h after the last error (max_idle_duration), so the alert self-resolves; an Alloy restart also clears it."
+          notification_settings:
+            receiver: Discord
+
+        - uid: eink_display_stale
+          title: E-Ink Display Loop Stalled
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - eink_last_tick_timestamp_seconds > 400
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "The e-ink fetch loop has not completed a tick in {{ '{{' }} $values.A {{ '}}' }} seconds."
+            description: "Threshold is 3x FETCH_INTERVAL (120s). This is the process being alive but wedged -- the scrape still succeeds, so `scrape_target_down` cannot see it. It deliberately watches last_tick and not last_render: record_tick() runs on every path including the night-mode early return, whereas last_render stops advancing from 23:00 to 06:00 and would make this fire every night."
+          notification_settings:
+            receiver: Discord
+
+        - uid: eink_metrics_absent
+          title: E-Ink Metrics Absent
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: absent(eink_last_tick_timestamp_seconds)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 10m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "No metrics are arriving from the e-ink display at all."
+            description: "The series has disappeared rather than gone stale, which means either the whole Orion pipeline is down or Alloy on Orion has stopped. Alloy generates the eink `up` series itself and remote-writes it, so when Alloy dies the `up` series never arrives and `scrape_target_down` cannot fire -- the same hole `alloy_not_reporting` describes, which deliberately covers nova only. This is the Orion half of it."
+          notification_settings:
+            receiver: Discord
+
+        - uid: eink_tick_failures
+          title: E-Ink Display Ticks Failing
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: increase(eink_tick_failures_total[15m]) > 3
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $values.A {{ '}}' }} e-ink ticks have raised in the last 15 minutes."
+            description: "Individual ticks are caught and retried; five consecutive failures re-raise and let systemd restart the unit. Seeing this without a matching eink_restart_loop means failures are intermittent -- usually Prometheus timing out rather than the panel."
+          notification_settings:
+            receiver: Discord
+
+        - uid: eink_restart_loop
+          title: E-Ink Display Restarting Repeatedly
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: increase(eink_starts_total[1h]) > 3
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The e-ink service has started {{ '{{' }} $values.A {{ '}}' }} times in the last hour."
+            description: "Restarts are not free: each one costs the panel a full Clear() plus an unconditional full first render, and the panel is rated for roughly 1M refreshes. A steady trickle usually means an Ansible task is notifying the handler on every run rather than a crash; `systemctl --user status eink-display` distinguishes the two."
           notification_settings:
             receiver: Discord
 
@@ -1023,5 +1170,124 @@ groups:
           annotations:
             summary: "Zigbee2MQTT has logged {{ '{{' }} $values.A {{ '}}' }} adapter or coordinator errors."
             description: "Threshold is 2 rather than 0 because Restart=always makes a single transient adapter error self-healing -- three or more means the coordinator is genuinely unhappy or the USB device has dropped. Partly covers the gap left by zigbee2mqtt having no container healthcheck yet (Q-03)."
+          notification_settings:
+            receiver: Discord
+
+        - uid: eink_fetch_errors
+          title: E-Ink Prometheus Queries Failing
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: sum by (reason) (increase(eink_fetch_errors_total[15m])) > 5
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The display's Prometheus query failed {{ '{{' }} $values.A {{ '}}' }} times in 15 minutes ({{ '{{' }} $labels.reason {{ '}}' }})."
+            description: "The display makes one OR-joined query per tick through Caddy and Authelia. `Prometheus Unreachable` is the network or the auth path, `Query Error` means Prometheus rejected the PromQL, `Parse Error` means the response was not JSON. The screen shows API ERR while this is happening."
+          notification_settings:
+            receiver: Discord
+
+        - uid: eink_metrics_missing
+          title: E-Ink Display Missing Metrics
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: eink_metrics_missing > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 30m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $values.A {{ '}}' }} of the display's queries have been returning no data for 30 minutes."
+            description: "The query succeeded but some series came back empty, so those tiles render as `--` rather than blanking the screen. A value that appears and never clears usually means a query no longer matches -- most often the hardcoded INSTANCE label in the display's config drifting from the node_exporter instance label."
+          notification_settings:
+            receiver: Discord
+
+        - uid: eink_wear_not_persisted
+          title: E-Ink Wear Counters Not Persisted
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: eink_wear_persisted == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The e-ink display's lifetime refresh counters are resetting on every restart."
+            description: "STATE_DIRECTORY is not reaching the process, so wear.json is never written and the panel-life figures on the dashboard are since-boot rather than lifetime. Check that StateDirectory=eink-display is still in the unit -- this alert exists because that line lives in a different repository from the code that needs it."
+          notification_settings:
+            receiver: Discord
+
+        - uid: eink_refresh_budget
+          title: E-Ink Refresh Rate Above Budget
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: sum(rate(eink_refresh_total[24h])) * 86400 > 5000
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 1h
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The panel is refreshing about {{ '{{' }} $values.A {{ '}}' }} times a day."
+            description: "Steady state is roughly 650/day: one render per 120s tick, minus the 23:00-06:00 sleep, plus the occasional blink. Crossing 5000 means a wear rule stopped working -- alert flapping defeating the edge-trigger, MAX_PARTIAL_REFRESHES being ignored, or night mode not engaging. The 1M lifetime total is a five-year problem; this is the same fault visible today."
           notification_settings:
             receiver: Discord
