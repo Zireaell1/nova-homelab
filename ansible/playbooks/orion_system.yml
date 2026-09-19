@@ -9,6 +9,9 @@
     - role: rpi_base
       tags: ["rpi_base"]
 
+    - role: shell
+      tags: ["shell", "foundation"]
+
     # =====================================================
     # Host monitoring
     # =====================================================

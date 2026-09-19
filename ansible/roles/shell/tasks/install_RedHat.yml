@@ -1,0 +1,5 @@
+---
+- name: Install shell packages
+  ansible.builtin.dnf:
+    name: "{{ shell_packages }}"
+    state: present

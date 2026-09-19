@@ -1,12 +1,14 @@
 set -gx EDITOR micro
 
 if status is-interactive
-    abbr -a up "sudo dnf upgrade --refresh"
-    abbr -a upclean "sudo dnf upgrade --refresh && sudo dnf autoremove"
+    abbr -a up "{{ dotfiles_update_cmd }}"
+    abbr -a upclean "{{ dotfiles_update_clean_cmd }}"
 end
 
 function fish_greeting
-    fastfetch
+    if command -q fastfetch
+        fastfetch
+    end
 
     echo ""
     set_color -o blue
@@ -14,10 +16,10 @@ function fish_greeting
     set_color green
     echo -n "  up      "
     set_color normal
-    echo "-> update packages (dnf upgrade)"
+    echo "-> update packages ({{ dotfiles_update_label }})"
     set_color green
     echo -n "  upclean "
     set_color normal
-    echo "-> update and clean up (dnf autoremove)"
+    echo "-> update and clean up ({{ dotfiles_update_clean_label }})"
     echo ""
 end

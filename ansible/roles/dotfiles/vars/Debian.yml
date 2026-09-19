@@ -1,0 +1,6 @@
+---
+dotfiles_update_cmd: "sudo apt update && sudo apt upgrade"
+dotfiles_update_clean_cmd: "sudo apt update && sudo apt upgrade && sudo apt autoremove --purge"
+
+dotfiles_update_label: "apt upgrade"
+dotfiles_update_clean_label: "apt autoremove"

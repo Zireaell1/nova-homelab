@@ -1,0 +1,6 @@
+---
+dotfiles_update_cmd: "sudo dnf upgrade --refresh"
+dotfiles_update_clean_cmd: "sudo dnf upgrade --refresh && sudo dnf autoremove"
+
+dotfiles_update_label: "dnf upgrade"
+dotfiles_update_clean_label: "dnf autoremove"

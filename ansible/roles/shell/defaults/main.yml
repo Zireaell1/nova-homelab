@@ -1,0 +1,20 @@
+---
+shell_packages:
+  - fish
+  - fastfetch
+  - micro
+  - bat
+
+shell_login_shell: "/usr/bin/fish"
+
+# renovate: datasource=github-releases depName=zellij-org/zellij
+shell_zellij_version: "0.45.1"
+
+shell_zellij_base_url: "https://github.com/zellij-org/zellij/releases/download"
+
+shell_zellij_supported_arches:
+  - x86_64
+  - aarch64
+
+shell_zellij_filename: "zellij-no-web-{{ ansible_facts['architecture'] }}-unknown-linux-musl.tar.gz"
+shell_zellij_link: "{{ shell_zellij_base_url }}/v{{ shell_zellij_version }}/{{ shell_zellij_filename }}"

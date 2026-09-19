@@ -1,0 +1,33 @@
+---
+- name: Install interactive shell tooling
+  ansible.builtin.include_tasks: "install_{{ ansible_facts['os_family'] }}.yml"
+
+- name: Assert Zellij ships a musl tarball under this architecture name
+  ansible.builtin.assert:
+    that: ansible_facts['architecture'] in shell_zellij_supported_arches
+    fail_msg: >-
+      Zellij's release asset for {{ ansible_facts['architecture'] }} does not follow
+      the "<arch>-unknown-linux-musl" pattern.
+    quiet: true
+
+- name: Check current version of Zellij
+  ansible.builtin.command: zellij --version
+  register: shell_zellij_cmd_output
+  failed_when: false
+  check_mode: false
+  changed_when: false
+
+- name: Install Zellij from GitHub releases
+  ansible.builtin.unarchive:
+    src: "{{ shell_zellij_link }}"
+    dest: /usr/local/bin
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0755"
+  when: shell_zellij_cmd_output.rc != 0 or shell_zellij_version not in shell_zellij_cmd_output.stdout
+
+- name: Change default shell to Fish
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    shell: "{{ shell_login_shell }}"

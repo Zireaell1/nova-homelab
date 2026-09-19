@@ -1,4 +1,7 @@
 ---
+- name: Load the package-manager commands for this host's OS family
+  ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
+
 - name: Verify if config directories exist
   ansible.builtin.file:
     path: "{{ item.path }}"
@@ -26,15 +29,12 @@
     - path: "{{ user_config_path }}/zellij/layouts"
       mode: "0755"
 
-    - path: "{{ stacks_path }}"
-      mode: "0755"
-
     - path: "{{ user_bin_path }}"
       mode: "0755"
 
-- name: Upload Fish config
-  ansible.builtin.copy:
-    src: "fish/config.fish"
+- name: Deploy Fish config
+  ansible.builtin.template:
+    src: "config.fish.j2"
     dest: "{{ user_config_path }}/fish/config.fish"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"

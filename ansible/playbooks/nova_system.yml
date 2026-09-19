@@ -9,6 +9,9 @@
     - role: system_base
       tags: ["system_base", "foundation"]
 
+    - role: shell
+      tags: ["shell", "foundation"]
+
     - role: hardware
       tags: ["hardware", "foundation"]
 
