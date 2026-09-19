@@ -75,7 +75,7 @@
                                             "spec": {
                                                 "editorMode": "code",
                                                 "exemplar": false,
-                                                "expr": "time() - eink_last_render_timestamp_seconds",
+                                                "expr": "time() - eink_last_tick_timestamp_seconds",
                                                 "instant": true,
                                                 "interval": "",
                                                 "legendFormat": "__auto",
