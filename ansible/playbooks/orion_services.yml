@@ -5,7 +5,7 @@
   environment: "{{ podman_user_env }}"
   roles:
     # =====================================================
-    # Services (Rootless)
+    # Runtime environment
     # =====================================================
     - role: dotfiles
       tags: ["dotfiles", "runtime"]
