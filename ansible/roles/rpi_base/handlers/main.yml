@@ -5,6 +5,7 @@
       SPI was just enabled in /boot/firmware/config.txt!
       The Raspberry Pi requires a full system reboot to load the spidev hardware drivers.
       Please reboot the Pi manually ('sudo reboot') and re-run this playbook.
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Abort playbook if device group membership changed (manual reboot required)
   ansible.builtin.fail:
@@ -14,3 +15,4 @@
       so eink-display.service would start without access to /dev/spidev* and /dev/gpiochip*.
       Neither a new SSH session nor 'meta: reset_connection' refreshes it once lingering
       is enabled. Please reboot the Pi manually ('sudo reboot') and re-run this playbook.
+  ignore_errors: "{{ ansible_check_mode }}"
