@@ -15,6 +15,8 @@ EnvironmentFile={{ eink_display_path }}/eink-display.secrets.env
 
 ExecStart={{ eink_display_path }}/.venv/bin/nova-eink-display
 
+StateDirectory=eink-display
+
 Restart=always
 RestartSec=10
 
