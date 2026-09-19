@@ -43,6 +43,19 @@
   args:
     creates: "/var/lib/systemd/linger/{{ ansible_user }}"
 
+- name: Detect the cloud-init user-data written by Imager
+  ansible.builtin.stat:
+    path: /boot/firmware/user-data
+  register: rpi_base_cloud_init_userdata
+
+- name: Stop cloud-init from rewriting /etc/hosts wholesale
+  ansible.builtin.lineinfile:
+    path: /boot/firmware/user-data
+    regexp: "^manage_etc_hosts:"
+    line: "manage_etc_hosts: localhost"
+    state: present
+  when: rpi_base_cloud_init_userdata.stat.exists
+
 - name: Provide static DNS entries in /etc/hosts
   ansible.builtin.lineinfile:
     path: /etc/hosts
