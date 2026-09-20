@@ -52,7 +52,6 @@
             }
         ],
         "cursorSync": "Off",
-        "description": "",
         "editable": true,
         "elements": {
             "panel-1": {
@@ -634,6 +633,108 @@
                                 "timestampResolution": "ms",
                                 "unwrappedColumns": false,
                                 "wrapLogMessage": true
+                            }
+                        },
+                        "version": "13.2.1"
+                    }
+                }
+            },
+            "panel-16": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "sum(eink_refresh_total)",
+                                                "legendFormat": "__auto",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 16,
+                    "links": [],
+                    "title": "Panel life used",
+                    "vizConfig": {
+                        "group": "gauge",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "max": 1000000,
+                                    "min": 0,
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            },
+                                            {
+                                                "color": "yellow",
+                                                "value": 500000
+                                            },
+                                            {
+                                                "color": "red",
+                                                "value": 800000
+                                            }
+                                        ]
+                                    },
+                                    "unit": "short"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "barShape": "flat",
+                                "barWidthFactor": 0.5,
+                                "effects": {
+                                    "barGlow": false,
+                                    "centerGlow": false,
+                                    "gradient": true
+                                },
+                                "endpointMarker": "point",
+                                "minVizHeight": 75,
+                                "minVizWidth": 75,
+                                "orientation": "auto",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "segmentCount": 1,
+                                "segmentSpacing": 0.3,
+                                "shape": "gauge",
+                                "showThresholdLabels": false,
+                                "showThresholdMarkers": true,
+                                "sizing": "auto",
+                                "sparkline": false,
+                                "textMode": "auto"
                             }
                         },
                         "version": "13.2.1"
@@ -1591,9 +1692,22 @@
                                                     "kind": "ElementReference",
                                                     "name": "panel-13"
                                                 },
-                                                "height": 11,
-                                                "width": 24,
+                                                "height": 8,
+                                                "width": 12,
                                                 "x": 0,
+                                                "y": 30
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-16"
+                                                },
+                                                "height": 8,
+                                                "width": 12,
+                                                "x": 12,
                                                 "y": 30
                                             }
                                         }
