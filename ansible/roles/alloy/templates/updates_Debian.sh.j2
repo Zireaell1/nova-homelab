@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+#
+# Pending-update metrics for the node exporter textfile collector.
+# Modelled on prometheus-community/node-exporter-textfile-collector-scripts
+# (apt_info.py)
+#
+# ==============================================================================
+# APT / System Commands used in this script (All are read-only and purely diagnostic):
+#
+# * apt-get -s -o Debug::NoLocking=true dist-upgrade : Simulates a full upgrade (dry-run) without locking the apt database.
+# * [ -f /var/run/reboot-required ]                  : Checks for the standard Debian/Ubuntu reboot flag file.
+# * stat -c %Y .../update-success-stamp              : Reads the timestamp of the last successful 'apt update' run.
+# ==============================================================================
+
+set -Eeuo pipefail
+
+PROM_DIR="{{ textfile_metrics_path }}"
+PROM_FILE="${PROM_DIR}/homelab_updates.prom"
+PROM_TMP="${PROM_DIR}/.homelab_updates.prom.$$"
+
+SUCCESS=1
+PENDING_ALL=0
+PENDING_SECURITY=0
+REBOOT_REQUIRED=0
+CACHE_TIMESTAMP=0
+
+cleanup() {
+    trap - EXIT
+    rm -f "$PROM_TMP"
+}
+trap cleanup EXIT
+
+on_err() {
+    echo >&2 "[ERROR] Unhandled failure at line ${1} (exit ${2})."
+    SUCCESS=0
+}
+trap 'on_err "${LINENO}" "$?"' ERR
+
+collect() {
+    local simulated
+
+    simulated="$(apt-get -s -o Debug::NoLocking=true dist-upgrade 2>/dev/null)" || {
+        echo >&2 "[ERROR] apt-get simulation failed."
+        SUCCESS=0
+        return
+    }
+
+    PENDING_ALL="$(printf '%s\n' "$simulated" | grep -c '^Inst ' || true)"
+    PENDING_SECURITY="$(printf '%s\n' "$simulated" | grep '^Inst ' | grep -ci 'security' || true)"
+
+    if [ -f /var/run/reboot-required ]; then
+        REBOOT_REQUIRED=1
+    fi
+
+    if [ -f /var/lib/apt/periodic/update-success-stamp ]; then
+        CACHE_TIMESTAMP="$(stat -c %Y /var/lib/apt/periodic/update-success-stamp)"
+    else
+        CACHE_TIMESTAMP="$(find /var/lib/apt/lists -maxdepth 1 -type f -name '*Packages*' -printf '%T@\n' 2>/dev/null \
+            | sort -rn | head -n1 | cut -d. -f1)"
+        [ -n "$CACHE_TIMESTAMP" ] || CACHE_TIMESTAMP=0
+    fi
+}
+
+emit() {
+    cat <<PROM
+# HELP homelab_updates_pending Packages with a pending upgrade, by severity
+# TYPE homelab_updates_pending gauge
+homelab_updates_pending{severity="all"} ${PENDING_ALL}
+homelab_updates_pending{severity="security"} ${PENDING_SECURITY}
+# HELP homelab_updates_reboot_required Whether the package manager says a reboot is needed
+# TYPE homelab_updates_reboot_required gauge
+homelab_updates_reboot_required ${REBOOT_REQUIRED}
+# HELP homelab_updates_cache_timestamp_seconds Unix time the package metadata was last refreshed
+# TYPE homelab_updates_cache_timestamp_seconds gauge
+homelab_updates_cache_timestamp_seconds ${CACHE_TIMESTAMP}
+# HELP homelab_updates_last_check_timestamp_seconds Unix time this collector last ran
+# TYPE homelab_updates_last_check_timestamp_seconds gauge
+homelab_updates_last_check_timestamp_seconds $(date +%s)
+# HELP homelab_updates_collector_success Whether this collector completed without error (1) or not (0)
+# TYPE homelab_updates_collector_success gauge
+homelab_updates_collector_success ${SUCCESS}
+PROM
+}
+
+main() {
+    mkdir -p "$PROM_DIR"
+    collect
+    emit > "$PROM_TMP"
+    mv -f "$PROM_TMP" "$PROM_FILE"
+    chmod 0644 "$PROM_FILE"
+    echo "[INFO] ${PENDING_ALL} pending (${PENDING_SECURITY} security), reboot_required=${REBOOT_REQUIRED}."
+}
+
+main "$@"

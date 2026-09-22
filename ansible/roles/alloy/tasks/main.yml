@@ -61,6 +61,41 @@
         mode: "0644"
       notify: Restart smartmon service
 
+- name: Updates collector block
+  when: alloy_enable_updates
+  block:
+    - name: Install packages the updates collector needs
+      ansible.builtin.package:
+        name: "{{ alloy_updates_packages[ansible_facts['os_family']] }}"
+        state: present
+      when: alloy_updates_packages[ansible_facts['os_family']] | length > 0
+
+    - name: Deploy updates collector script
+      ansible.builtin.template:
+        src: "updates_{{ ansible_facts['os_family'] }}.sh.j2"
+        dest: /usr/local/bin/homelab-updates.sh
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Deploy updates collector systemd service
+      ansible.builtin.template:
+        src: updates.service.j2
+        dest: /etc/systemd/system/homelab-updates.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart updates timer
+
+    - name: Deploy updates collector systemd timer
+      ansible.builtin.template:
+        src: updates.timer.j2
+        dest: /etc/systemd/system/homelab-updates.timer
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart updates timer
+
 - name: Flush handlers to restart Alloy if configurations changed
   ansible.builtin.meta: flush_handlers
 

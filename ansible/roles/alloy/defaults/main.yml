@@ -1,2 +1,11 @@
 ---
 alloy_smartmon_interval_seconds: 300
+
+alloy_enable_updates: true
+
+alloy_updates_packages:
+  RedHat:
+    - dnf5-plugins
+  Debian: []
+
+alloy_updates_on_calendar: "*-*-* 06:00:00"

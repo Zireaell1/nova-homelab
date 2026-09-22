@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+#
+# Pending-update metrics for the node exporter textfile collector.
+#
+# ==============================================================================
+# DNF Commands used in this script (All are read-only and purely diagnostic):
+#
+# * dnf -q -C repoquery --upgrades       : Lists all available updates from local cache.
+# * dnf -q -C check-update --security    : Checks local cache for security updates.
+# * dnf -q -C updateinfo list --security : Fallback to check security update notices.
+# * dnf -q needs-restarting -r           : Checks if a reboot is needed (e.g., kernel update).
+# ==============================================================================
+
+set -Eeuo pipefail
+
+PROM_DIR="{{ textfile_metrics_path }}"
+PROM_FILE="${PROM_DIR}/homelab_updates.prom"
+PROM_TMP="${PROM_DIR}/.homelab_updates.prom.$$"
+
+SUCCESS=1
+PENDING_ALL=0
+PENDING_SECURITY=0
+REBOOT_REQUIRED=0
+CACHE_TIMESTAMP=0
+
+cleanup() {
+    trap - EXIT
+    rm -f "$PROM_TMP"
+}
+trap cleanup EXIT
+
+on_err() {
+    echo >&2 "[ERROR] Unhandled failure at line ${1} (exit ${2})."
+    SUCCESS=0
+}
+trap 'on_err "${LINENO}" "$?"' ERR
+
+count_pending_all() {
+    local out rc=0
+    out="$(dnf -q -C repoquery --upgrades --queryformat '%{name}\n' 2>/dev/null)" || rc=$?
+    if [ "$rc" -ne 0 ]; then
+        echo >&2 "[ERROR] 'dnf repoquery --upgrades' failed (exit ${rc})."
+        SUCCESS=0
+        return
+    fi
+    PENDING_ALL="$(printf '%s\n' "$out" | sed '/^$/d' | sort -u | wc -l)"
+}
+
+count_pending_security() {
+    local out rc=0
+
+    out="$(dnf -q -C check-update --security 2>/dev/null)" || rc=$?
+    if [ "$rc" -eq 0 ] || [ "$rc" -eq 100 ]; then
+        PENDING_SECURITY="$(printf '%s\n' "$out" \
+            | awk '/^Obsoleting Packages/ {exit} NF >= 3 && $1 !~ /^(Last|Security:)/ {sub(/\.[^.]+$/, "", $1); print $1}' \
+            | sort -u | wc -l)"
+        return
+    fi
+
+    rc=0
+    out="$(dnf -q -C updateinfo list --security 2>/dev/null)" || rc=$?
+    if [ "$rc" -eq 0 ] || [ "$rc" -eq 100 ]; then
+        PENDING_SECURITY="$(printf '%s\n' "$out" \
+            | awk 'NF >= 3 {print $3}' \
+            | sort -u | wc -l)"
+        return
+    fi
+
+    echo >&2 "[ERROR] Neither 'check-update --security' nor 'updateinfo list --security' worked."
+    SUCCESS=0
+}
+
+check_reboot() {
+    local rc=0
+    dnf -q needs-restarting -r >/dev/null 2>&1 || rc=$?
+    case "$rc" in
+        0) REBOOT_REQUIRED=0 ;;
+        1) REBOOT_REQUIRED=1 ;;
+        *)
+            echo >&2 "[ERROR] 'dnf needs-restarting' failed (exit ${rc}); is dnf5-plugins installed?"
+            SUCCESS=0
+            ;;
+    esac
+}
+
+read_cache_timestamp() {
+    local newest
+    newest="$(find /var/cache/libdnf5 /var/cache/dnf -maxdepth 4 -name 'repomd.xml' -printf '%T@\n' 2>/dev/null \
+        | sort -rn | head -n1 | cut -d. -f1)" || newest=""
+    [ -n "$newest" ] && CACHE_TIMESTAMP="$newest"
+}
+
+emit() {
+    cat <<PROM
+# HELP homelab_updates_pending Packages with a pending upgrade, by severity
+# TYPE homelab_updates_pending gauge
+homelab_updates_pending{severity="all"} ${PENDING_ALL}
+homelab_updates_pending{severity="security"} ${PENDING_SECURITY}
+# HELP homelab_updates_reboot_required Whether the package manager says a reboot is needed
+# TYPE homelab_updates_reboot_required gauge
+homelab_updates_reboot_required ${REBOOT_REQUIRED}
+# HELP homelab_updates_cache_timestamp_seconds Unix time the package metadata was last refreshed
+# TYPE homelab_updates_cache_timestamp_seconds gauge
+homelab_updates_cache_timestamp_seconds ${CACHE_TIMESTAMP}
+# HELP homelab_updates_last_check_timestamp_seconds Unix time this collector last ran
+# TYPE homelab_updates_last_check_timestamp_seconds gauge
+homelab_updates_last_check_timestamp_seconds $(date +%s)
+# HELP homelab_updates_collector_success Whether this collector completed without error (1) or not (0)
+# TYPE homelab_updates_collector_success gauge
+homelab_updates_collector_success ${SUCCESS}
+PROM
+}
+
+main() {
+    mkdir -p "$PROM_DIR"
+    count_pending_all
+    count_pending_security
+    check_reboot
+    read_cache_timestamp
+    emit > "$PROM_TMP"
+    mv -f "$PROM_TMP" "$PROM_FILE"
+    chmod 0644 "$PROM_FILE"
+    echo "[INFO] ${PENDING_ALL} pending (${PENDING_SECURITY} security), reboot_required=${REBOOT_REQUIRED}."
+}
+
+main "$@"

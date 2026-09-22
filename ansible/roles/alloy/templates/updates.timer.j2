@@ -1,0 +1,11 @@
+[Unit]
+Description=Collect pending package update metrics daily
+
+[Timer]
+OnCalendar={{ alloy_updates_on_calendar }}
+RandomizedDelaySec=30m
+
+Persistent=true
+
+[Install]
+WantedBy=timers.target

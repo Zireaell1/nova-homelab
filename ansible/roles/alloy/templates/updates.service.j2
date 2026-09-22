@@ -1,0 +1,12 @@
+[Unit]
+Description=Collect pending package update metrics
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/homelab-updates.sh
+
+PrivateTmp=true
+ProtectHome=true
+NoNewPrivileges=true
+
+TimeoutStartSec=300
