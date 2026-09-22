@@ -371,7 +371,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: '{__name__=~"smartmon_(reallocated_sector_ct|current_pending_sector|offline_uncorrectable)_raw_value"} > 0'
+                expr: '{__name__=~"smartmon_(reallocated_sector_ct|current_pending_sector|offline_uncorrectable|media_errors)_raw_value"} > 0'
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -1289,5 +1289,238 @@ groups:
           annotations:
             summary: "The panel is refreshing about {{ '{{' }} $values.A {{ '}}' }} times a day."
             description: "Steady state is roughly 650/day: one render per 120s tick, minus the 23:00-06:00 sleep, plus the occasional blink. Crossing 5000 means a wear rule stopped working -- alert flapping defeating the edge-trigger, MAX_PARTIAL_REFRESHES being ignored, or night mode not engaging. The 1M lifetime total is a five-year problem; this is the same fault visible today."
+          notification_settings:
+            receiver: Discord
+
+        - uid: updates_security_pending
+          title: Security Updates Pending
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_updates_pending{severity="security"} > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has {{ '{{' }} $values.A {{ '}}' }} package(s) with a security update waiting."
+            description: "Counted from the distribution's own security metadata -- apt origins containing `security` on Debian, `--security` advisories on Fedora -- not a hand-maintained package list, which goes stale silently. There is deliberately no alert on the total update count: forty pending means a week on Fedora and months on Debian stable, so one threshold cannot mean the same thing on both hosts."
+          notification_settings:
+            receiver: Discord
+
+        - uid: updates_reboot_required
+          title: Reboot Required
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_updates_reboot_required == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 12h
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} needs a reboot to finish applying updates."
+            description: "`/var/run/reboot-required` on Debian, `dnf needs-restarting` on Fedora. The 12h `for` means a reboot you are already planning does not page you mid-maintenance. This is what catches a kernel updated weeks ago that nothing ever booted into."
+          notification_settings:
+            receiver: Discord
+
+        - uid: updates_collector_stale
+          title: Update Collector Has Stopped Running
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - homelab_updates_last_check_timestamp_seconds > 172800
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The update collector on {{ '{{' }} $labels.instance {{ '}}' }} has not run for over 48h."
+            description: "homelab-updates.timer fires daily, so 48h means it is dead, masked, or the unit failed to install. The textfile keeps its last values on disk, so every count metric stays green and only this staleness check notices -- the same shape as backup_has_not_run."
+          notification_settings:
+            receiver: Discord
+
+        - uid: updates_cache_stale
+          title: Package Metadata Is Stale
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - homelab_updates_cache_timestamp_seconds > 259200
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Package metadata on {{ '{{' }} $labels.instance {{ '}}' }} was last refreshed over 3 days ago."
+            description: "The collector never refreshes the cache itself -- apt-daily.timer and dnf-makecache.timer own that, and refreshing from a collector deadlocks against them and against unattended-upgrades. Without this rule a broken refresh timer produces a confident `0 pending` forever and the other update alerts go quietly useless."
+          notification_settings:
+            receiver: Discord
+
+        - uid: updates_collector_failed
+          title: Update Collector Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_updates_collector_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The update collector on {{ '{{' }} $labels.instance {{ '}}' }} ran but could not complete."
+            description: "Distinct from updates_collector_stale: the timer fired and the textfile is fresh, but a command inside it failed. Check `journalctl -u homelab-updates.service`. On Fedora the usual cause is `dnf needs-restarting` missing, which means dnf5-plugins is not installed."
+          notification_settings:
+            receiver: Discord
+
+        - uid: smart_critical_warning
+          title: SMART Critical Warning
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: smartmon_critical_warning_raw_value > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} has raised its NVMe critical-warning flag ({{ '{{' }} $values.A {{ '}}' }})."
+            description: "The controller itself declaring a problem -- spare below threshold, degraded reliability, read-only mode, or volatile memory backup failure -- rather than a counter ticking up. Kept out of smart_sectors_degrading because that rule is a leading indicator at warning severity; this one means the drive has already decided something is wrong. Decode with `smartctl -a -d nvme /dev/nvmeXn1`."
+          notification_settings:
+            receiver: Discord
+
+        - uid: smart_lifetime_low
+          title: SMART Lifetime Remaining Low
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: smartmon_percent_lifetime_remain_raw_value < 10
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} has {{ '{{' }} $values.A {{ '}}' }}% of its rated write endurance left."
+            description: "Derived by smartmon.sh as 100 - NVMe 'Percentage Used', so it matches ATA attribute 202 and one rule covers both. Endurance running out is not imminent failure, but it is the point to start planning a replacement rather than discovering it during a restore."
+          notification_settings:
+            receiver: Discord
+
+        - uid: smart_spare_below_threshold
+          title: SMART Spare Below Threshold
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: smartmon_available_spare_raw_value < smartmon_available_spare_threshold_raw_value
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} is down to {{ '{{' }} $values.A {{ '}}' }}% spare blocks, below the threshold the drive itself reports."
+            description: "Self-calibrating against the drive's own Available Spare Threshold rather than a guessed number, the same way the UPS rules use ups_battery_charge_low. Running out of replacement blocks is a different failure mode from write endurance -- smart_lifetime_low covers the other one, so keep both."
           notification_settings:
             receiver: Discord
