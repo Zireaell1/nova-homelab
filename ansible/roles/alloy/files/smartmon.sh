@@ -141,6 +141,14 @@ parse_smartctl_nvme_attributes() {
       crit=$((16#${value#0x}))
       echo "critical_warning_raw_value{${labels},smart_id=\"-1\"} ${crit}"
       ;;
+    "Available Spare Threshold")
+      spare_threshold="$(echo "${value}" | tr -d '%')"
+      echo "available_spare_threshold_raw_value{${labels},smart_id=\"-1\"} ${spare_threshold}"
+      ;;
+    "Error Information Log Entries")
+      err_entries="$(echo "${value}" | tr -d ',')"
+      echo "error_log_entries_raw_value{${labels},smart_id=\"-1\"} ${err_entries}"
+      ;;
     esac
   done
 }
