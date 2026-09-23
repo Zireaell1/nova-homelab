@@ -13,6 +13,7 @@ Environment="PATH={{ eink_display_path }}/.venv/bin:/usr/local/sbin:/usr/local/b
 EnvironmentFile={{ eink_display_path }}/eink-display.env
 EnvironmentFile={{ eink_display_path }}/eink-display.secrets.env
 
+ExecStartPre=-/usr/bin/nm-online -q -t 60
 ExecStart={{ eink_display_path }}/.venv/bin/nova-eink-display
 
 StateDirectory=eink-display
