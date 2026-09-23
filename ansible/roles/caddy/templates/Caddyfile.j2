@@ -85,8 +85,8 @@ http:// {
 :9091 {
 	bind 0.0.0.0
 
-    respond /healthz "OK" 200
-	metrics
+	respond /healthz "OK" 200
+	metrics /metrics
 }
 
 # ===============================================================================
