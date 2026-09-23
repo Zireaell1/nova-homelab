@@ -35,7 +35,7 @@
   ansible.builtin.lineinfile:
     path: /etc/default/alloy
     regexp: '^#?\s*CUSTOM_ARGS='
-    line: 'CUSTOM_ARGS="--disable-reporting --server.http.listen-addr=0.0.0.0:12345"'
+    line: 'CUSTOM_ARGS="--disable-reporting --server.http.listen-addr=127.0.0.1:12345"'
     state: present
     owner: root
     group: root
