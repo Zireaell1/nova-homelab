@@ -381,7 +381,7 @@ abort_if_interrupted
 # 11. INTEGRITY CHECK
 # ==========================================
 log "Verifying repository integrity..."
-restic check --read-data-subset=10% || {
+restic check --read-data-subset="$(date +%u)/7" || {
     err "Repository check failed."
     GLOBAL_SUCCESS=0
 }

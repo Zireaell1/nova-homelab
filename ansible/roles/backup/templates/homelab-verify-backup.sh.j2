@@ -55,7 +55,7 @@ VERIFY_DURATION=$((VERIFY_END_TIME - VERIFY_START_TIME))
 
 echo "[INFO] Generating Prometheus metrics..."
 cat <<EOF > "$PROM_TMP_FILE"
-# HELP homelab_backup_verify_success Whether the cloud B2 verification succeeded (1) or failed (0)
+# HELP homelab_backup_verify_success Whether the cloud B2 verification of the homelab repository succeeded (1) or failed (0); device repositories are encrypted under client keys and are not verified
 # TYPE homelab_backup_verify_success gauge
 homelab_backup_verify_success $SUCCESS
 
