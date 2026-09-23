@@ -21,7 +21,7 @@
       mode: "0755"
 
     - path: "{{ user_config_path }}/fastfetch"
-      mode: "0744"
+      mode: "0755"
 
     - path: "{{ user_config_path }}/zellij"
       mode: "0755"
