@@ -54,6 +54,7 @@
       - python3
       - git
       - jq
+      - openssl
     state: present
 
 - name: Remove Cockpit MOTD/issue banner
