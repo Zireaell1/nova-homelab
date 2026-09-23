@@ -11,6 +11,8 @@ StopTimeout=20
 
 Exec=redis-server /usr/local/etc/redis/redis.conf
 
+Notify=healthy
+
 # --- Identity / Namespaces ---
 User=999:999
 UserNS=keep-id:uid=999,gid=999
@@ -37,6 +39,11 @@ HealthInterval=60s
 HealthTimeout=10s
 HealthRetries=3
 HealthStartPeriod=60s
+
+HealthStartupCmd=["redis-cli", "ping"]
+HealthStartupInterval=2s
+HealthStartupTimeout=5s
+HealthStartupSuccess=1
 
 [Service]
 Restart=always

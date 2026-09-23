@@ -11,6 +11,8 @@ StopTimeout=20
 
 Exec=postgres -c log_min_messages=WARNING -c log_checkpoints=off
 
+Notify=healthy
+
 # --- Identity / Namespaces ---
 User=999:999
 UserNS=keep-id:uid=999,gid=999
@@ -40,6 +42,11 @@ HealthInterval=60s
 HealthTimeout=10s
 HealthRetries=3
 HealthStartPeriod=60s
+
+HealthStartupCmd=["pg_isready", "-q", "-U", "authelia"]
+HealthStartupInterval=2s
+HealthStartupTimeout=5s
+HealthStartupSuccess=1
 
 [Service]
 Restart=always
