@@ -1111,7 +1111,37 @@ groups:
             severity: critical
           annotations:
             summary: "Alloy on nova has stopped reporting -- every host metric, both backup collectors and the textfile metrics are now blind."
-            description: "Alloy generates its own `up` series, so a dead Alloy makes them go stale rather than drop to 0 and `scrape_target_down` cannot fire for it. This watches for the series disappearing instead. Orion's Alloy is deliberately not covered -- it feeds the e-ink screen only. The instance matcher renders from `host_svc_address`, the same variable the Alloy config uses, so the two cannot drift apart."
+            description: "Alloy generates its own `up` series, so a dead Alloy makes them go stale rather than drop to 0 and `scrape_target_down` cannot fire for it. This watches for the series disappearing instead. Orion has its own rule, alloy_not_reporting_orion. The instance matcher renders from `host_svc_address`, the same variable the Alloy config uses, so the two cannot drift apart."
+          notification_settings:
+            receiver: Discord
+
+        - uid: alloy_not_reporting_orion
+          title: Alloy Not Reporting (Orion)
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: absent(up{job="alloy", instance="{{ hostvars['orion']['inventory_hostname'] }}:12345"})
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 10m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Alloy on orion has stopped reporting -- the e-ink host's metrics and logs are blind."
+            description: "Same mechanism as alloy_not_reporting, but warning rather than critical and with 10m of grace: Orion is on wifi and pushes over remote_write, so a short association drop is expected. The instance label is set explicitly in config_orion.alloy.j2 from inventory_hostname, so it cannot collide with nova's."
           notification_settings:
             receiver: Discord
 
@@ -1522,5 +1552,92 @@ groups:
           annotations:
             summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} is down to {{ '{{' }} $values.A {{ '}}' }}% spare blocks, below the threshold the drive itself reports."
             description: "Self-calibrating against the drive's own Available Spare Threshold rather than a guessed number, the same way the UPS rules use ups_battery_charge_low. Running out of replacement blocks is a different failure mode from write endurance -- smart_lifetime_low covers the other one, so keep both."
+          notification_settings:
+            receiver: Discord
+
+        - uid: git_mirror_stale
+          title: Git Mirror Stale
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - homelab_git_mirror_last_success_timestamp_seconds > 172800
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Git mirror {{ '{{' }} $labels.repo {{ '}}' }} has not updated in over 2 days."
+            description: "git-sync.sh runs as the backup's ExecStartPre with a '-' prefix, so a failing mirror never fails the backup -- this is the only place it shows. A failing mirror keeps its last good timestamp, so it ages into this rule rather than resetting. Check `journalctl --user -u homelab-backup.service`."
+          notification_settings:
+            receiver: Discord
+
+        - uid: cert_expiring
+          title: TLS Certificate Expiring
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: (max by (domain) (homelab_cert_not_after_timestamp_seconds) - time()) / 86400 < 14
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Certificate for {{ '{{' }} $labels.domain {{ '}}' }} expires in {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} days."
+            description: "Caddy renews at ~30 days left, so under 14 means renewal has been failing for two weeks. `admin off` leaves no API to ask, and Caddy exports no expiry metric -- this reads the stored certificates directly. max by (domain) because a fallback issuer can leave an older copy behind. Usually the Cloudflare token: `podman logs caddy 2>&1 | grep -i acme`."
+          notification_settings:
+            receiver: Discord
+
+        - uid: cert_collector_failed
+          title: TLS Certificate Collector Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_cert_collector_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The certificate expiry collector found no certificates or could not parse one."
+            description: "Without it cert_expiring is blind. Check `journalctl --user -u caddy-cert-expiry.service`."
           notification_settings:
             receiver: Discord
