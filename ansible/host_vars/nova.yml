@@ -35,7 +35,7 @@ hardware_target_lvs:
     manage_fs_and_mount: true
     rootless: true
 
-hardware_vg_name: "fedora_nova-2"
+hardware_vg_name: "fedora_{{ nova_hostname }}"
 
 zigbee2mqtt_adapter_path: "/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_348e0dcf501fef11abc857d0639e525b-if00-port0"
 
