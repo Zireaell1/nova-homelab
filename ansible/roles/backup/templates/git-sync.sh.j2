@@ -1,24 +1,60 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -Euo pipefail
 
 TARGET_DIR="{{ git_backup_dir }}"
-mkdir -p "$TARGET_DIR"
+PROM_DIR="{{ textfile_metrics_path }}"
+PROM_FILE="${PROM_DIR}/homelab_git_mirror.prom"
+PROM_TMP="${PROM_DIR}/.homelab_git_mirror.prom.$$"
 
+FAILED=0
+
+cleanup() {
+    trap - EXIT
+    rm -f "$PROM_TMP"
+}
+trap cleanup EXIT
+
+previous_success() {
+    local repo="$1"
+    [ -f "$PROM_FILE" ] || { echo 0; return; }
+    awk -v r="$repo" -F'[ ]' '$1 == "homelab_git_mirror_last_success_timestamp_seconds{repo=\"" r "\"}" {print $2; found=1} END {if (!found) print 0}' "$PROM_FILE"
+}
+
+sync_repo() {
+    local name="$1" url="$2" path="$TARGET_DIR/$1"
+    if [ -d "$path" ]; then
+        echo "[INFO] Updating mirror: $name"
+        git -c gc.autoDetach=false -C "$path" remote update --prune
+    else
+        echo "[INFO] Cloning mirror: $name"
+        git -c gc.autoDetach=false clone --mirror "$url" "$path"
+    fi
+}
+
+mkdir -p "$TARGET_DIR" "$PROM_DIR"
 echo "[INFO] Starting Git repository sync..."
 
-{% for repo in git_backup_repos %}
-REPO_NAME="{{ repo.name }}"
-REPO_URL="{{ repo.url }}"
-REPO_PATH="$TARGET_DIR/$REPO_NAME"
+{
+    echo "# HELP homelab_git_mirror_last_success_timestamp_seconds Unix time of the last successful mirror update"
+    echo "# TYPE homelab_git_mirror_last_success_timestamp_seconds gauge"
+    echo "# HELP homelab_git_mirror_success Whether the last mirror update succeeded (1) or failed (0)"
+    echo "# TYPE homelab_git_mirror_success gauge"
+} > "$PROM_TMP"
 
-if [ -d "$REPO_PATH" ]; then
-    echo "[INFO] Updating mirror: $REPO_NAME"
-    git -c gc.autoDetach=false -C "$REPO_PATH" remote update --prune
+{% for repo in git_backup_repos %}
+if sync_repo "{{ repo.name }}" "{{ repo.url }}"; then
+    ts="$(date +%s)"; ok=1
 else
-    echo "[INFO] Cloning mirror: $REPO_NAME"
-    git -c gc.autoDetach=false clone --mirror "$REPO_URL" "$REPO_PATH"
+    echo >&2 "[ERROR] Mirror failed: {{ repo.name }}"
+    ts="$(previous_success "{{ repo.name }}")"; ok=0; FAILED=1
 fi
+echo "homelab_git_mirror_last_success_timestamp_seconds{repo=\"{{ repo.name }}\"} ${ts}" >> "$PROM_TMP"
+echo "homelab_git_mirror_success{repo=\"{{ repo.name }}\"} ${ok}" >> "$PROM_TMP"
+
 {% endfor %}
+mv -f "$PROM_TMP" "$PROM_FILE"
+chmod 0644 "$PROM_FILE"
 
 echo "[INFO] Git repository sync complete."
+exit "$FAILED"
