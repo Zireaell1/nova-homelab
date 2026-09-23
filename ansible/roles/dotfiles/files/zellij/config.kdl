@@ -1,3 +1,10 @@
 default_layout "default_strider"
 
 scroll_buffer_size 20000
+
+keybinds {
+    shared_except "locked" {
+        unbind "Ctrl q"
+        bind "Ctrl Alt q" { Quit; }
+    }
+}
