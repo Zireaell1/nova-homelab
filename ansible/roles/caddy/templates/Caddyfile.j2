@@ -281,6 +281,7 @@ http:// {
 	import secure_headers
 
 	import authelia_middleware_basic
+	rewrite / /preview.png
 	reverse_proxy {{ hostvars['orion']['ansible_host'] }}:{{ eink_display_preview_port }}
 }
 
