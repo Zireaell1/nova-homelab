@@ -7,6 +7,7 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
+    - "{{ user_bin_path }}"
     - "{{ stacks_path }}/caddy/caddy-build"
     - "{{ caddy_srv_path }}"
 
@@ -36,6 +37,15 @@
     force: "{{ caddy_containerfile is changed }}"
   register: caddy_image_build
 
+- name: Deploy certificate expiry collector
+  ansible.builtin.template:
+    src: caddy-cert-expiry.sh.j2
+    dest: "{{ user_bin_path }}/caddy-cert-expiry.sh"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+    validate: "bash -n %s"
+
 - name: Deploy Caddy
   ansible.builtin.include_role:
     name: podman_service
@@ -54,5 +64,8 @@
         mode: "0600"
         no_log: true
     podman_service_quadlets: ["caddy.container"]
-    podman_service_units: ["caddy.socket"]
+    podman_service_units:
+      - caddy.socket
+      - caddy-cert-expiry.service
+      - caddy-cert-expiry.timer
     podman_service_changed_extra: "{{ (caddy_containerfile is changed) or (caddy_image_build is changed) }}"

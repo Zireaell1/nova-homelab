@@ -1,0 +1,9 @@
+[Unit]
+Description=Export Caddy certificate expiry metrics
+
+RequiresMountsFor={{ stacks_path }}/caddy/data
+
+[Service]
+Type=oneshot
+ExecStart={{ user_bin_path }}/caddy-cert-expiry.sh
+TimeoutStartSec=120

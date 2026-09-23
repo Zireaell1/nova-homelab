@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Reads the certificates Caddy keeps on disk and exports each one's notAfter.
+# Needs no admin API (it stays off); Caddy itself exports no expiry metric.
+
+set -Eeuo pipefail
+shopt -s nullglob
+
+CERT_ROOT="{{ stacks_path }}/caddy/data/caddy/certificates"
+PROM_DIR="{{ textfile_metrics_path }}"
+PROM_FILE="${PROM_DIR}/homelab_certs.prom"
+PROM_TMP="${PROM_DIR}/.homelab_certs.prom.$$"
+
+SUCCESS=1
+COUNT=0
+
+cleanup() {
+    trap - EXIT
+    rm -f "$PROM_TMP"
+}
+trap cleanup EXIT
+
+on_err() {
+    echo >&2 "[ERROR] Unhandled failure at line ${1} (exit ${2})."
+    SUCCESS=0
+}
+trap 'on_err "${LINENO}" "$?"' ERR
+
+emit_certs() {
+    local crt issuer domain end
+    # <root>/<issuer>/<domain>/<domain>.crt
+    for crt in "$CERT_ROOT"/*/*/*.crt; do
+        issuer="$(basename "$(dirname "$(dirname "$crt")")")"
+        domain="$(basename "$crt" .crt)"
+        if ! end="$(openssl x509 -enddate -noout -in "$crt" 2>/dev/null)"; then
+            echo >&2 "[ERROR] Could not parse ${crt}."
+            SUCCESS=0
+            continue
+        fi
+        echo "homelab_cert_not_after_timestamp_seconds{domain=\"${domain}\",issuer=\"${issuer}\"} $(date -d "${end#notAfter=}" +%s)"
+        COUNT=$((COUNT + 1))
+    done
+}
+
+main() {
+    mkdir -p "$PROM_DIR"
+    {
+        echo "# HELP homelab_cert_not_after_timestamp_seconds Unix time at which a stored Caddy certificate expires"
+        echo "# TYPE homelab_cert_not_after_timestamp_seconds gauge"
+        emit_certs
+        if [ "$COUNT" -eq 0 ]; then
+            echo >&2 "[ERROR] No certificates found under ${CERT_ROOT}."
+            SUCCESS=0
+        fi
+        echo "# HELP homelab_cert_collector_success Whether the certificate collector found and parsed every certificate (1) or not (0)"
+        echo "# TYPE homelab_cert_collector_success gauge"
+        echo "homelab_cert_collector_success ${SUCCESS}"
+    } > "$PROM_TMP"
+    mv -f "$PROM_TMP" "$PROM_FILE"
+    chmod 0644 "$PROM_FILE"
+    echo "[INFO] ${COUNT} certificate(s) exported."
+}
+
+main "$@"
