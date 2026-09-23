@@ -11,6 +11,7 @@
       - "{{ stacks_path }}/authelia/pgsecrets"
       - "{{ stacks_path }}/authelia/postgres"
       - "{{ stacks_path }}/authelia/redis"
+      - "{{ stacks_path }}/authelia/redis-conf"
     podman_service_templates:
       - src: configuration.yml.j2
         dest: "{{ stacks_path }}/authelia/config/configuration.yml"
@@ -22,6 +23,11 @@
         dest: "{{ stacks_path }}/authelia/secrets/JWT_SECRET"
       - content: "{{ vault_authelia_redis_password }}"
         dest: "{{ stacks_path }}/authelia/secrets/REDIS_PASSWORD"
+      - content: |
+          requirepass {{ vault_authelia_redis_password | to_json }}
+          save 60 1
+          loglevel warning
+        dest: "{{ stacks_path }}/authelia/redis-conf/redis.conf"
       - content: "{{ vault_authelia_session_secret }}"
         dest: "{{ stacks_path }}/authelia/secrets/SESSION_SECRET"
       - content: "{{ vault_authelia_storage_encryption_key }}"

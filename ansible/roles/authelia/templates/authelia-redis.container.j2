@@ -9,7 +9,7 @@ Image={{ authelia_redis_image }}:{{ authelia_redis_version }}
 ContainerName=authelia-redis
 StopTimeout=20
 
-Exec=redis-server --requirepass {{ vault_authelia_redis_password }} --save 60 1 --loglevel warning
+Exec=redis-server /usr/local/etc/redis/redis.conf
 
 # --- Identity / Namespaces ---
 User=999:999
@@ -24,6 +24,7 @@ Memory={{ authelia_redis_memory_limit }}
 
 # --- Storage ---
 Volume={{ stacks_path }}/authelia/redis:/data:Z
+Volume={{ stacks_path }}/authelia/redis-conf/redis.conf:/usr/local/etc/redis/redis.conf:ro,Z
 
 # --- Networking ---
 Network=authelia-backend.network
