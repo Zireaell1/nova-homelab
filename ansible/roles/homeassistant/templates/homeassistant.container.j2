@@ -33,6 +33,12 @@ AddHost=host.svc.internal:{{ host_svc_address }}
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+HealthCmd=["curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8123/manifest.json"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
 [Service]
 Restart=always
 RestartSec=10
