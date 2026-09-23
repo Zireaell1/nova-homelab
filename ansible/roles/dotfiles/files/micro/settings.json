@@ -1,0 +1,16 @@
+{
+    "clipboard": "terminal",
+    "diffgutter": true,
+    "mkparents": true,
+    "savecursor": true,
+    "saveundo": true,
+    "scrollbar": true,
+    "tabsize": 4,
+    "tabstospaces": true,
+    "ft:yaml": {
+        "tabsize": 2
+    },
+    "ft:makefile": {
+        "tabstospaces": false
+    }
+}
