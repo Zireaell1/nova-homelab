@@ -8,6 +8,8 @@ Image={{ openrgb_local_image }}:latest
 ContainerName=openrgb
 StopTimeout=20
 
+Notify=healthy
+
 # --- Identity / Namespaces ---
 GroupAdd=keep-groups
 UserNS=keep-id:uid=0,gid=0
@@ -28,13 +30,23 @@ Network=openrgb.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+HealthCmd=["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6742"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
+HealthStartupCmd=["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6742"]
+HealthStartupInterval=2s
+HealthStartupTimeout=5s
+HealthStartupSuccess=1
+
 [Service]
 Restart=always
 RestartSec=10
 TimeoutStartSec=900
 TimeoutStopSec=30
 
-ExecStartPost=/bin/sleep 5
 ExecStartPost=/usr/bin/podman exec openrgb /app/openrgb --noautoconnect --nodetect --client 127.0.0.1:6742 -d 0 -z 0 -m Static -c FF0000
 
 [Install]
