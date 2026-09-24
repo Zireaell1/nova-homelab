@@ -11,5 +11,8 @@ Options=isolate=true
 {% endif %}
 {% if item.subnet is defined %}
 Subnet={{ item.subnet }}
+{% endif %}
+{% if item.gateway is defined %}
 Gateway={{ item.gateway }}
 {% endif %}
+NetworkDeleteOnStop=true
