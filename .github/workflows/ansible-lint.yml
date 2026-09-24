@@ -20,6 +20,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      - name: Sync locked environment
+        run: |
+          uv sync --locked
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+
       - name: Mock Vault File
         run: |
           cp examples/vault.yml.example ansible/group_vars/all/vault.yml
@@ -28,9 +36,8 @@ jobs:
         run: ansible-galaxy collection install -r ansible/requirements.yml -p ./.collections --force
 
       - name: Run ansible-lint
-        uses: ansible/ansible-lint@v26
-        with:
-          working_directory: "ansible"
+        working-directory: ansible
+        run: ansible-lint
         env:
           ANSIBLE_CONFIG: "ansible-ci.cfg"
           ANSIBLE_COLLECTIONS_PATH: "${{ github.workspace }}/.collections"
