@@ -14,7 +14,7 @@ ifdef k
 endif
 
 # --- BASE COMMAND ---
-CMD = ansible-playbook $(TAG_FLAG) $(CHECK_FLAG) $(BECOME_FLAG)
+CMD = uv run ansible-playbook $(TAG_FLAG) $(CHECK_FLAG) $(BECOME_FLAG)
 
 # --- PLAYBOOK LISTS ---
 ROOT_PLAYBOOKS := site

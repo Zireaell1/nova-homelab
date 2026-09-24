@@ -1,1 +1,0 @@
-ansible-dev-tools==26.8.0
