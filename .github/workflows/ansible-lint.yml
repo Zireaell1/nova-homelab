@@ -34,7 +34,15 @@ jobs:
           printf 'ci-placeholder' > "$RUNNER_TEMP/vault_pass"
           echo "ANSIBLE_VAULT_PASSWORD_FILE=$RUNNER_TEMP/vault_pass" >> "$GITHUB_ENV"
 
+      - name: Cache collections
+        id: collections-cache
+        uses: actions/cache@v6
+        with:
+          path: .collections
+          key: collections-${{ runner.os }}-${{ hashFiles('ansible/requirements.yml') }}
+
       - name: Build collections
+        if: steps.collections-cache.outputs.cache-hit != 'true'
         working-directory: ansible
         run: ansible-galaxy collection install -r requirements.yml
 
