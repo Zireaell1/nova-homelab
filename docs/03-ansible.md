@@ -7,14 +7,20 @@ Before we run anything, let's look at what is actually in here. The whole repo i
 ### The Directory Structure
 If you look inside the `ansible/` directory, here is how everything is organized:
 
-* **`group_vars/`** - Contains the variables shared across multiple roles.
-  * `all/services.yaml`: Shared configurations specific to the deployed services.
-  * `all/vars.yaml`: General shared variables for the server.
-* **`ansible-ci.cfg`** - The configuration file used by GitHub Actions for automatic Ansible Linting when code is pushed to `main`.
-* **`ansible.cfg`** - The local configuration used when executing Ansible against the server.
-* **`requirements.yml`** - Defines external Ansible Galaxy collections required to make this work. You will likely need to install these locally first.
+* **`group_vars/all/`** - Contains the variables shared across multiple roles.
+  * `vars.yml`: General shared variables (timezone, hostnames, small shared settings).
+  * `paths.yml`: Every directory path the roles use.
+  * `podman.yml`: The Podman networks and rootless settings.
+  * `endpoints.yml`: The registry of services and their subdomains.
+  * `backup.yml`: What gets backed up, and which services are stopped for it.
+* **`host_vars/`** - Facts about one specific machine (disk UUIDs, network interface names, USB device paths).
+* **`ansible.cfg`** - The configuration used when executing Ansible against the server (and by CI).
+* **`Makefile`** - Short commands for running the playbooks (`make nova_services t=grafana`) and the checks.
+* **`requirements.yml`** - Defines external Ansible Galaxy collections required to make this work. `make deps` installs them.
 * **`site.yml`** - The master playbook that executes basically everything.
 * **`playbooks/`** - The directory containing all the individual, split playbooks.
+
+The Python tooling itself (ansible-core, ansible-lint, yamllint) is pinned in `pyproject.toml` / `uv.lock` at the repository root and managed with [uv](https://docs.astral.sh/uv/).
 
 Inside the `roles/` directory, each individual service has its own folder. They generally follow this structure:
 * **`defaults/`**: Variables specific only to that role.
@@ -22,6 +28,9 @@ Inside the `roles/` directory, each individual service has its own folder. They 
 * **`tasks/`**: The main sequence of steps Ansible will execute to deploy the service.
 * **`files/`**: Just static files, nothing more. :)
 * **`templates/`**: Similar to files, but these use Jinja2 templating so Ansible can inject variables into them dynamically.
+* **`meta/`**: Where a role has `argument_specs.yml`, the list of variables it accepts. Ansible checks them before the role runs.
+
+Most container roles do not deploy anything themselves: they hand a short list of directories, templates and quadlets to the shared **`podman_service`** role, which does the deployment and decides when to restart.
 
 ## Ansible Playbooks
 
@@ -41,9 +50,9 @@ Here are the core files inside the `playbooks/` directory:
 * `orion_system.yml` - Needs root (`-K`)
 * `orion_services.yml` - Rootless
 
-There are also currently two additional playbooks used for the maintenance of the main Nova server:
-
-**Work in progress**
+There are also two additional playbooks used for the maintenance of the main Nova server:
+* `nova_update_check.yml` - Lists the available DNF updates without installing anything. Needs root (`-K`)
+* `nova_update.yml` - Installs all updates and reports whether a reboot is needed. Needs root (`-K`)
 
 ## Setting up Ansible Vault (Secrets)
 
@@ -54,20 +63,20 @@ First, we need to handle secrets. Most of these services require passwords, API 
 I have provided an example file at `examples/vault.yml.example`. To create your own encrypted vault, navigate to your `ansible/` directory and run:
 
 ```bash
-ansible-vault create group_vars/all/vault.yml
+uv run ansible-vault create group_vars/all/vault.yml
 ```
 
 It will prompt you to create a vault password. (Remember this password - the file is heavily encrypted and will need to be decrypted during every playbook execution). Once your terminal editor opens, paste the contents of the `.example` file, fill in all of your actual secret values, save, and exit.
 
 > [!TIP]
 > If you ever need to change a password later, you can edit the encrypted file using:
-> `ansible-vault edit group_vars/all/vault.yml`
+> `uv run ansible-vault edit group_vars/all/vault.yml`
 
-**Quality of Life Fix:** Typing the vault password every single time you run a playbook gets annoying fast. You can create a file named `.vault_pass` inside the `ansible/` directory and write your password inside it as plain text. Ansible will read this file automatically. *(Just make absolutely sure this file stays in your `.gitignore`!)*
+**Quality of Life Fix:** Typing the vault password every single time you run a playbook gets annoying fast. You can create a file named `.vault_pass` inside the `ansible/` directory and write your password inside it as plain text. `ansible.cfg` points at this file, so Ansible reads it automatically - and will refuse to start if it is missing. *(It is already in `.gitignore`; make absolutely sure it stays there!)*
 
 ## Setting up the Inventory
 
-The next step is telling Ansible where to find your server. There is an example inventory file located at `examples/inventory.ini`.
+The next step is telling Ansible where to find your server. There is an example inventory file located at `examples/inventory.ini.example`.
 
 Create a new file at `ansible/inventory.ini`, copy the example content, and swap the values:
 
@@ -75,7 +84,7 @@ Create a new file at `ansible/inventory.ini`, copy the example content, and swap
 server_name ansible_host=server_ip ansible_user=server_user
 ```
 
-* **`server_name`**: The friendly name for your server (e.g., `nova` or `orion`).
+* **`server_name`**: The name of your server. It must be `nova` or `orion` - the playbooks target the machines by these names.
 * **`ansible_host`**: The actual IP address of your server.
 * **`ansible_user`**: The username you use to log in (the one we set up SSH keys for).
 
@@ -86,26 +95,28 @@ And that is it! The configuration is officially done.
 To actually deploy the services, navigate to the `ansible/` directory in your terminal and run:
 
 ```bash
-# Example 1: Running a root-level system playbook (requires -K for sudo)
-ansible-playbook playbooks/nova_system.yml -K
+# Example 1: Running a root-level system playbook (the Makefile adds -K for sudo)
+make nova_system
 
 # Example 2: Running a rootless services playbook
-ansible-playbook playbooks/nova_services.yml
+make nova_services
 ```
 
-If you only want to deploy or update a single specific service instead of running the entire playbook, you can use the `--tags` flag. Each role inside the playbooks is assigned a tag (usually matching the service name).
+If you only want to deploy or update a single specific service instead of running the entire playbook, pass tags with `t=`. Each role inside the playbooks is assigned a tag (usually matching the service name).
 
 ```bash
 # Example 3: Updating just Grafana and Prometheus
-ansible-playbook playbooks/nova_services.yml --tags "grafana,prometheus"
+make nova_services t=grafana,prometheus
 ```
+
+`make help` lists every target. Under the hood these are plain `uv run ansible-playbook playbooks/<name>.yml` calls with `--tags`, `--check` and `-K` added as needed.
 
 ### The Test Run (Dry Run)
 
-If you are making changes and want to see what Ansible *would* do without actually breaking anything, you can run the exact same command with the `--check` flag:
+If you are making changes and want to see what Ansible *would* do without actually breaking anything, add `c=1` (Ansible's `--check`):
 
 ```bash
-ansible-playbook playbooks/nova_services.yml --tags "grafana" --check
+make nova_services t=grafana c=1
 ```
 
 This performs a dry run, giving you a report of what would have changed.

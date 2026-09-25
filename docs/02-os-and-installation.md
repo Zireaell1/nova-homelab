@@ -26,6 +26,7 @@ You can configure the installation however you want, but for future reference (a
 - **Mirrors:** Install from the closest mirror
 - **Language/Keyboard:** ENG language with PL + EN keyboard layouts
 - **Networking:** Default settings
+- **Hostname:** `nova-2`
 
 I don't have any screenshots of the installer, so for now, this simple note will have to do! :)
 

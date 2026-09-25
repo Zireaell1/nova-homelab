@@ -29,7 +29,7 @@ To flash the dongle, first find out what your connected coordinator is named in 
 
 ```bash
 # Activate the Ansible-created python venv
-source /path/to/venv/bin/activate
+source ~/tools/universal-silabs-flasher/venv/bin/activate
 
 # Run the flasher tool
 universal-silabs-flasher \

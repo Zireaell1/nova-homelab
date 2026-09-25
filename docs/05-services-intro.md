@@ -1,6 +1,6 @@
 # Services Overview
 
-After building the rack, setting up the OS, and configuring all the Ansible automation, we are finally at the services—the stuff we actually get to use.
+After building the rack, setting up the OS, and configuring all the Ansible automation, we are finally at the services-the stuff we actually get to use.
 
 Let's start with probably the most simple tool here: the dashboard!
 
@@ -16,4 +16,3 @@ I will try to explain these services, how they are grouped, and the headaches of
 
 1. [Security Services](06-security-services.md)
 2. [Smart Home & CCTV Services](07-smart-home-cctv-services.md)
-3. [Observability Services](08-observability-services.md)

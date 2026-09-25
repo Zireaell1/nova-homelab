@@ -74,52 +74,65 @@ Here is a complete list of the services currently managed by Ansible (primarily 
 | **[Peanut](https://github.com/Brandawg93/PeaNUT/)** | Web dashboard acting as a frontend UI for the native NUT service. |
 | **[OpenRGB](https://openrgb.org/)** | Hardware lighting control, built locally via a custom Podman `Containerfile`. |
 
+### Orion (Raspberry Pi)
+| Service | Description |
+| :--- | :--- |
+| **[nova-eink-display](https://github.com/Zireaell1/nova-eink-display)** | E-ink dashboard showing the server's state, running as a rootless systemd user service. |
+| **[Grafana Alloy](https://grafana.com/oss/alloy-opentelemetry-collector/)** | Same host agent as on Nova, pushing Orion's metrics and journal to Prometheus and Loki. |
+
 ## Quick Start
 > [!WARNING]
 > **Use as a reference first!**
 > Remember that some of these Ansible roles are heavily tailored to my specific hardware and network setup. I do not guarantee they will work out-of-the-box on your machines. I highly suggest using this repo as a reference first, or reading the docs for a detailed explanation. However, if you know what you are doing, here is the quick guide.
 
 **Prerequisites:**
-* Ansible installed on your control machine.
+* [uv](https://docs.astral.sh/uv/) on your control machine - it installs the pinned Ansible toolchain from `uv.lock`, so you do not need Ansible installed globally.
 * SSH keys configured and copied to the target server(s).
 
 **1. Clone the repository and install dependencies:**
 ```bash
 git clone https://github.com/Zireaell1/nova-homelab.git
 cd nova-homelab/ansible
-ansible-galaxy collection install -r requirements.yml
+make deps    # creates .venv from uv.lock and installs the Galaxy collections into .collections
 ```
 
 **2. Configuration (Inventory, Variables & Secrets):**
 Before running anything, you need to configure your environment.
-* **Inventory:** Copy examples/inventory.ini to ansible/inventory.ini and update it with your servers' actual IP addresses and SSH usernames.
-* **Variables:** Review the files in group_vars/all/ (like vars.yml or services.yml) and change any personal variables.
-* **Secrets:** Copy examples/vault.yml.example to ansible/group_vars/all/vault.yml. Fill in your specific passwords and API keys, then encrypt the file using:
-  ```bash
-  ansible-vault encrypt group_vars/all/vault.yml
-  ```
+* **Inventory:** Copy `examples/inventory.ini.example` to `ansible/inventory.ini` and update it with your servers' actual IP addresses and SSH usernames. The host names must be `nova` and `orion` - the playbooks target them by name.
+* **Variables:** Review the files in `group_vars/all/` (`vars.yml`, `paths.yml`, `podman.yml`, `endpoints.yml`, `backup.yml`) and the per-machine facts in `host_vars/`, and change any personal variables.
+* **Secrets:** Copy `examples/vault.yml.example` to `ansible/group_vars/all/vault.yml`. Fill in your specific passwords and API keys, then encrypt the file using:
+```bash
+uv run ansible-vault encrypt group_vars/all/vault.yml
+```
+* **Vault password:** Write your vault password into `ansible/.vault_pass` (it is gitignored). `ansible.cfg` points at this file, so Ansible will not start without it.
 
 **3. The Playbooks:**
 The deployment is explicitly split to safely separate root-level host configurations from rootless container deployments across both of my physical machines (Nova and Orion).
-* nova_system.yml — Base system setup for the main server. Requires root access (needs the -K flag).
-* nova_services.yml — Rootless Podman deployment for all of the main server's services.
-* orion_system.yml — Base system setup for the Raspberry Pi e-ink display. Requires root access (needs the -K flag).
-* orion_services.yml — Rootless deployment for the e-ink display services.
+* `playbooks/nova_system.yml` - Base system setup for the main server. Requires root access (`-K`).
+* `playbooks/nova_services.yml` - Rootless Podman deployment for all of the main server's services.
+* `playbooks/orion_system.yml` - Base system setup for the Raspberry Pi e-ink display. Requires root access (`-K`).
+* `playbooks/orion_services.yml` - Rootless deployment for the e-ink display services.
 
 **4. Execution:**
-I strongly suggest looking inside these playbooks first. You can execute them with the --tags parameter if you only want to deploy or update specific parts of the stack. *(Note: You must include --ask-vault-pass so Ansible can decrypt your secrets!)*
+I strongly suggest looking inside these playbooks first. From the `ansible/` directory, the `Makefile` wraps them (and adds `-K` for the system playbooks automatically). Use `t=` to deploy only specific parts of the stack and `c=1` for a dry run:
 ```bash
-# Example 1: Running a system-level playbook (prompts for sudo and vault passwords)
-ansible-playbook nova_system.yml -K --ask-vault-pass
+# Example 1: Running a system-level playbook (prompts for the sudo password)
+make nova_system
 
-# Example 2: Deploying specific rootless services (prompts for vault password)
-ansible-playbook nova_services.yml --tags "grafana,prometheus" --ask-vault-pass
+# Example 2: Deploying specific rootless services
+make nova_services t=grafana,prometheus
+
+# Example 3: Dry run
+make nova_services t=grafana c=1
 ```
+`make help` lists everything. The raw equivalent is `uv run ansible-playbook playbooks/nova_services.yml --tags grafana`.
 
 ## Repository Structure
-Currently, the repository is split into two main areas:
+Currently, the repository is split into these areas:
 * **`ansible/`** - The actual playbooks, inventory, and roles.
 * **`docs/`** - The documentation. This is where I explain the services, the problems I faced, and the different choices I made.
+* **`examples/`** - Templates for the inventory and the vault.
+* **`scripts/ci/`** - The repository's own structural checks, run by CI and locally with `make check`.
 
 ## Docs
 If you want to see exactly how this was built, check out the docs:

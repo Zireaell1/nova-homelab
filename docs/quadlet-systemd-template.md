@@ -8,7 +8,7 @@ RequiresMountsFor=
 # --- Image / Exec ---
 Image=
 ContainerName=
-StopTimeout=120
+StopTimeout=20
 
 # --- Identity / Namespaces ---
 UserNS=
@@ -31,11 +31,20 @@ Network=
 # --- Configuration / Env ---
 Timezone=
 
+EnvironmentFile=
+
+# --- Healthcheck ---
+HealthCmd=
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
 [Service]
 Restart=always
 RestartSec=10
 TimeoutStartSec=900
-TimeoutStopSec=130
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target
