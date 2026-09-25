@@ -1,7 +1,7 @@
 ---
 eink_display_repo: "https://github.com/Zireaell1/nova-eink-display.git"
 
-# renovate: datasource=pypi depName=uv
+# renovate: datasource=pypi depName=eink-display-uv packageName=uv
 eink_display_uv_version: "0.12.16"
 
 eink_display_path: "{{ user_home }}/eink-display"
