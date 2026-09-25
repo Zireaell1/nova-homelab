@@ -75,7 +75,7 @@
 - name: Keep NetworkManager retrying wifi and disable wifi power saving
   ansible.builtin.copy:
     src: 90-nova-wifi.conf
-    dest: /etc/NetworkManager/conf.d/90-nova-wifi.conf
+    dest: /etc/NetworkManager/conf.d/90-orion-wifi.conf
     owner: root
     group: root
     mode: "0644"
