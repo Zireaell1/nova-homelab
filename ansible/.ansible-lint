@@ -1,2 +1,5 @@
 ---
 profile: production
+
+exclude_paths:
+  - group_vars/all/vault.yml
