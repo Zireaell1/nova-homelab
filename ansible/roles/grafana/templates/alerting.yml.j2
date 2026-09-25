@@ -540,7 +540,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: time() - eink_last_tick_timestamp_seconds > 400
+                expr: time() - eink_last_tick_timestamp_seconds > {{ eink_display_fetch_interval * 3 + 40 }}
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -602,7 +602,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: increase(eink_tick_failures_total[15m]) > 3
+                expr: increase(eink_tick_failures_total[15m]) > {{ (900 // eink_display_fetch_interval * 0.4) | round | int }}
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -1270,7 +1270,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: sum by (reason) (increase(eink_fetch_errors_total[15m])) > 5
+                expr: sum by (reason) (increase(eink_fetch_errors_total[15m])) > {{ (900 // eink_display_fetch_interval * 2 / 3) | round | int }}
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -1376,7 +1376,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The e-ink panel is refreshing about {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} times a day (normal is about 650)."
+            summary: "The e-ink panel is refreshing about {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} times a day (normal is about {{ (78000 / eink_display_fetch_interval) | int }})."
             impact: "The panel will wear out years early."
             action: "On the e-ink dashboard: look for a flapping tile, or night mode not engaging"
           notification_settings:

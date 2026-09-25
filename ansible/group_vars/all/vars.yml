@@ -5,4 +5,6 @@ host_svc_address: "10.42.42.1"
 
 eink_display_preview_port: 9111
 
+eink_display_fetch_interval: 60
+
 nova_hostname: "nova-2"
