@@ -16,3 +16,9 @@
       Neither a new SSH session nor 'meta: reset_connection' refreshes it once lingering
       is enabled. Please reboot the Pi manually ('sudo reboot') and re-run this playbook.
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Reload NetworkManager
+  ansible.builtin.systemd:
+    name: NetworkManager.service
+    state: reloaded
+  ignore_errors: "{{ ansible_check_mode }}"

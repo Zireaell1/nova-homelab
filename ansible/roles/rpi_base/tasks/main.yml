@@ -72,5 +72,14 @@
     state: present
   notify: Abort playbook if SPI was just enabled (manual reboot required)
 
+- name: Keep NetworkManager retrying wifi and disable wifi power saving
+  ansible.builtin.copy:
+    src: 90-nova-wifi.conf
+    dest: /etc/NetworkManager/conf.d/90-nova-wifi.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload NetworkManager
+
 - name: Flush rpi_base handlers
   ansible.builtin.meta: flush_handlers
