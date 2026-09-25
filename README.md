@@ -7,7 +7,7 @@
 
 [![License: AGPL-3.0](https://img.shields.io/github/license/Zireaell1/nova-homelab?color=blue&label=License)](https://github.com/Zireaell1/nova-homelab/blob/main/LICENSE)
 [![Last Commit](https://img.shields.io/github/last-commit/Zireaell1/nova-homelab?label=Last%20Commit)](https://github.com/Zireaell1/nova-homelab/commits/main/)
-[![CI](https://img.shields.io/github/actions/workflow/status/Zireaell1/nova-homelab/ansible-lint.yml?branch=main&label=Ansible%20Lint)](https://github.com/Zireaell1/nova-homelab/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/Zireaell1/nova-homelab/ci.yml?branch=main&label=CI)](https://github.com/Zireaell1/nova-homelab/actions)
 
 <p align="center">
   <img src="docs/assets/nova-rack.jpg" width="350" alt="Nova Server Rack">
