@@ -45,7 +45,9 @@
 		"[github-actions-workflow]": {
 			"editor.insertSpaces": true,
 			"editor.tabSize": 2,
+			"editor.detectIndentation": false,
 			"editor.autoIndent": "keep",
+			"editor.defaultFormatter": "redhat.vscode-yaml",
 			"diffEditor.ignoreTrimWhitespace": false,
 			"editor.defaultColorDecorators": "never",
 			"editor.quickSuggestions": {
