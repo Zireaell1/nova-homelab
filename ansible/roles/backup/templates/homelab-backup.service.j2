@@ -4,6 +4,9 @@ Description=Restic & Rclone Homelab Backup
 RequiresMountsFor={{ backup_mount }}
 ConditionPathIsMountPoint={{ backup_mount }}
 
+Wants=podman-user-wait-network-online.service
+After=podman-user-wait-network-online.service
+
 [Service]
 Type=oneshot
 
