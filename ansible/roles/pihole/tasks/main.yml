@@ -7,6 +7,7 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
+    - "{{ quadlet_path }}"
     - "{{ stacks_path }}/pihole"
 
 - name: Check if data directories exist
