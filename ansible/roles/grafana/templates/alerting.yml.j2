@@ -30,7 +30,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Container {{ '{{' }} $labels.name {{ '}}' }} exited with code {{ '{{' }} $values.A {{ '}}' }}."
+            summary: "Container {{ '{{' }} $labels.name {{ '}}' }} exited with code {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }}."
+            impact: "The service is down; systemd restarts it after 10s, so a repeat of this alert means a crash loop."
+            action: "`podman logs --tail 50 <container>` · `systemctl --user status <container>`"
           notification_settings:
             receiver: Discord
 
@@ -59,7 +61,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Container {{ '{{' }} $labels.name {{ '}}' }} has been failing its healthcheck for 5 minutes."
+            summary: "Container {{ '{{' }} $labels.name {{ '}}' }} has failed its healthcheck for 5 minutes."
+            impact: "The process is running but not answering, so the service is effectively down."
+            action: "`podman healthcheck run <container>` · `podman logs --tail 50 <container>`"
           notification_settings:
             receiver: Discord
 
@@ -88,8 +92,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Mains lost -- input {{ '{{' }} $values.A {{ '}}' }}V, under 80% of the UPS's nominal. Running on battery."
-            description: "Self-calibrating against ups_output_voltage_nominal, so it needs no hardcoded mains voltage."
+            summary: "Power cut: the UPS is on battery (input {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} V)."
+            impact: "Nova is running on battery; it shuts down automatically when the UPS reports low battery."
+            action: "Check the mains and the breaker · remaining runtime is on the UPS dashboard"
           notification_settings:
             receiver: Discord
 
@@ -117,7 +122,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Battery at {{ '{{' }} $values.A {{ '}}' }}% -- past the UPS's own low-battery threshold. Shutdown is imminent."
+            summary: "UPS battery at {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }}%, below its low threshold. Shutdown is imminent."
+            impact: "NUT is about to shut Nova down; anything not yet stopped stops uncleanly."
+            action: "Nothing to fix remotely. After power returns: `systemctl --user list-units --state=failed`"
           notification_settings:
             receiver: Discord
 
@@ -145,7 +152,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Only {{ '{{' }} $values.A {{ '}}' }}s of runtime left on battery."
+            summary: "UPS has {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} of battery left."
+            impact: "Shutdown follows when the battery reaches the UPS's low threshold."
+            action: "If mains is not coming back, shut down cleanly now: `sudo systemctl poweroff`"
           notification_settings:
             receiver: Discord
 
@@ -174,8 +183,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Prometheus cannot scrape {{ '{{' }} $labels.job {{ '}}' }} at {{ '{{' }} $labels.instance {{ '}}' }}."
-            description: "Covers every exporter at once, including the monitoring stack itself."
+            summary: "Prometheus cannot reach {{ '{{' }} $labels.job {{ '}}' }} ({{ '{{' }} $labels.instance {{ '}}' }}) for 10 minutes."
+            impact: "No metrics from it, so every alert that depends on it is blind too."
+            action: "Prometheus → Status → Targets shows the error · `podman ps -a` for the container behind it"
           notification_settings:
             receiver: Discord
 
@@ -204,7 +214,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Caddy marked upstream {{ '{{' }} $labels.upstream {{ '}}' }} unhealthy."
+            summary: "Caddy cannot reach {{ '{{' }} $labels.upstream {{ '}}' }} for 5 minutes."
+            impact: "The site behind it returns 502 Bad Gateway."
+            action: "`podman ps -a` for the container behind it · `podman logs --tail 50 caddy`"
           notification_settings:
             receiver: Discord
 
@@ -232,7 +244,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Caddy is serving the previous config -- the last load attempt failed."
+            summary: "Caddy rejected its new config and is still serving the previous one."
+            impact: "Sites keep working, but the last Caddyfile change is not live."
+            action: "`podman exec caddy caddy validate --config /etc/caddy/Caddyfile` · `podman logs caddy 2>&1 | grep -i error`"
           notification_settings:
             receiver: Discord
 
@@ -261,8 +275,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Camera {{ '{{' }} $labels.camera_name {{ '}}' }} is producing no frames."
-            description: "Frigate keeps running with a dead camera, so nothing else reports this."
+            summary: "Camera {{ '{{' }} $labels.camera_name {{ '}}' }} has sent no frames for 5 minutes."
+            impact: "No recording and no detection for that camera."
+            action: "Check the camera's power and network (`ping` it) · Frigate → System · `podman logs --tail 50 frigate`"
           notification_settings:
             receiver: Discord
 
@@ -291,8 +306,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "The e-ink panel could not be initialised -- frames are being written to a PNG, not to the glass."
-            description: "EPDDisplay() raised at start-up and the app fell back to SimulatedDisplay, which it does deliberately so a loose ribbon cable cannot take the service down. Every other eink metric keeps counting as though the panel were real, so without this alert the dashboard looks healthy. Check the HAT seating and `journalctl -t eink-display` for the traceback. eink_simulated alone is not enough to alert on: it is also 1 when SIMULATE=true, which is the normal state on a laptop."
+            summary: "The e-ink panel failed to start; the app is drawing to a PNG instead of the screen."
+            impact: "The screen is frozen on its last image while everything else reports healthy."
+            action: "Reseat the HAT ribbon cable · traceback on Orion: `journalctl --user -t eink-display -b`"
           notification_settings:
             receiver: Discord
 
@@ -326,8 +342,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Host unit {{ '{{' }} $labels.name {{ '}}' }} is in the failed state."
-            description: "The only coverage for native daemons -- nut, tailscaled, fail2ban, alloy, smartd -- which podman metrics cannot see."
+            summary: "Unit {{ '{{' }} $labels.name {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} has failed."
+            impact: "That service is stopped until something restarts it."
+            action: "`systemctl status <unit>` · `journalctl -u <unit> -b -n 50` · after fixing: `systemctl reset-failed <unit>`"
           notification_settings:
             receiver: Discord
 
@@ -355,8 +372,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} reports its overall SMART self-assessment as failed."
-            description: "A lagging indicator by design: the drive only says this once a threshold is crossed. smart_sectors_degrading is the leading one."
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} reports its SMART health as FAILED."
+            impact: "The drive expects to fail soon; data on it is at risk."
+            action: "Make sure the last backup succeeded · `sudo smartctl -a <disk>` · replace the disk"
           notification_settings:
             receiver: Discord
 
@@ -371,7 +389,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: '{__name__=~"smartmon_(reallocated_sector_ct|current_pending_sector|offline_uncorrectable|media_errors)_raw_value"} > 0'
+                expr: 'label_replace({__name__=~"smartmon_(reallocated_sector_ct|current_pending_sector|offline_uncorrectable|media_errors)_raw_value"}, "attribute", "$1", "__name__", "smartmon_(.+)_raw_value") > 0'
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -384,8 +402,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }}: {{ '{{' }} $labels.__name__ {{ '}}' }} is {{ '{{' }} $values.A {{ '}}' }}."
-            description: "Any non-zero value here is the earliest warning of a failing disk, well before the health assessment flips."
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }}: {{ '{{' }} $labels.attribute {{ '}}' }} is {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }}."
+            impact: "An early sign of a failing disk. A stable small number is survivable; a rising one means replace it."
+            action: "Watch the trend on the SMART dashboard · `sudo smartctl -A <disk>` · keep backups current"
           notification_settings:
             receiver: Discord
 
@@ -413,8 +432,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Failed authentications running at {{ '{{' }} $values.A {{ '}}' }}/s over 5 minutes."
-            description: "With Home Assistant, Vaultwarden and mainsail all on bypass, Authelia's own metrics are where a credential attack shows first."
+            summary: "Failed logins at {{ '{{' }} printf `%.2f` $values.A.Value {{ '}}' }}/s over the last 5 minutes."
+            impact: "Someone is guessing passwords, or a device keeps retrying an old one."
+            action: "Source IP and user: `podman logs --since 15m authelia 2>&1 | grep -i unsuccessful`"
           notification_settings:
             receiver: Discord
 
@@ -443,8 +463,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "tailscaled is reporting {{ '{{' }} $values.A {{ '}}' }} health message(s)."
-            description: "Run `tailscale status` for the text; this only exposes the count."
+            summary: "Tailscale has reported {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} health warning(s) for 15 minutes."
+            impact: "Remote access over Tailscale may be degraded or down."
+            action: "`tailscale status` (warnings are listed at the end) · `tailscale netcheck`"
           notification_settings:
             receiver: Discord
 
@@ -472,8 +493,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "{{ '{{' }} $labels.rule_group {{ '}}' }} failed to evaluate."
-            description: "Meta-alert: a rule that cannot evaluate silently stops alerting. This is the one that tells you the alerting itself broke."
+            summary: "Prometheus rule group {{ '{{' }} $labels.rule_group {{ '}}' }} failed to evaluate."
+            impact: "Rules in that group stop producing results; anything built on them goes silent."
+            action: "Prometheus → Status → Rules shows the error · `podman logs --tail 50 prometheus`"
           notification_settings:
             receiver: Discord
 
@@ -501,8 +523,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "{{ '{{' }} $values.A {{ '}}' }} kernel I/O or filesystem error line(s) in the journal -- a disk is failing or a filesystem is damaged."
-            description: "Counted by the Alloy log pipeline from kernel journal lines (Buffer I/O error, blk_update_request, EXT4-fs error, XFS corruption/metadata errors, failed FPDMA commands). This catches a disk going bad hours before smart_sectors_degrading does, and it is the only signal here that sees filesystem corruption at all. The counter is dropped 24h after the last error (max_idle_duration), so the alert self-resolves; an Alloy restart also clears it."
+            summary: "{{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} kernel disk or filesystem error(s) in the journal."
+            impact: "A disk is failing or a filesystem is damaged; data corruption is possible."
+            action: "Find the device: `sudo journalctl -k -p err -b | tail -50` · `sudo smartctl -a /dev/<dev>` · confirm the last backup"
           notification_settings:
             receiver: Discord
 
@@ -531,8 +554,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "The e-ink fetch loop has not completed a tick in {{ '{{' }} $values.A {{ '}}' }} seconds."
-            description: "Threshold is 3x FETCH_INTERVAL (120s). This is the process being alive but wedged -- the scrape still succeeds, so `scrape_target_down` cannot see it. It deliberately watches last_tick and not last_render: record_tick() runs on every path including the night-mode early return, whereas last_render stops advancing from 23:00 to 06:00 and would make this fire every night."
+            summary: "The e-ink display has not updated for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            impact: "The screen is frozen on its last image; the app is running but stuck."
+            action: "on Orion: `systemctl --user restart eink-display` · `journalctl --user -t eink-display -n 50`"
           notification_settings:
             receiver: Discord
 
@@ -561,8 +585,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "No metrics are arriving from the e-ink display at all."
-            description: "The series has disappeared rather than gone stale, which means either the whole Orion pipeline is down or Alloy on Orion has stopped. Alloy generates the eink `up` series itself and remote-writes it, so when Alloy dies the `up` series never arrives and `scrape_target_down` cannot fire -- the same hole `alloy_not_reporting` describes, which deliberately covers nova only. This is the Orion half of it."
+            summary: "No metrics from the e-ink display for 10 minutes."
+            impact: "Either the display app is down or Orion is not sending anything."
+            action: "on Orion: `systemctl --user status eink-display` · if Orion is unreachable, check its power and wifi"
           notification_settings:
             receiver: Discord
 
@@ -590,8 +615,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $values.A {{ '}}' }} e-ink ticks have raised in the last 15 minutes."
-            description: "Individual ticks are caught and retried; five consecutive failures re-raise and let systemd restart the unit. Seeing this without a matching eink_restart_loop means failures are intermittent -- usually Prometheus timing out rather than the panel."
+            summary: "{{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} e-ink updates failed in the last 15 minutes."
+            impact: "The screen skips updates; usually Prometheus was slow or unreachable."
+            action: "on Orion: `journalctl --user -t eink-display -n 50`"
           notification_settings:
             receiver: Discord
 
@@ -619,8 +645,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The e-ink service has started {{ '{{' }} $values.A {{ '}}' }} times in the last hour."
-            description: "Restarts are not free: each one costs the panel a full Clear() plus an unconditional full first render, and the panel is rated for roughly 1M refreshes. A steady trickle usually means an Ansible task is notifying the handler on every run rather than a crash; `systemctl --user status eink-display` distinguishes the two."
+            summary: "The e-ink service restarted {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} times in the last hour."
+            impact: "Every restart forces a full panel refresh, which wears the panel."
+            action: "on Orion: `systemctl --user status eink-display` — an exit code means a crash, a clean stop means something keeps restarting it"
           notification_settings:
             receiver: Discord
 
@@ -653,8 +680,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "No backup has completed in over 30 hours."
-            description: "Check `systemctl --user status homelab-backup.timer` and whether {{ backup_mount }} is mounted -- ConditionPathIsMountPoint makes an unmounted disk a successful skip, which produces no metrics at all."
+            summary: "No backup has completed for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            impact: "Anything changed since the last backup exists only on the live disks."
+            action: "`systemctl --user list-timers homelab-backup.timer` · `findmnt {{ backup_mount }}` · `journalctl --user -u homelab-backup.service -n 50`"
           notification_settings:
             receiver: Discord
 
@@ -682,8 +710,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "homelab_backup_last_run_timestamp_seconds has disappeared entirely."
-            description: "The textfile collector keeps serving the last .prom file, so this means node_exporter lost {{ textfile_metrics_path }} or stopped -- not that a backup was skipped. A skipped run shows up as `backup_has_not_run` instead."
+            summary: "Backup metrics have disappeared."
+            impact: "Every backup alert is blind: a failed backup would go unnoticed."
+            action: "`ls -l {{ textfile_metrics_path }}` · `systemctl status alloy`"
           notification_settings:
             receiver: Discord
 
@@ -711,8 +740,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "{{ '{{' }} $values.A {{ '}}' }} service(s) stopped for the snapshot did not come back up."
-            description: "The backup run caused an outage. Check `systemctl --user list-units --state=failed` and the journal for homelab-backup.service."
+            summary: "{{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} service(s) stopped for the backup did not come back."
+            impact: "Those services are down right now."
+            action: "`systemctl --user list-units --state=failed` · then `systemctl --user start <unit>`"
           notification_settings:
             receiver: Discord
 
@@ -740,7 +770,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "The nightly restic backup to {{ local_backup_path }} failed."
+            summary: "Last night's backup to {{ local_backup_path }} failed."
+            impact: "No new restore point, locally or in B2."
+            action: "`journalctl --user -u homelab-backup.service -n 100`"
           notification_settings:
             receiver: Discord
 
@@ -768,7 +800,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "The rclone sync to B2 failed -- the offsite copy is not current."
+            summary: "Offsite sync to B2 failed."
+            impact: "The local backup is fine; the offsite copy is out of date."
+            action: "`journalctl --user -u homelab-backup.service -n 100 | grep -i rclone` · usually network, B2 credentials or quota"
           notification_settings:
             receiver: Discord
 
@@ -796,8 +830,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Could not restore the canary from B2, or it was older than the {{ backup_canary_max_age }}s limit."
-            description: "This is the only end-to-end proof the offsite copy is restorable. Device repos are not covered -- rest-server holds those encrypted under each client's own password."
+            summary: "Test restore from B2 failed: the canary file was missing or stale."
+            impact: "The offsite copy may not be restorable."
+            action: "`journalctl --user -u homelab-verify-backup.service -n 50`"
           notification_settings:
             receiver: Discord
 
@@ -825,7 +860,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The canary in B2 is over 24h old -- the offsite copy is falling behind."
+            summary: "The offsite copy is {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} behind."
+            impact: "A restore from B2 would lose that much data."
+            action: "Usually `backup_cloud_sync_failed` or `backup_quota_exceeded` is firing too; fix that one"
           notification_settings:
             receiver: Discord
 
@@ -853,7 +890,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Projected cloud size exceeded backup_b2_quota_bytes -- the sync was skipped."
+            summary: "Offsite sync skipped: the backup would exceed the B2 quota."
+            impact: "B2 gets no new data until space is freed or the quota is raised."
+            action: "Find what grew: `restic stats` on {{ local_backup_path }} · prune, or raise `backup_b2_quota_bytes`"
           notification_settings:
             receiver: Discord
 
@@ -881,7 +920,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "B2 bucket is over 85% of the configured quota."
+            summary: "The B2 bucket is at {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} of its quota."
+            impact: "Offsite sync stops once it reaches 100%."
+            action: "Prune older snapshots or raise `backup_b2_quota_bytes` before it fills"
           notification_settings:
             receiver: Discord
 
@@ -909,7 +950,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "restic forget --prune failed -- retention is drifting and the repo will keep growing."
+            summary: "Backup retention cleanup failed."
+            impact: "Old snapshots are not being removed, so the repository keeps growing."
+            action: "`journalctl --user -u homelab-backup.service -n 100 | grep -A5 forget` · often a stale lock: `restic unlock`"
           notification_settings:
             receiver: Discord
 
@@ -937,7 +980,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $values.A {{ '}}' }} device repo dir(s) are in neither the cloud nor local tier, so they sync nowhere."
+            summary: "{{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} device backup folder(s) are in neither the cloud nor the local tier."
+            impact: "Those devices' backups are never copied offsite."
+            action: "Move the folder under `<user>/cloud/` or `<user>/local/` in the rest-server root"
           notification_settings:
             receiver: Discord
 
@@ -965,7 +1010,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Last backup took {{ '{{' }} $values.A {{ '}}' }}s, against the 1h TimeoutStartSec on homelab-backup.service."
+            summary: "The last backup took {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}, close to its 1h limit."
+            impact: "A little more data and the backup will be killed mid-run."
+            action: "Stage timings: `journalctl --user -u homelab-backup.service` · trim `backup_targets` or raise TimeoutStartSec"
           notification_settings:
             receiver: Discord
 
@@ -994,8 +1041,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.mountpoint {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} is trending to full within 6 hours."
-            description: "The <20% guard stops a 6h dip on a mostly-empty filesystem from firing."
+            summary: "{{ '{{' }} $labels.mountpoint {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} will be full within 6 hours at the current rate."
+            impact: "Writes will start failing, and services on that disk with them."
+            action: "`sudo du -xh --max-depth=2 <mountpoint> 2>/dev/null | sort -h | tail`"
           notification_settings:
             receiver: Discord
 
@@ -1024,7 +1072,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "{{ '{{' }} $labels.mountpoint {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} is under 5% free."
+            summary: "{{ '{{' }} $labels.mountpoint {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} has only {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} free."
+            impact: "Writes will start failing, and services on that disk with them."
+            action: "`sudo du -xh --max-depth=2 <mountpoint> 2>/dev/null | sort -h | tail`"
           notification_settings:
             receiver: Discord
 
@@ -1052,8 +1102,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.user {{ '}}' }}/{{ '{{' }} $labels.tier {{ '}}' }}/{{ '{{' }} $labels.device {{ '}}' }} has not backed up in over 3 days."
-            description: "72h rather than 30h: these are client machines that get switched off for a weekend. Freshness is all that is observable server-side -- rest-server holds each repo encrypted under the client's own password."
+            summary: "{{ '{{' }} $labels.device {{ '}}' }} ({{ '{{' }} $labels.user {{ '}}' }}, {{ '{{' }} $labels.tier {{ '}}' }}) has not backed up for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            impact: "That device has no recent restore point."
+            action: "Check the device is switched on and its scheduled backup ran (log on the device)"
           notification_settings:
             receiver: Discord
 
@@ -1081,8 +1132,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The device freshness collector could not read the restic repository root."
-            description: "Usually means /mnt/backup is not mounted. noDataState stays OK because backup_metrics_absent owns the case where the textfile stops being written at all."
+            summary: "Device backup freshness could not be read."
+            impact: "`device_backup_stale` is blind."
+            action: "`findmnt {{ backup_mount }}` · `journalctl --user -u device-backup-freshness.service -n 20`"
           notification_settings:
             receiver: Discord
 
@@ -1110,8 +1162,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Alloy on nova has stopped reporting -- every host metric, both backup collectors and the textfile metrics are now blind."
-            description: "Alloy generates its own `up` series, so a dead Alloy makes them go stale rather than drop to 0 and `scrape_target_down` cannot fire for it. This watches for the series disappearing instead. Orion has its own rule, alloy_not_reporting_orion. The instance matcher renders from `host_svc_address`, the same variable the Alloy config uses, so the two cannot drift apart."
+            summary: "Alloy on Nova has stopped sending metrics."
+            impact: "Host, backup, update and SMART metrics are all blind; most other alerts cannot fire."
+            action: "`systemctl status alloy` · `journalctl -u alloy -n 50`"
           notification_settings:
             receiver: Discord
 
@@ -1140,8 +1193,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Alloy on orion has stopped reporting -- the e-ink host's metrics and logs are blind."
-            description: "Same mechanism as alloy_not_reporting, but warning rather than critical and with 10m of grace: Orion is on wifi and pushes over remote_write, so a short association drop is expected. The instance label is set explicitly in config_orion.alloy.j2 from inventory_hostname, so it cannot collide with nova's."
+            summary: "Alloy on Orion has stopped sending metrics for 10 minutes."
+            impact: "Orion's metrics and logs are blind."
+            action: "Is Orion reachable? `ssh orion systemctl status alloy`"
           notification_settings:
             receiver: Discord
 
@@ -1169,8 +1223,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "setroubleshootd reported {{ '{{' }} $values.A {{ '}}' }} SELinux denial(s)."
-            description: "SELinux is Enforcing, so a denial means something was actually blocked -- most often a container path that was never labelled container_file_t, or a new service. Check `ausearch -m AVC -ts recent` and `sealert -a /var/log/audit/audit.log`. Value is denials since the counter appeared; it vanishes 24h after the last one. Raise the threshold if deploys make this chatty."
+            summary: "SELinux blocked {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} action(s)."
+            impact: "Something, usually a container, was denied access and may be failing."
+            action: "`sudo ausearch -m AVC -ts recent` · `sudo sealert -a /var/log/audit/audit.log`"
           notification_settings:
             receiver: Discord
 
@@ -1198,8 +1253,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Zigbee2MQTT has logged {{ '{{' }} $values.A {{ '}}' }} adapter or coordinator errors."
-            description: "Threshold is 2 rather than 0 because Restart=always makes a single transient adapter error self-healing -- three or more means the coordinator is genuinely unhappy or the USB device has dropped. Partly covers the gap left by zigbee2mqtt having no container healthcheck yet (Q-03)."
+            summary: "Zigbee2MQTT logged {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} adapter errors."
+            impact: "Zigbee devices may not respond."
+            action: "`podman logs --tail 50 zigbee2mqtt` · is the dongle still there? `ls /dev/serial/by-id/`"
           notification_settings:
             receiver: Discord
 
@@ -1227,8 +1283,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The display's Prometheus query failed {{ '{{' }} $values.A {{ '}}' }} times in 15 minutes ({{ '{{' }} $labels.reason {{ '}}' }})."
-            description: "The display makes one OR-joined query per tick through Caddy and Authelia. `Prometheus Unreachable` is the network or the auth path, `Query Error` means Prometheus rejected the PromQL, `Parse Error` means the response was not JSON. The screen shows API ERR while this is happening."
+            summary: "The e-ink display failed to fetch data {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} times in 15 minutes ({{ '{{' }} $labels.reason {{ '}}' }})."
+            impact: "The screen shows API ERR."
+            action: "Unreachable = network or Authelia · Query Error = bad PromQL · Parse Error = non-JSON reply. on Orion: `journalctl --user -t eink-display -n 50`"
           notification_settings:
             receiver: Discord
 
@@ -1257,8 +1314,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $values.A {{ '}}' }} of the display's queries have been returning no data for 30 minutes."
-            description: "The query succeeded but some series came back empty, so those tiles render as `--` rather than blanking the screen. A value that appears and never clears usually means a query no longer matches -- most often the hardcoded INSTANCE label in the display's config drifting from the node_exporter instance label."
+            summary: "{{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} e-ink tile(s) have had no data for 30 minutes."
+            impact: "Those tiles show `--`."
+            action: "Check that a query still matches its series, first of all `INSTANCE` in eink-display.env against Nova's `instance` label"
           notification_settings:
             receiver: Discord
 
@@ -1287,8 +1345,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The e-ink display's lifetime refresh counters are resetting on every restart."
-            description: "STATE_DIRECTORY is not reaching the process, so wear.json is never written and the panel-life figures on the dashboard are since-boot rather than lifetime. Check that StateDirectory=eink-display is still in the unit -- this alert exists because that line lives in a different repository from the code that needs it."
+            summary: "The e-ink wear counters are not being saved."
+            impact: "Panel lifetime figures reset on every restart."
+            action: "on Orion: `systemctl --user cat eink-display | grep StateDirectory`"
           notification_settings:
             receiver: Discord
 
@@ -1317,8 +1376,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The panel is refreshing about {{ '{{' }} $values.A {{ '}}' }} times a day."
-            description: "Steady state is roughly 650/day: one render per 120s tick, minus the 23:00-06:00 sleep, plus the occasional blink. Crossing 5000 means a wear rule stopped working -- alert flapping defeating the edge-trigger, MAX_PARTIAL_REFRESHES being ignored, or night mode not engaging. The 1M lifetime total is a five-year problem; this is the same fault visible today."
+            summary: "The e-ink panel is refreshing about {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} times a day (normal is about 650)."
+            impact: "The panel will wear out years early."
+            action: "On the e-ink dashboard: look for a flapping tile, or night mode not engaging"
           notification_settings:
             receiver: Discord
 
@@ -1346,8 +1406,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has {{ '{{' }} $values.A {{ '}}' }} package(s) with a security update waiting."
-            description: "Counted from the distribution's own security metadata -- apt origins containing `security` on Debian, `--security` advisories on Fedora -- not a hand-maintained package list, which goes stale silently. There is deliberately no alert on the total update count: forty pending means a week on Fedora and months on Debian stable, so one threshold cannot mean the same thing on both hosts."
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} security update(s) waiting."
+            impact: "Known vulnerabilities stay unpatched until they are installed."
+            action: "Nova: `make nova_update` · Orion: `up` in a shell on the Pi"
           notification_settings:
             receiver: Discord
 
@@ -1376,8 +1437,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.instance {{ '}}' }} needs a reboot to finish applying updates."
-            description: "`/var/run/reboot-required` on Debian, `dnf needs-restarting` on Fedora. The 12h `for` means a reboot you are already planning does not page you mid-maintenance. This is what catches a kernel updated weeks ago that nothing ever booted into."
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has needed a reboot for 12 hours."
+            impact: "The updated kernel or libraries are not in use until it reboots."
+            action: "Reboot when convenient: `sudo systemctl reboot`"
           notification_settings:
             receiver: Discord
 
@@ -1405,8 +1467,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The update collector on {{ '{{' }} $labels.instance {{ '}}' }} has not run for over 48h."
-            description: "homelab-updates.timer fires daily, so 48h means it is dead, masked, or the unit failed to install. The textfile keeps its last values on disk, so every count metric stays green and only this staleness check notices -- the same shape as backup_has_not_run."
+            summary: "The update check on {{ '{{' }} $labels.instance {{ '}}' }} has not run for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            impact: "Update alerts are showing stale numbers."
+            action: "`systemctl status homelab-updates.timer` · `journalctl -u homelab-updates.service -n 20`"
           notification_settings:
             receiver: Discord
 
@@ -1434,8 +1497,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Package metadata on {{ '{{' }} $labels.instance {{ '}}' }} was last refreshed over 3 days ago."
-            description: "The collector never refreshes the cache itself -- apt-daily.timer and dnf-makecache.timer own that, and refreshing from a collector deadlocks against them and against unattended-upgrades. Without this rule a broken refresh timer produces a confident `0 pending` forever and the other update alerts go quietly useless."
+            summary: "Package metadata on {{ '{{' }} $labels.instance {{ '}}' }} is {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} old."
+            impact: "Pending-update counts are out of date and may wrongly show 0."
+            action: "Fedora: `systemctl status dnf-makecache.timer` · Debian: `systemctl status apt-daily.timer`"
           notification_settings:
             receiver: Discord
 
@@ -1463,8 +1527,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The update collector on {{ '{{' }} $labels.instance {{ '}}' }} ran but could not complete."
-            description: "Distinct from updates_collector_stale: the timer fired and the textfile is fresh, but a command inside it failed. Check `journalctl -u homelab-updates.service`. On Fedora the usual cause is `dnf needs-restarting` missing, which means dnf5-plugins is not installed."
+            summary: "The update check on {{ '{{' }} $labels.instance {{ '}}' }} failed."
+            impact: "Update counts may be wrong."
+            action: "`journalctl -u homelab-updates.service -n 20` · on Fedora usually `dnf5-plugins` missing"
           notification_settings:
             receiver: Discord
 
@@ -1492,8 +1557,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} has raised its NVMe critical-warning flag ({{ '{{' }} $values.A {{ '}}' }})."
-            description: "The controller itself declaring a problem -- spare below threshold, degraded reliability, read-only mode, or volatile memory backup failure -- rather than a counter ticking up. Kept out of smart_sectors_degrading because that rule is a leading indicator at warning severity; this one means the drive has already decided something is wrong. Decode with `smartctl -a -d nvme /dev/nvmeXn1`."
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} has raised its NVMe critical-warning flag ({{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }})."
+            impact: "The drive reports a failure condition itself and may switch to read-only."
+            action: "Decode: `sudo smartctl -a -d nvme <disk>` · confirm backups · plan a replacement"
           notification_settings:
             receiver: Discord
 
@@ -1521,8 +1587,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} has {{ '{{' }} $values.A {{ '}}' }}% of its rated write endurance left."
-            description: "Derived by smartmon.sh as 100 - NVMe 'Percentage Used', so it matches ATA attribute 202 and one rule covers both. Endurance running out is not imminent failure, but it is the point to start planning a replacement rather than discovering it during a restore."
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} has {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }}% of its rated write endurance left."
+            impact: "Not failing yet, but time to buy a replacement."
+            action: "`sudo smartctl -a <disk>` · order a replacement"
           notification_settings:
             receiver: Discord
 
@@ -1550,8 +1617,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} is down to {{ '{{' }} $values.A {{ '}}' }}% spare blocks, below the threshold the drive itself reports."
-            description: "Self-calibrating against the drive's own Available Spare Threshold rather than a guessed number, the same way the UPS rules use ups_battery_charge_low. Running out of replacement blocks is a different failure mode from write endurance -- smart_lifetime_low covers the other one, so keep both."
+            summary: "Disk {{ '{{' }} $labels.disk {{ '}}' }} is down to {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }}% spare blocks, below the drive's own threshold."
+            impact: "The drive can barely replace bad blocks any more; failure is close."
+            action: "Confirm backups · replace the disk soon"
           notification_settings:
             receiver: Discord
 
@@ -1579,8 +1647,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Git mirror {{ '{{' }} $labels.repo {{ '}}' }} has not updated in over 2 days."
-            description: "git-sync.sh runs as the backup's ExecStartPre with a '-' prefix, so a failing mirror never fails the backup -- this is the only place it shows. A failing mirror keeps its last good timestamp, so it ages into this rule rather than resetting. Check `journalctl --user -u homelab-backup.service`."
+            summary: "Git mirror {{ '{{' }} $labels.repo {{ '}}' }} has not updated for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            impact: "The backup holds an old copy of this repository."
+            action: "`journalctl --user -u homelab-backup.service -n 100 | grep -i git`"
           notification_settings:
             receiver: Discord
 
@@ -1608,8 +1677,9 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Certificate for {{ '{{' }} $labels.domain {{ '}}' }} expires in {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} days."
-            description: "Caddy renews at ~30 days left, so under 14 means renewal has been failing for two weeks. `admin off` leaves no API to ask, and Caddy exports no expiry metric -- this reads the stored certificates directly. max by (domain) because a fallback issuer can leave an older copy behind. Usually the Cloudflare token: `podman logs caddy 2>&1 | grep -i acme`."
+            summary: "TLS certificate for {{ '{{' }} $labels.domain {{ '}}' }} expires in {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} days."
+            impact: "When it expires, browsers refuse every site it covers."
+            action: "`podman logs caddy 2>&1 | grep -i acme` · usually the Cloudflare API token"
           notification_settings:
             receiver: Discord
 
@@ -1637,7 +1707,8 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The certificate expiry collector found no certificates or could not parse one."
-            description: "Without it cert_expiring is blind. Check `journalctl --user -u caddy-cert-expiry.service`."
+            summary: "The certificate expiry check failed."
+            impact: "`cert_expiring` is blind."
+            action: "`journalctl --user -u caddy-cert-expiry.service -n 20`"
           notification_settings:
             receiver: Discord

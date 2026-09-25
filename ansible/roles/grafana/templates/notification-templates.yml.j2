@@ -9,18 +9,23 @@ templates:
 
         {{ define "nova.alert" }}
         {{ .Annotations.summary }}
-        {{- with .Labels.Remove (stringSlice "alertname" "severity" "grafana_folder" "rulename") }}
+        {{- with .Labels.Remove (stringSlice "alertname" "severity" "grafana_folder" "rulename" "id") }}
         -# {{ range .SortedPairs }}{{ .Name }}=`{{ .Value }}` {{ end }}
         {{- end }}
         {{ end }}
 
         {{ define "nova.message" }}
         {{- range .Alerts.Firing }}{{ template "nova.alert" . }}{{ end }}
+        {{- if .Alerts.Firing }}
+        {{- with .CommonAnnotations.impact }}
+        **Impact:** {{ . }}
+        {{- end }}
+        {{- with .CommonAnnotations.action }}
+        **Next:** {{ . }}
+        {{- end }}
+        {{- end }}
         {{- with .Alerts.Resolved }}{{ if $.Alerts.Firing }}
         **Resolved**{{ end }}
         {{- range . }}{{ template "nova.alert" . }}{{ end }}{{ end }}
-        {{- with .CommonAnnotations.description }}
-        > {{ . }}
-        {{- end }}
         {{- end }}
 {% endraw %}
