@@ -18,6 +18,10 @@ sun:
 usage_prediction:
 webhook:
 
+# `http:` (trusted_proxies, use_x_forwarded_for, ip_ban_enabled, login_attempts_threshold)
+# is configured in the UI since HA 2026.8 -- Settings -> System -> Network -- and lives
+# in .storage/, not here.
+
 homeassistant:
   name: Home
   unit_system: metric
