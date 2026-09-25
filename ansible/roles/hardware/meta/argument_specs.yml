@@ -1,0 +1,62 @@
+---
+argument_specs:
+  main:
+    short_description: LVM layout, data-disk mounts and hardware quirks on Nova
+    description:
+      - Root plane and destructive. Creates and grows logical volumes, formats
+        filesystems on LVs that have none, and writes fstab entries. Every input is
+        required and host-specific, so nothing here has a default.
+    options:
+      hardware_vg_name:
+        type: str
+        required: true
+        description: Volume group Anaconda created, derived from the install-time hostname.
+      hardware_target_lvs:
+        type: list
+        elements: dict
+        required: true
+        description: Logical volumes to ensure, in order.
+        options:
+          name:
+            type: str
+            required: true
+          size:
+            type: str
+            required: true
+            description: lvol size, e.g. 15g. Never shrinks.
+          mount_path:
+            type: path
+            description: Required when manage_fs_and_mount is true.
+          manage_fs_and_mount:
+            type: bool
+            default: false
+            description: Create an XFS filesystem if none exists and mount it at mount_path.
+          rootless:
+            type: bool
+            default: false
+            description: Hand the mountpoint to the rootless user.
+        required_if:
+          - [manage_fs_and_mount, true, [mount_path]]
+      hardware_data_drives:
+        type: list
+        elements: dict
+        required: true
+        description: Existing data disks mounted by UUID. Never formatted.
+        options:
+          uuid:
+            type: str
+            required: true
+          fstype:
+            type: str
+            required: true
+            choices: [xfs, ext4, btrfs]
+          mountpoint:
+            type: path
+            required: true
+          passno:
+            type: str
+            default: "0"
+          fstrim_notrim:
+            type: bool
+            default: false
+            description: Add X-fstrim.notrim so fstrim.timer skips the disk.

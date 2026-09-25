@@ -1,0 +1,52 @@
+---
+argument_specs:
+  main:
+    short_description: Network UPS Tools server for the USB-attached UPS
+    options:
+      nut_mode:
+        type: str
+        default: netserver
+        choices: [standalone, netserver, netclient]
+      nut_ups_name:
+        type: str
+        default: eaton
+      nut_ups_driver:
+        type: str
+        default: usbhid-ups
+      nut_ups_description:
+        type: str
+        default: Eaton 5E
+      nut_ups_port:
+        type: str
+        default: auto
+      nut_ups_vendorid:
+        type: str
+        required: true
+        description: USB vendor ID from lsusb, as a quoted 4-digit hex string. Set in host_vars.
+      nut_ups_productid:
+        type: str
+        required: true
+        description: USB product ID from lsusb. Set in host_vars.
+      nut_ups_waitbeforereconnect:
+        type: int
+        default: 20
+      nut_ups_lowbatt:
+        type: int
+        default: 30
+        description: Battery percentage the UPS reports as low; triggers shutdown.
+      nut_ups_offdelay:
+        type: int
+        default: 30
+      nut_ups_ondelay:
+        type: int
+        default: 600
+        description: Must be greater than nut_ups_offdelay.
+      nut_ups_admin_user:
+        type: str
+        default: ups_admin
+      nut_ups_peanut_user:
+        type: str
+        default: ups_observer
+      nut_ups_ha_user:
+        type: str
+        default: ups_ha

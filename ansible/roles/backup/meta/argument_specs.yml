@@ -1,0 +1,50 @@
+---
+argument_specs:
+  main:
+    short_description: Nightly restic backup, B2 sync, verification and freshness collectors
+    description:
+      - Rootless plane. Runs after every service it quiesces, since backup_targets with
+        stop set to true must resolve to deployed quadlets.
+    options:
+      backup_targets:
+        type: list
+        elements: dict
+        required: true
+        description: What to back up. Defined in group_vars/all/backup.yml.
+        options:
+          name:
+            type: str
+            required: true
+            description: Target name; with stop set to true it must match a <name>.container quadlet.
+          paths:
+            type: list
+            elements: path
+            required: true
+          excludes:
+            type: list
+            elements: path
+            default: []
+          stop:
+            type: bool
+            default: false
+            description: Stop the unit for a consistent snapshot, restart it afterwards.
+      backup_rclone_remote_name:
+        type: str
+        default: external
+      backup_rclone_target:
+        type: str
+        default: "{{ backup_rclone_remote_name }}:{{ vault_backup_rclone_bucket_name }}"
+      backup_restic_password_file:
+        type: path
+        default: "{{ user_config_path }}/restic/.repo_pass"
+      backup_b2_quota_bytes:
+        type: int
+        default: 9000000000
+        description: Cloud sync is skipped when the projected size exceeds this.
+      backup_canary_file:
+        type: path
+        default: "{{ user_backups_path }}/canary.txt"
+      backup_canary_max_age:
+        type: int
+        default: 172800
+        description: Seconds; older restored canary fails verification.

@@ -1,0 +1,33 @@
+---
+argument_specs:
+  main:
+    short_description: Grafana Alloy with host collectors and textfile scripts
+    description:
+      - Root plane. Installs Alloy, deploys the per-host config, and optionally the
+        smartmon and pending-updates textfile collectors.
+    options:
+      alloy_config_template:
+        type: str
+        required: true
+        choices: [config_nova.alloy.j2, config_orion.alloy.j2]
+        description: Per-host Alloy config under templates/. Set in host_vars.
+      alloy_enable_smartmon:
+        type: bool
+        required: true
+        description: Deploy smartmontools, smartmon.sh and its service. Set in host_vars.
+      alloy_smartmon_interval_seconds:
+        type: int
+        default: 300
+        description: Seconds between smartmon.sh runs.
+      alloy_enable_updates:
+        type: bool
+        default: true
+        description: Deploy the pending-updates collector and its daily timer.
+      alloy_updates_packages:
+        type: dict
+        default: { RedHat: [dnf5-plugins], Debian: [] }
+        description: Extra packages the updates collector needs, keyed by ansible_facts['os_family'].
+      alloy_updates_on_calendar:
+        type: str
+        default: "*-*-* 06:00:00"
+        description: systemd OnCalendar= for homelab-updates.timer.
