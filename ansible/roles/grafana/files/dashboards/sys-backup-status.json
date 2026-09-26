@@ -124,7 +124,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -179,10 +179,6 @@
                                             {
                                                 "color": "green",
                                                 "value": 0
-                                            },
-                                            {
-                                                "color": "red",
-                                                "value": 80
                                             }
                                         ]
                                     }
@@ -207,7 +203,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -231,7 +227,7 @@
                                             "spec": {
                                                 "editorMode": "code",
                                                 "exemplar": false,
-                                                "expr": "smartmon_device_smart_healthy{disk=\"/dev/sdb\"}",
+                                                "expr": "smartmon_device_smart_healthy and on(disk) label_replace(node_filesystem_size_bytes{instance=\"nova-2\", mountpoint=\"/mnt/backup\"}, \"disk\", \"$1\", \"device\", \"(/dev/sd[a-z]+)[0-9]*\")",
                                                 "instant": true,
                                                 "legendFormat": "Disk Health",
                                                 "range": false
@@ -310,7 +306,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -410,7 +406,7 @@
                                 "showHeader": true
                             }
                         },
-                        "version": "13.0.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -510,7 +506,7 @@
                                 "showHeader": true
                             }
                         },
-                        "version": "13.0.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -596,7 +592,7 @@
                                 "wrapLogMessage": false
                             }
                         },
-                        "version": "13.0.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -695,7 +691,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -778,7 +774,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -861,7 +857,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -923,6 +919,10 @@
                                             {
                                                 "color": "orange",
                                                 "value": 86400
+                                            },
+                                            {
+                                                "color": "red",
+                                                "value": 108000
                                             }
                                         ]
                                     },
@@ -948,7 +948,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1031,7 +1031,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1192,7 +1192,7 @@
                                 }
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1291,7 +1291,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1390,7 +1390,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1473,7 +1473,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1531,6 +1531,10 @@
                                             {
                                                 "color": "green",
                                                 "value": 0
+                                            },
+                                            {
+                                                "color": "red",
+                                                "value": 86400
                                             }
                                         ]
                                     },
@@ -1556,7 +1560,361 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-26": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_backup_b2_size_bytes / homelab_backup_b2_quota_bytes",
+                                                "legendFormat": "__auto",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 26,
+                    "links": [],
+                    "title": "B2 usage",
+                    "vizConfig": {
+                        "group": "gauge",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            },
+                                            {
+                                                "color": "yellow",
+                                                "value": 0.7
+                                            },
+                                            {
+                                                "color": "red",
+                                                "value": 0.85
+                                            }
+                                        ]
+                                    },
+                                    "unit": "percentunit"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "barShape": "flat",
+                                "barWidthFactor": 0.5,
+                                "effects": {
+                                    "barGlow": false,
+                                    "centerGlow": false,
+                                    "gradient": true
+                                },
+                                "endpointMarker": "point",
+                                "minVizHeight": 75,
+                                "minVizWidth": 75,
+                                "orientation": "auto",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "segmentCount": 1,
+                                "segmentSpacing": 0.3,
+                                "shape": "gauge",
+                                "showThresholdLabels": false,
+                                "showThresholdMarkers": true,
+                                "sizing": "auto",
+                                "sparkline": true,
+                                "textMode": "auto"
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-27": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "exemplar": false,
+                                                "expr": "homelab_backup_services_down",
+                                                "instant": true,
+                                                "legendFormat": "__auto",
+                                                "range": false
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 27,
+                    "links": [],
+                    "title": "Services left down",
+                    "vizConfig": {
+                        "group": "stat",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            },
+                                            {
+                                                "color": "red",
+                                                "value": 1
+                                            }
+                                        ]
+                                    }
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "colorMode": "value",
+                                "graphMode": "area",
+                                "justifyMode": "auto",
+                                "orientation": "auto",
+                                "percentChangeColorMode": "standard",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "showPercentChange": false,
+                                "textMode": "auto",
+                                "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-28": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "exemplar": false,
+                                                "expr": "homelab_backup_exit_code",
+                                                "instant": true,
+                                                "legendFormat": "__auto",
+                                                "range": false
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 28,
+                    "links": [],
+                    "title": "Exit code",
+                    "vizConfig": {
+                        "group": "stat",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            }
+                                        ]
+                                    }
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "colorMode": "value",
+                                "graphMode": "area",
+                                "justifyMode": "auto",
+                                "orientation": "auto",
+                                "percentChangeColorMode": "standard",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "showPercentChange": false,
+                                "textMode": "auto",
+                                "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-29": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "exemplar": false,
+                                                "expr": "homelab_backup_devices_unknown_tiers",
+                                                "instant": true,
+                                                "legendFormat": "__auto",
+                                                "range": false
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 29,
+                    "links": [],
+                    "title": "Unknown tiers",
+                    "vizConfig": {
+                        "group": "stat",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            },
+                                            {
+                                                "color": "red",
+                                                "value": 1
+                                            }
+                                        ]
+                                    }
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "colorMode": "value",
+                                "graphMode": "area",
+                                "justifyMode": "auto",
+                                "orientation": "auto",
+                                "percentChangeColorMode": "standard",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "showPercentChange": false,
+                                "textMode": "auto",
+                                "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1614,6 +1972,14 @@
                                             {
                                                 "color": "green",
                                                 "value": 0
+                                            },
+                                            {
+                                                "color": "#EAB839",
+                                                "value": 2160
+                                            },
+                                            {
+                                                "color": "red",
+                                                "value": 2700
                                             }
                                         ]
                                     },
@@ -1639,7 +2005,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1752,7 +2118,7 @@
                                 }
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1869,7 +2235,7 @@
                                 }
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1893,7 +2259,7 @@
                                             "spec": {
                                                 "editorMode": "code",
                                                 "expr": "homelab_backup_repo_size_bytes",
-                                                "legendFormat": "Local Backup Size",
+                                                "legendFormat": "{{repo}}",
                                                 "range": true
                                             },
                                             "version": "v0"
@@ -1921,6 +2287,28 @@
                                             "version": "v0"
                                         },
                                         "refId": "B"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_backup_b2_quota_bytes",
+                                                "instant": false,
+                                                "legendFormat": "B2 quota",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "C"
                                     }
                                 }
                             ],
@@ -1959,6 +2347,9 @@
                                         },
                                         "insertNulls": false,
                                         "lineInterpolation": "linear",
+                                        "lineStyle": {
+                                            "fill": "solid"
+                                        },
                                         "lineWidth": 1,
                                         "pointSize": 5,
                                         "scaleDistribution": {
@@ -1986,7 +2377,27 @@
                                     },
                                     "unit": "bytes"
                                 },
-                                "overrides": []
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "options": "B2 quota",
+                                            "scope": "series"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "custom.lineStyle",
+                                                "value": {
+                                                    "dash": [
+                                                        10,
+                                                        10
+                                                    ],
+                                                    "fill": "dash"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
                             },
                             "options": {
                                 "annotations": {
@@ -2008,7 +2419,7 @@
                                 }
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -2129,7 +2540,7 @@
                                 }
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -2228,7 +2639,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.1.1"
+                        "version": "13.2.2"
                     }
                 }
             }
@@ -2392,12 +2803,64 @@
                                             "spec": {
                                                 "element": {
                                                     "kind": "ElementReference",
+                                                    "name": "panel-26"
+                                                },
+                                                "height": 5,
+                                                "width": 6,
+                                                "x": 0,
+                                                "y": 9
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-28"
+                                                },
+                                                "height": 5,
+                                                "width": 6,
+                                                "x": 6,
+                                                "y": 9
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-27"
+                                                },
+                                                "height": 5,
+                                                "width": 6,
+                                                "x": 12,
+                                                "y": 9
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-29"
+                                                },
+                                                "height": 5,
+                                                "width": 6,
+                                                "x": 18,
+                                                "y": 9
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
                                                     "name": "panel-4"
                                                 },
                                                 "height": 8,
                                                 "width": 12,
                                                 "x": 0,
-                                                "y": 9
+                                                "y": 14
                                             }
                                         },
                                         {
@@ -2410,7 +2873,7 @@
                                                 "height": 8,
                                                 "width": 12,
                                                 "x": 12,
-                                                "y": 9
+                                                "y": 14
                                             }
                                         },
                                         {
@@ -2423,7 +2886,7 @@
                                                 "height": 8,
                                                 "width": 12,
                                                 "x": 0,
-                                                "y": 17
+                                                "y": 22
                                             }
                                         },
                                         {
@@ -2436,7 +2899,7 @@
                                                 "height": 8,
                                                 "width": 12,
                                                 "x": 12,
-                                                "y": 17
+                                                "y": 22
                                             }
                                         },
                                         {
@@ -2449,7 +2912,7 @@
                                                 "height": 8,
                                                 "width": 24,
                                                 "x": 0,
-                                                "y": 25
+                                                "y": 30
                                             }
                                         }
                                     ]
@@ -2574,6 +3037,30 @@
                             },
                             "title": "Logs"
                         }
+                    },
+                    {
+                        "kind": "TabsLayoutTab",
+                        "spec": {
+                            "layout": {
+                                "kind": "GridLayout",
+                                "spec": {
+                                    "items": []
+                                }
+                            },
+                            "title": "Mirrors"
+                        }
+                    },
+                    {
+                        "kind": "TabsLayoutTab",
+                        "spec": {
+                            "layout": {
+                                "kind": "GridLayout",
+                                "spec": {
+                                    "items": []
+                                }
+                            },
+                            "title": "Devices"
+                        }
                     }
                 ]
             }
@@ -2606,7 +3093,7 @@
                 "1d"
             ],
             "fiscalYearStartMonth": 0,
-            "from": "now-30d",
+            "from": "now-7d",
             "hideTimepicker": false,
             "timezone": "browser",
             "to": "now"
