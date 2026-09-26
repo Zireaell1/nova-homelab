@@ -2889,8 +2889,8 @@
                 "spec": {
                     "allowCustomValue": false,
                     "current": {
-                        "text": "127.0.0.1:9882",
-                        "value": "127.0.0.1:9882"
+                        "text": "nova-2",
+                        "value": "nova-2"
                     },
                     "definition": "label_values(podman_container_info,instance)",
                     "hide": "dontHide",
