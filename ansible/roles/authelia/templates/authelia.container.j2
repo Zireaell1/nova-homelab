@@ -4,7 +4,6 @@ Documentation=https://www.authelia.com/
 
 Wants=authelia-postgres.service authelia-redis.service
 After=authelia-postgres.service authelia-redis.service
-PartOf=authelia-postgres.service authelia-redis.service
 
 RequiresMountsFor={{ stacks_path }}/authelia/config
 
