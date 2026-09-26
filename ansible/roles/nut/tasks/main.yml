@@ -16,20 +16,21 @@
     - nut.conf
     - ups.conf
     - upsd.conf
-    - upsmon.conf
   notify:
     - Restart NUT enumerator
     - Restart NUT server
     - Restart NUT monitor
 
-- name: Configure upsd.users (Server Credentials)
+- name: Configure NUT credential files
   ansible.builtin.template:
-    src: "upsd.users.j2"
-    dest: "/etc/ups/upsd.users"
+    src: "{{ item }}.j2"
+    dest: "/etc/ups/{{ item }}"
     owner: "root"
     group: "nut"
     mode: "0640"
-    backup: true
+  loop:
+    - upsd.users
+    - upsmon.conf
   no_log: true
   notify:
     - Restart NUT enumerator
