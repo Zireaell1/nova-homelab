@@ -147,3 +147,45 @@ prometheus.scrape "host_metrics" {
 
     scrape_interval = "15s"
 }
+
+prometheus.exporter.cadvisor "containers" {
+    docker_only                 = true
+    raw_cgroup_prefix_allowlist = ["/user.slice/"]
+    store_container_labels      = false
+    disable_root_cgroup_stats   = true
+    enabled_metrics             = ["cpu", "memory"]
+    storage_duration            = "2m"
+}
+
+prometheus.scrape "containers" {
+    targets         = prometheus.exporter.cadvisor.containers.targets
+    forward_to      = [prometheus.relabel.containers.receiver]
+    scrape_interval = "30s"
+}
+
+prometheus.relabel "containers" {
+    forward_to = [prometheus.remote_write.local_prom.receiver]
+
+    rule {
+        source_labels = ["id"]
+        regex         = ".*/([^/]+)\\.service/libpod-payload-[0-9a-f]+"
+        target_label  = "service"
+    }
+
+    rule {
+        source_labels = ["service"]
+        regex         = ""
+        action        = "drop"
+    }
+
+    rule {
+        source_labels = ["__name__"]
+        regex         = "container_memory_(swap|working_set_bytes|rss)|container_spec_memory_(limit|swap_limit)_bytes|container_cpu_(usage_seconds_total|cfs_periods_total|cfs_throttled_periods_total)"
+        action        = "keep"
+    }
+
+    rule {
+        regex  = "id|name|image"
+        action = "labeldrop"
+    }
+}
