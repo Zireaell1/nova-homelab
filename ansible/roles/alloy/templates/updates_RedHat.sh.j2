@@ -8,7 +8,7 @@
 # * dnf -q -C repoquery --upgrades       : Lists all available updates from local cache.
 # * dnf -q -C check-update --security    : Checks local cache for security updates.
 # * dnf -q -C updateinfo list --security : Fallback to check security update notices.
-# * dnf -q needs-restarting -r           : Checks if a reboot is needed (e.g., kernel update).
+# * dnf -q -C needs-restarting -r        : Checks if a reboot is needed (e.g., kernel update).
 # ==============================================================================
 
 set -Eeuo pipefail
@@ -72,7 +72,7 @@ count_pending_security() {
 
 check_reboot() {
     local rc=0
-    dnf -q needs-restarting -r >/dev/null 2>&1 || rc=$?
+    dnf -q -C needs-restarting -r >/dev/null 2>&1 || rc=$?
     case "$rc" in
         0) REBOOT_REQUIRED=0 ;;
         1) REBOOT_REQUIRED=1 ;;
