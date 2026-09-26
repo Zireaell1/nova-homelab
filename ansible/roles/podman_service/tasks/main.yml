@@ -106,7 +106,12 @@
     enabled: true
     scope: user
   loop: >-
-    {{ podman_service_units
+    {{ (podman_service_units
+        | reject('in', podman_service_units
+                       | select('search', '\.timer$')
+                       | map('regex_replace', '\.timer$', '.service')
+                       | list)
+        | list)
        + (podman_service_quadlets
           | select('search', '\.container$')
           | map('regex_replace', '\.container$', '.service')
