@@ -14,7 +14,7 @@ What are the actual advantages of Podman?
 
 So, what are the downsides of Podman? Fighting to build those `.container` files is definitely the main one.
 
-Because we are running them rootless and as systemd services, you often have to manually translate the official Docker Compose files into Quadlet syntax. Sometimes you even have to dig into a project's raw `Dockerfile` just to see what internal user it expects. You *will* fight with permissions, specifically hardware device access (**I hate you, Frigate**-it's running, but still not perfect!) and advanced networking quirks (**I hate you, Frigate** - it's running, but still not perfect!) and advanced networking quirks (**I hate you too, Pi-hole** - preserving original client IP addresses for DNS queries is a notoriously difficult task).
+Because we are running them rootless and as systemd services, you often have to manually translate the official Docker Compose files into Quadlet syntax. Sometimes you even have to dig into a project's raw `Dockerfile` just to see what internal user it expects. You *will* fight with permissions, specifically hardware device access (**I hate you, Frigate** - it's running, but still not perfect!) and advanced networking quirks (**I hate you too, Pi-hole** - preserving original client IP addresses for DNS queries is a notoriously difficult task).
 
 **How do rootless permissions actually work?**
 Essentially, the container inherits the exact permissions of the host user running the service. If your standard Linux user has access to a hardware device (like a Coral TPU or a GPU), the container will have access to it. If the user doesn't, the container doesn't either.
