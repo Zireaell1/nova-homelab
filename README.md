@@ -101,9 +101,9 @@ Before running anything, you need to configure your environment.
 * **Inventory:** Copy `examples/inventory.ini.example` to `ansible/inventory.ini` and update it with your servers' actual IP addresses and SSH usernames. The host names must be `nova` and `orion` - the playbooks target them by name.
 * **Variables:** Review the files in `group_vars/all/` (`vars.yml`, `paths.yml`, `podman.yml`, `endpoints.yml`, `backup.yml`) and the per-machine facts in `host_vars/`, and change any personal variables.
 * **Secrets:** Copy `examples/vault.yml.example` to `ansible/group_vars/all/vault.yml`. Fill in your specific passwords and API keys, then encrypt the file using:
-```bash
-uv run ansible-vault encrypt group_vars/all/vault.yml
-```
+  ```bash
+  uv run ansible-vault encrypt group_vars/all/vault.yml
+  ```
 * **Vault password:** Write your vault password into `ansible/.vault_pass` (it is gitignored). `ansible.cfg` points at this file, so Ansible will not start without it.
 
 **3. The Playbooks:**

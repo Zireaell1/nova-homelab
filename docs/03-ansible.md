@@ -72,7 +72,7 @@ It will prompt you to create a vault password. (Remember this password - the fil
 > If you ever need to change a password later, you can edit the encrypted file using:
 > `uv run ansible-vault edit group_vars/all/vault.yml`
 
-**Quality of Life Fix:** Typing the vault password every single time you run a playbook gets annoying fast. You can create a file named `.vault_pass` inside the `ansible/` directory and write your password inside it as plain text. `ansible.cfg` points at this file, so Ansible reads it automatically - and will refuse to start if it is missing. *(It is already in `.gitignore`; make absolutely sure it stays there!)*
+**Quality of Life Fix:** Typing the vault password every single time you run a playbook gets annoying fast. You need a file named `.vault_pass` inside the `ansible/` directory with your password inside it as plain text. `ansible.cfg` points at this file, so Ansible reads it automatically - and will refuse to start if it is missing. *(It is already in `.gitignore`; make absolutely sure it stays there!)*
 
 ## Setting up the Inventory
 

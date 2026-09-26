@@ -1,6 +1,6 @@
 # Podman
 
-Before diving into the specific services, we need to talk about the engine that runs them. If you look through the repository, you won't find a single `docker-compose.yml` file. As mentioned in previous chapters, we don't use Docker. We use **Podman**-specifically, we run every container using **Podman Quadlets** natively integrated with `systemd`.
+Before diving into the specific services, we need to talk about the engine that runs them. If you look through the repository, you won't find a single `docker-compose.yml` file. As mentioned in previous chapters, we don't use Docker. We use **Podman** - specifically, we run every container using **Podman Quadlets** natively integrated with `systemd`.
 
 So why choose Podman over Docker? Let's be honest: Docker is definitely the easier setup. Almost every self-hosted service provides a handy `docker-compose` file in their documentation. It's basically copy, paste, run a single command, and it just works. Previous iterations of this server ran on Docker, and it was totally fine. However, I kept seeing Podman highly recommended online, and since I was building this new version on Fedora, I decided it was the perfect time to experiment.
 
@@ -14,7 +14,7 @@ What are the actual advantages of Podman?
 
 So, what are the downsides of Podman? Fighting to build those `.container` files is definitely the main one.
 
-Because we are running them rootless and as systemd services, you often have to manually translate the official Docker Compose files into Quadlet syntax. Sometimes you even have to dig into a project's raw `Dockerfile` just to see what internal user it expects. You *will* fight with permissions, specifically hardware device access (**I hate you, Frigate**-it's running, but still not perfect!) and advanced networking quirks (**I hate you too, Pi-hole**-preserving original client IP addresses for DNS queries is a notoriously difficult task).
+Because we are running them rootless and as systemd services, you often have to manually translate the official Docker Compose files into Quadlet syntax. Sometimes you even have to dig into a project's raw `Dockerfile` just to see what internal user it expects. You *will* fight with permissions, specifically hardware device access (**I hate you, Frigate**-it's running, but still not perfect!) and advanced networking quirks (**I hate you, Frigate** - it's running, but still not perfect!) and advanced networking quirks (**I hate you too, Pi-hole** - preserving original client IP addresses for DNS queries is a notoriously difficult task).
 
 **How do rootless permissions actually work?**
 Essentially, the container inherits the exact permissions of the host user running the service. If your standard Linux user has access to a hardware device (like a Coral TPU or a GPU), the container will have access to it. If the user doesn't, the container doesn't either.

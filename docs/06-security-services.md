@@ -4,7 +4,7 @@ Let's start our services breakdown with the security stack. This includes Caddy,
 
 ## Caddy
 
-Caddy is the web server that acts as the reverse proxy-and essentially the front door-to all of our services.
+Caddy is the web server that acts as the reverse proxy - and essentially the front door - to all of our services.
 
 The main advantage of using Caddy is how easily it allows us to build a system where services run in their own isolated Podman networks. We don't expose direct ports to the host machine. Instead, if you enter the domain name for Home Assistant into your browser, Caddy recognizes it, knows it lives on port `8123` in the internal Podman network, and securely proxies the connection.
 
@@ -43,7 +43,7 @@ At the time of writing this document, that equals about **2.3 million blocked do
 
 ![Authelia](assets/authelia.png)
 
-Authelia is our main authentication service. There are a few exceptions-like Home Assistant or Vaultwarden-where Authelia has a `bypass` rule instead of a login, simply because intercepting their traffic breaks their native mobile apps. The bypass only applies from the local network and Tailscale, and Vaultwarden's `/admin` page still requires two-factor login.
+Authelia is our main authentication service. There are a few exceptions - like Home Assistant or Vaultwarden - where Authelia has a `bypass` rule instead of a login, simply because intercepting their traffic breaks their native mobile apps. The bypass only applies from the local network and Tailscale, and Vaultwarden's `/admin` page still requires two-factor login.
 
 For the services that *are* behind Authelia, there are two ways authentication gets handled:
 

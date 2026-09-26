@@ -1,6 +1,6 @@
 # Services Overview
 
-After building the rack, setting up the OS, and configuring all the Ansible automation, we are finally at the services-the stuff we actually get to use.
+After building the rack, setting up the OS, and configuring all the Ansible automation, we are finally at the services - the stuff we actually get to use.
 
 Let's start with probably the most simple tool here: the dashboard!
 
