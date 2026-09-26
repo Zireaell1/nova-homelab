@@ -1149,7 +1149,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: absent(up{job="alloy", instance="{{ host_svc_address }}:12345"})
+                expr: absent(up{job="alloy", instance="{{ nova_hostname }}"})
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -1179,7 +1179,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: absent(up{job="alloy", instance="{{ hostvars['orion']['inventory_hostname'] }}:12345"})
+                expr: absent(up{job="alloy", instance="{{ hostvars['orion']['inventory_hostname'] }}"})
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
