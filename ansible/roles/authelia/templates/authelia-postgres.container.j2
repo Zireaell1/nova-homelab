@@ -37,13 +37,13 @@ Timezone={{ timezone }}
 Environment=POSTGRES_USER=authelia
 Environment=POSTGRES_PASSWORD_FILE=/STORAGE_PASSWORD
 
-HealthCmd=["pg_isready", "-q", "-U", "authelia"]
+HealthCmd=["pg_isready", "-q", "-h", "127.0.0.1", "-U", "authelia"]
 HealthInterval=60s
 HealthTimeout=10s
 HealthRetries=3
 HealthStartPeriod=60s
 
-HealthStartupCmd=["pg_isready", "-q", "-U", "authelia"]
+HealthStartupCmd=["pg_isready", "-q", "-h", "127.0.0.1", "-U", "authelia"]
 HealthStartupInterval=2s
 HealthStartupTimeout=5s
 HealthStartupSuccess=1
