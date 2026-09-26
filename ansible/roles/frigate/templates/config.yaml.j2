@@ -23,6 +23,7 @@ proxy:
     user: remote-user
     role: remote-groups
   default_role: viewer
+  logout_url: https://{{ service_endpoints['authelia']['subdomain'] }}.{{ vault_domain }}/logout
 
 go2rtc:
   streams:
