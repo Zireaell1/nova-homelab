@@ -23,7 +23,6 @@
     rsync_opts:
       - "--chmod=D0755,F0644"
       - "--chown={{ ansible_user }}:{{ ansible_user }}"
-  register: grafana_sync_dashboards
 
 - name: Deploy Grafana
   ansible.builtin.include_role:
@@ -63,4 +62,3 @@
         mode: "0644"
     podman_service_quadlets: ["grafana.container"]
     podman_service_images: ["{{ grafana_image }}:{{ grafana_version }}"]
-    podman_service_changed_extra: "{{ grafana_sync_dashboards is changed }}"
