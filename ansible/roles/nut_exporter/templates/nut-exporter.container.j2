@@ -10,7 +10,7 @@ Image={{ nut_exporter_image }}:{{ nut_exporter_version }}
 ContainerName=nut-exporter
 StopTimeout=20
 
-Exec=--nut.server=host.svc.internal --nut.username={{ nut_exporter_nut_user }} --nut.vars_enable= --log.level=warn
+Exec=--nut.server=host.svc.internal --nut.username={{ nut_ups_exporter_user }} --nut.vars_enable= --log.level=warn
 
 # --- Identity / Namespaces ---
 User=65534:65534

@@ -46,7 +46,8 @@ argument_specs:
         default: ups_admin
       nut_ups_exporter_user:
         type: str
-        default: ups_exporter
+        required: true
+        description: Shared with nut_exporter; set in group_vars/all/vars.yml.
       nut_ups_ha_user:
         type: str
         default: ups_ha

@@ -14,5 +14,4 @@ nut_ups_offdelay: 30
 nut_ups_ondelay: 600
 
 nut_ups_admin_user: "ups_admin"
-nut_ups_exporter_user: "ups_exporter"
 nut_ups_ha_user: "ups_ha"
