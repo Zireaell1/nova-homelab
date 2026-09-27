@@ -17,4 +17,4 @@ pihole_memory_limit: "1g"
 pihole_image: "docker.io/pihole/pihole"
 
 # renovate: datasource=docker depName=docker.io/pihole/pihole
-pihole_version: "2026.07.2"
+pihole_version: "2026.09.0"
