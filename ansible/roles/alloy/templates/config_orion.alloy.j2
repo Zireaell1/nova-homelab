@@ -116,5 +116,5 @@ prometheus.scrape "host_metrics" {
     )
     forward_to = [prometheus.remote_write.remote_prom.receiver]
 
-    scrape_interval = "60s"
+    scrape_interval = "30s"
 }
