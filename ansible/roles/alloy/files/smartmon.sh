@@ -29,65 +29,13 @@ $1 ~ /^ *[0-9]+$/ && $2 ~ /^[a-zA-Z0-9_-]+$/ {
 SMARTCTLAWK
 )"
 
-smartmon_attrs="$(
-  cat <<'SMARTMONATTRS'
-airflow_temperature_cel
-command_timeout
-current_pending_sector
-end_to_end_error
-erase_fail_count
-g_sense_error_rate
-hardware_ecc_recovered
-helium_condition_lower
-helium_condition_upper
-helium_level
-host_reads_32mib
-host_reads_mib
-host_writes_32mib
-host_writes_mib
-load_cycle_count
-media_wearout_indicator
-nand_writes_1gib
-offline_uncorrectable
-percent_lifetime_remain
-power_cycle_count
-power_on_hours
-program_fail_cnt_total
-program_fail_count
-raw_read_error_rate
-reallocated_event_count
-reallocated_sector_ct
-reported_uncorrect
-runtime_bad_block
-sata_downshift_count
-seek_error_rate
-spin_retry_count
-spin_up_time
-start_stop_count
-temperature_case
-temperature_celsius
-temperature_internal
-total_lbas_read
-total_lbas_written
-udma_crc_error_count
-unsafe_shutdown_count
-unused_rsvd_blk_cnt_tot
-wear_leveling_count
-workld_host_reads_perc
-workld_media_wear_indic
-workload_minutes
-SMARTMONATTRS
-)"
-smartmon_attrs="$(echo "${smartmon_attrs}" | xargs | tr ' ' '|')"
-
 parse_smartctl_attributes() {
   local disk="$1"
   local disk_type="$2"
   local labels="disk=\"${disk}\",type=\"${disk_type}\""
   sed 's/^ \+//g' |
     awk -v labels="${labels}" "${parse_smartctl_attributes_awk}" 2>/dev/null |
-    tr '[:upper:]' '[:lower:]' |
-    grep -E "(${smartmon_attrs})"
+    tr '[:upper:]' '[:lower:]'
 }
 
 parse_smartctl_nvme_attributes() {
