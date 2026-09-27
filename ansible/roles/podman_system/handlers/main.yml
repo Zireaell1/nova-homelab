@@ -6,11 +6,11 @@
 - name: Show cgroup delegation restart warning
   ansible.builtin.debug:
     msg: >
-      [WARNING] The 'io' cgroup controller was just delegated to user sessions.
-      This only takes effect for NEW user@.service instances. You must reboot
-      the server (or fully log out the {{ ansible_user }} session, including
-      killing user@{{ ansible_facts['user_uid'] }}.service) for rootless
-      Podman blkio stats to start populating.
+      [WARNING] cgroup controllers (cpu cpuset io memory pids) were just delegated
+      to user sessions. This only takes effect for NEW user@.service instances.
+      Reboot the server, or fully log out {{ ansible_user }} including
+      user@$(id -u {{ ansible_user }}).service, before CPUWeight= and rootless
+      Podman blkio stats take effect.
   listen: Reload systemd daemon and warn about required reboot
 
 - name: Restore container path SELinux contexts
