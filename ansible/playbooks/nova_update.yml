@@ -10,13 +10,15 @@
       # noqa: package-latest
 
     - name: Check if reboot is required after update
-      ansible.builtin.command: "dnf needs-restarting -r"
+      ansible.builtin.command: dnf -q needs-restarting --json
       register: reboot_required
-      failed_when: false
       check_mode: false
       changed_when: false
+      failed_when: >-
+        reboot_required.rc not in [0, 1]
+        or (reboot_required.stdout | trim | length) == 0
 
     - name: Notify that a reboot is required after update
       ansible.builtin.debug:
         msg: "WARNING: A reboot is required after the DNF update. Please restart the system manually."
-      when: reboot_required.rc == 1
+      when: (reboot_required.stdout | from_json)[0].reboot_required | bool
