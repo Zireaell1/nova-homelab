@@ -11,7 +11,6 @@ service_endpoints:
   switch: { subdomain: switch }
   go2rtc: { subdomain: go2rtc }
   zigbee2mqtt: { subdomain: z2m }
-  peanut: { subdomain: peanut }
   frigate: { subdomain: frigate }
   restic: { subdomain: backup }
   homeassistant: { subdomain: ha }

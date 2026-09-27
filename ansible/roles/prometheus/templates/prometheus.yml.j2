@@ -23,10 +23,10 @@ scrape_configs:
     static_configs:
       - targets: ['caddy:9091']
 
-  - job_name: 'peanut'
-    metrics_path: '/api/v1/metrics'
+  - job_name: 'nut'
+    metrics_path: '/ups_metrics'
     static_configs:
-      - targets: ['peanut:8080']
+      - targets: ['nut-exporter:9199']
 
   - job_name: 'authelia'
     static_configs:

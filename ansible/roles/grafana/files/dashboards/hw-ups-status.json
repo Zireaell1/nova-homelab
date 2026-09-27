@@ -49,7 +49,7 @@
                                             "spec": {
                                                 "editorMode": "code",
                                                 "exemplar": false,
-                                                "expr": "ups_battery_charge",
+                                                "expr": "network_ups_tools_battery_charge",
                                                 "instant": true,
                                                 "interval": "",
                                                 "legendFormat": "Battery Charge",
@@ -152,7 +152,7 @@
                                             "spec": {
                                                 "editorMode": "code",
                                                 "exemplar": false,
-                                                "expr": "ups_battery_runtime",
+                                                "expr": "network_ups_tools_battery_runtime",
                                                 "instant": true,
                                                 "legendFormat": "Battery Runtime",
                                                 "range": false
@@ -234,7 +234,7 @@
                                             "kind": "DataQuery",
                                             "spec": {
                                                 "editorMode": "code",
-                                                "expr": "ups_ups_load",
+                                                "expr": "network_ups_tools_ups_load",
                                                 "legendFormat": "UPS Load",
                                                 "range": true
                                             },
@@ -334,7 +334,7 @@
                                             "kind": "DataQuery",
                                             "spec": {
                                                 "editorMode": "code",
-                                                "expr": "ups_input_voltage",
+                                                "expr": "network_ups_tools_input_voltage",
                                                 "legendFormat": "Input",
                                                 "range": true
                                             },
@@ -355,7 +355,7 @@
                                             "kind": "DataQuery",
                                             "spec": {
                                                 "editorMode": "code",
-                                                "expr": "ups_output_voltage",
+                                                "expr": "network_ups_tools_output_voltage",
                                                 "instant": false,
                                                 "legendFormat": "Output",
                                                 "range": true
@@ -471,7 +471,7 @@
                                             "kind": "DataQuery",
                                             "spec": {
                                                 "editorMode": "code",
-                                                "expr": "ups_ups_load",
+                                                "expr": "network_ups_tools_ups_load",
                                                 "legendFormat": "Load",
                                                 "range": true
                                             },
@@ -586,7 +586,7 @@
                                             "kind": "DataQuery",
                                             "spec": {
                                                 "editorMode": "code",
-                                                "expr": "ups_ups_realpower",
+                                                "expr": "network_ups_tools_ups_realpower",
                                                 "legendFormat": "Power Usage",
                                                 "range": true
                                             },
@@ -702,7 +702,7 @@
                                             "spec": {
                                                 "editorMode": "code",
                                                 "exemplar": false,
-                                                "expr": "(avg_over_time(ups_ups_realpower[24h]) / 1000) * 24 * 1.15",
+                                                "expr": "(avg_over_time(network_ups_tools_ups_realpower[24h]) / 1000) * 24 * 1.15",
                                                 "instant": true,
                                                 "legendFormat": "Daily Operating Cost",
                                                 "range": false
@@ -784,7 +784,7 @@
                                             "kind": "DataQuery",
                                             "spec": {
                                                 "editorMode": "code",
-                                                "expr": "ups_output_frequency",
+                                                "expr": "network_ups_tools_output_frequency",
                                                 "legendFormat": "Output Frequency",
                                                 "range": true
                                             },
@@ -901,7 +901,7 @@
                                             "kind": "DataQuery",
                                             "spec": {
                                                 "editorMode": "code",
-                                                "expr": "ups_ups_realpower / ups_ups_power",
+                                                "expr": "network_ups_tools_ups_realpower / network_ups_tools_ups_power",
                                                 "legendFormat": "Power Factor",
                                                 "range": true
                                             },

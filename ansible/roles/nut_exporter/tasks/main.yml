@@ -1,0 +1,16 @@
+---
+- name: Deploy NUT exporter
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: nut-exporter
+    podman_service_dirs:
+      - "{{ stacks_path }}/nut-exporter"
+    podman_service_templates:
+      - src: nut-exporter.secrets.env.j2
+        dest: "{{ stacks_path }}/nut-exporter/nut-exporter.secrets.env"
+        mode: "0600"
+        no_log: true
+    podman_service_quadlets: ["nut-exporter.container"]
+    podman_service_images:
+      ["{{ nut_exporter_image }}:{{ nut_exporter_version }}"]

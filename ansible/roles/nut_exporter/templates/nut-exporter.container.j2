@@ -1,0 +1,49 @@
+[Unit]
+Description=NUT Exporter
+Documentation=https://github.com/DRuggeri/nut_exporter
+
+RequiresMountsFor={{ stacks_path }}/nut-exporter
+
+[Container]
+# --- Image / Exec ---
+Image={{ nut_exporter_image }}:{{ nut_exporter_version }}
+ContainerName=nut-exporter
+StopTimeout=20
+
+Exec=--nut.server=host.svc.internal --nut.username={{ nut_exporter_nut_user }} --nut.vars_enable= --log.level=warn
+
+# --- Identity / Namespaces ---
+User=65534:65534
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+ReadOnly=true
+
+# --- Resource Limits ---
+Memory={{ nut_exporter_memory_limit }}
+
+# --- Networking ---
+Network=nut-exporter.network
+
+AddHost=host.svc.internal:{{ host_svc_address }}
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/nut-exporter/nut-exporter.secrets.env
+
+HealthCmd=["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9199/metrics"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+
+[Service]
+Restart=always
+RestartSec=10
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

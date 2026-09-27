@@ -71,7 +71,7 @@ Here is a complete list of the services currently managed by Ansible (primarily 
 | :--- | :--- |
 | **[Vaultwarden](https://github.com/dani-garcia/vaultwarden/)** | Self-hosted password manager (lightweight Bitwarden alternative). |
 | **[NUT](https://networkupstools.org/)** | Network UPS Tools daemon running natively on the host to monitor the physical battery backup. |
-| **[Peanut](https://github.com/Brandawg93/PeaNUT/)** | Web dashboard acting as a frontend UI for the native NUT service. |
+| **[NUT Exporter](https://github.com/DRuggeri/nut_exporter)** | Exposes every NUT variable of the UPS to Prometheus; the UPS dashboard and alerts live in Grafana. |
 | **[OpenRGB](https://openrgb.org/)** | Hardware lighting control, built locally via a custom Podman `Containerfile`. |
 
 ### Orion (Raspberry Pi)

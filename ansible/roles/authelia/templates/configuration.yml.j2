@@ -202,7 +202,6 @@ access_control:
         - '{{ service_endpoints['go2rtc']['subdomain'] }}.{{ vault_domain }}'
         - '{{ service_endpoints['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}'
         - '{{ service_endpoints['pihole']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ service_endpoints['peanut']['subdomain'] }}.{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'

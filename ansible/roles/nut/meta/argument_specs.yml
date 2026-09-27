@@ -44,9 +44,9 @@ argument_specs:
       nut_ups_admin_user:
         type: str
         default: ups_admin
-      nut_ups_peanut_user:
+      nut_ups_exporter_user:
         type: str
-        default: ups_observer
+        default: ups_exporter
       nut_ups_ha_user:
         type: str
         default: ups_ha

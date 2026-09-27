@@ -14,7 +14,7 @@ podman_networks:
   - { name: homepage }
   - { name: immich }
   - { name: loki }
-  - { name: peanut }
+  - { name: nut-exporter }
   - { name: prometheus }
   - { name: vaultwarden }
   - { name: zigbee2mqtt }

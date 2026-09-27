@@ -8,13 +8,11 @@ nut_ups_description: "Eaton 5E"
 nut_ups_port: "auto"
 
 nut_ups_waitbeforereconnect: 20
-# ups_interrupt_pipe_no_events_tolerance: 5
-# ups_pollfreq: 15
 
 nut_ups_lowbatt: 30
 nut_ups_offdelay: 30
 nut_ups_ondelay: 600
 
 nut_ups_admin_user: "ups_admin"
-nut_ups_peanut_user: "ups_observer"
+nut_ups_exporter_user: "ups_exporter"
 nut_ups_ha_user: "ups_ha"

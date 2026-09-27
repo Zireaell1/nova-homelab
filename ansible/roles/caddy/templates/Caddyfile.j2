@@ -254,14 +254,6 @@ http:// {
 	reverse_proxy host.svc.internal:8080
 }
 
-{{ service_endpoints['peanut']['subdomain'] }}.{{ vault_domain }} {
-	import standard
-	import secure_headers
-
-	import authelia_middleware_basic
-	reverse_proxy peanut:8080
-}
-
 {{ service_endpoints['homeassistant']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers

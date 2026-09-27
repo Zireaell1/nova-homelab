@@ -78,7 +78,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: ups_input_voltage < ups_output_voltage_nominal * 0.8
+                expr: network_ups_tools_ups_status{flag="OB"} == 1
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -92,7 +92,7 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Power cut: the UPS is on battery (input {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} V)."
+            summary: "Power cut: the UPS is on battery."
             impact: "Nova is running on battery; it shuts down automatically when the UPS reports low battery."
             action: "Check the mains and the breaker · remaining runtime is on the UPS dashboard"
           notification_settings:
@@ -109,7 +109,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: ups_battery_charge < ups_battery_charge_low
+                expr: network_ups_tools_battery_charge < network_ups_tools_battery_charge_low
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -139,7 +139,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: ups_battery_runtime < 300
+                expr: network_ups_tools_battery_runtime < 300
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -155,6 +155,221 @@ groups:
             summary: "UPS has {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} of battery left."
             impact: "Shutdown follows when the battery reaches the UPS's low threshold."
             action: "If mains is not coming back, shut down cleanly now: `sudo systemctl poweroff`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: ups_battery_replace
+          title: UPS Battery Needs Replacing
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: network_ups_tools_ups_status{flag="RB"} == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 1h
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The UPS reports its battery needs replacing."
+            impact: "Runtime on battery is no longer what the dashboard claims; a power cut may end in an unclean shutdown."
+            action: "Check `upsc eaton battery.date` and order a replacement battery for the Eaton 5E"
+          notification_settings:
+            receiver: Discord
+
+        - uid: ups_overload
+          title: UPS Overloaded
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: network_ups_tools_ups_load > 80
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "UPS load at {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }}% for 5 minutes."
+            impact: "Battery runtime shrinks sharply near full load; a spike above 100% makes the UPS drop the output."
+            action: "Find what draws more than usual: Power dashboard · `upsc eaton ups.load ups.realpower`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: ups_power_flapping
+          title: Mains Power Flapping
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: changes(network_ups_tools_ups_status{flag="OL"}[1h]) > 4
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Mains dropped in and out {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} times in the last hour."
+            impact: "Each switch to battery wears it; brownouts can also hit devices not behind the UPS."
+            action: "Check the plug, the power strip and the breaker · UPS dashboard → Status flags"
+          notification_settings:
+            receiver: Discord
+
+        - uid: ups_battery_not_recharging
+          title: UPS Battery Not Recharging
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: network_ups_tools_battery_charge < 90 and on() network_ups_tools_ups_status{flag="OL"} == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 12h
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "UPS battery stuck at {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }}% after 12 hours on mains."
+            impact: "An ageing battery; the 5E cannot self-test, so this is the earliest warning it gives."
+            action: "Plan a battery replacement · runtime on battery will be shorter than the dashboard estimates"
+          notification_settings:
+            receiver: Discord
+
+        - uid: ups_mains_voltage_abnormal
+          title: Mains Voltage Out of Range
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: (network_ups_tools_input_voltage < 207 or network_ups_tools_input_voltage > 253) and on() network_ups_tools_ups_status{flag="OL"} == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Mains at {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} V, outside 230 V ±10% for 5 minutes."
+            impact: "The UPS is correcting it (AVR) for now; sustained, it wears the UPS and may push it onto battery."
+            action: "Compare with other outlets · if it persists, report it to the grid operator"
+          notification_settings:
+            receiver: Discord
+
+        - uid: ups_data_missing
+          title: UPS Data Missing
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: absent(network_ups_tools_battery_charge)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "No UPS readings for 5 minutes."
+            impact: "Every other UPS alert is blind — a power cut would go unnoticed until Nova shuts down."
+            action: "`systemctl status nut-server nut-driver@eaton` · `upsc eaton` · `systemctl --user status nut-exporter`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: ups_forced_shutdown
+          title: UPS Forced Shutdown
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: network_ups_tools_ups_status{flag="FSD"} == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "NUT has ordered a shutdown: Nova is powering off now."
+            impact: "Everything goes down; it comes back only when mains returns and the UPS restores output."
+            action: "After power returns: `journalctl -b -1 -u nut-monitor` · `systemctl --user list-units --state=failed`"
           notification_settings:
             receiver: Discord
 
