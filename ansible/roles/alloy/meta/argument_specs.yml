@@ -25,7 +25,7 @@ argument_specs:
         description: Deploy the pending-updates collector and its daily timer.
       alloy_updates_packages:
         type: dict
-        default: { RedHat: [dnf5-plugins], Debian: [] }
+        default: { RedHat: [dnf5-plugins, python3], Debian: [] }
         description: Extra packages the updates collector needs, keyed by ansible_facts['os_family'].
       alloy_updates_on_calendar:
         type: str
