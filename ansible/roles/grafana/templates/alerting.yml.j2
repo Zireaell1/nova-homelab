@@ -563,6 +563,36 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: host_rebooted
+          title: Host Rebooted
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - node_boot_time_seconds < 900
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} booted {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} ago."
+            impact: "Every service restarted. If you did not reboot it: power cut (check the UPS alerts), kernel panic or a hang."
+            action: "`journalctl -b -1 -p warning -e` · `last -x reboot shutdown | head`"
+          notification_settings:
+            receiver: Discord
+
         - uid: smart_health_failed
           title: SMART Health Assessment Failed
           condition: A
