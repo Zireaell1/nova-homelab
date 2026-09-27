@@ -5,7 +5,13 @@ After=homelab-backup.service
 
 [Service]
 Type=oneshot
+
 ExecStart=/usr/bin/podman image prune --all --force --filter until=168h
 ExecStart=/usr/bin/podman volume prune --force
 ExecStart=/usr/bin/podman system prune --force --filter until=168h
+
 TimeoutStartSec=600
+
+CPUWeight=idle
+Nice=10
+IOSchedulingClass=idle
