@@ -6,6 +6,7 @@ alloy_enable_updates: true
 alloy_updates_packages:
   RedHat:
     - dnf5-plugins
+    - python3
   Debian: []
 
 alloy_updates_on_calendar: "*-*-* 06:00:00"

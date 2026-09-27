@@ -8,7 +8,7 @@
 # * dnf -q -C repoquery --upgrades       : Lists all available updates from local cache.
 # * dnf -q -C check-update --security    : Checks local cache for security updates.
 # * dnf -q -C updateinfo list --security : Fallback to check security update notices.
-# * dnf -q -C needs-restarting -r        : Checks if a reboot is needed (e.g., kernel update).
+# * dnf -q -C needs-restarting --json    : Reboot hint as JSON; its exit code alone cannot tell "reboot needed" (1) from "error" (also 1).
 # ==============================================================================
 
 set -Eeuo pipefail
@@ -16,6 +16,7 @@ set -Eeuo pipefail
 PROM_DIR="{{ textfile_metrics_path }}"
 PROM_FILE="${PROM_DIR}/homelab_updates.prom"
 PROM_TMP="${PROM_DIR}/.homelab_updates.prom.$$"
+DNF_ERR_FILE="$(mktemp)"
 
 SUCCESS=1
 PENDING_ALL=0
@@ -23,9 +24,13 @@ PENDING_SECURITY=0
 REBOOT_REQUIRED=0
 CACHE_TIMESTAMP=0
 
+DNF_OUT=""
+DNF_ERR=""
+DNF_RC=0
+
 cleanup() {
     trap - EXIT
-    rm -f "$PROM_TMP"
+    rm -f "$PROM_TMP" "$DNF_ERR_FILE"
 }
 trap cleanup EXIT
 
@@ -35,50 +40,70 @@ on_err() {
 }
 trap 'on_err "${LINENO}" "$?"' ERR
 
+run_dnf() {
+    DNF_RC=0
+    DNF_OUT="$(LC_ALL=C dnf -q -C "$@" 2>"$DNF_ERR_FILE")" || DNF_RC=$?
+    DNF_ERR="$(<"$DNF_ERR_FILE")"
+}
+
+log_dnf_stderr() {
+    [ -n "$DNF_ERR" ] || return 0
+    printf '%s\n' "$DNF_ERR" | sed "s/^/[${1}] dnf ${2}: /" >&2
+}
+
+fail() {
+    echo >&2 "[ERROR] $1"
+    SUCCESS=0
+}
+
 count_pending_all() {
-    local out rc=0
-    out="$(dnf -q -C repoquery --upgrades --queryformat '%{name}\n' 2>/dev/null)" || rc=$?
-    if [ "$rc" -ne 0 ]; then
-        echo >&2 "[ERROR] 'dnf repoquery --upgrades' failed (exit ${rc})."
-        SUCCESS=0
+    run_dnf repoquery --upgrades --queryformat '%{name}\n'
+    if [ "$DNF_RC" -ne 0 ]; then
+        log_dnf_stderr ERROR "repoquery"
+        fail "'dnf repoquery --upgrades' failed (exit ${DNF_RC})."
         return
     fi
-    PENDING_ALL="$(printf '%s\n' "$out" | sed '/^$/d' | sort -u | wc -l)"
+    log_dnf_stderr WARN "repoquery"
+    PENDING_ALL="$(printf '%s\n' "$DNF_OUT" | sed '/^$/d' | sort -u | wc -l)"
 }
 
 count_pending_security() {
-    local out rc=0
-
-    out="$(dnf -q -C check-update --security 2>/dev/null)" || rc=$?
-    if [ "$rc" -eq 0 ] || [ "$rc" -eq 100 ]; then
-        PENDING_SECURITY="$(printf '%s\n' "$out" \
+    run_dnf check-update --security
+    if [ "$DNF_RC" -eq 0 ] || [ "$DNF_RC" -eq 100 ]; then
+        log_dnf_stderr WARN "check-update"
+        PENDING_SECURITY="$(printf '%s\n' "$DNF_OUT" \
             | awk '/^Obsoleting Packages/ {exit} NF >= 3 && $1 !~ /^(Last|Security:)/ {sub(/\.[^.]+$/, "", $1); print $1}' \
             | sort -u | wc -l)"
         return
     fi
+    log_dnf_stderr ERROR "check-update"
 
-    rc=0
-    out="$(dnf -q -C updateinfo list --security 2>/dev/null)" || rc=$?
-    if [ "$rc" -eq 0 ] || [ "$rc" -eq 100 ]; then
-        PENDING_SECURITY="$(printf '%s\n' "$out" \
+    run_dnf updateinfo list --security
+    if [ "$DNF_RC" -eq 0 ] || [ "$DNF_RC" -eq 100 ]; then
+        log_dnf_stderr WARN "updateinfo"
+        PENDING_SECURITY="$(printf '%s\n' "$DNF_OUT" \
             | awk 'NF >= 3 {print $3}' \
             | sort -u | wc -l)"
         return
     fi
-
-    echo >&2 "[ERROR] Neither 'check-update --security' nor 'updateinfo list --security' worked."
-    SUCCESS=0
+    log_dnf_stderr ERROR "updateinfo"
+    fail "Neither 'check-update --security' nor 'updateinfo list --security' worked."
 }
 
 check_reboot() {
-    local rc=0
-    dnf -q -C needs-restarting -r >/dev/null 2>&1 || rc=$?
-    case "$rc" in
-        0) REBOOT_REQUIRED=0 ;;
-        1) REBOOT_REQUIRED=1 ;;
+    local verdict=""
+    run_dnf needs-restarting --json
+    verdict="$(printf '%s' "$DNF_OUT" \
+        | python3 -c 'import json, sys; print(int(json.load(sys.stdin)[0]["reboot_required"]))' 2>/dev/null)" \
+        || verdict=""
+    case "$verdict" in
+        0 | 1)
+            REBOOT_REQUIRED="$verdict"
+            log_dnf_stderr WARN "needs-restarting"
+            ;;
         *)
-            echo >&2 "[ERROR] 'dnf needs-restarting' failed (exit ${rc}); is dnf5-plugins installed?"
-            SUCCESS=0
+            log_dnf_stderr ERROR "needs-restarting"
+            fail "'dnf needs-restarting --json' gave no verdict (exit ${DNF_RC}); is dnf5-plugins installed?"
             ;;
     esac
 }
@@ -87,7 +112,9 @@ read_cache_timestamp() {
     local newest
     newest="$(find /var/cache/libdnf5 /var/cache/dnf -maxdepth 4 -name 'repomd.xml' -printf '%T@\n' 2>/dev/null \
         | sort -rn | head -n1 | cut -d. -f1)" || newest=""
-    [ -n "$newest" ] && CACHE_TIMESTAMP="$newest"
+    if [ -n "$newest" ]; then
+        CACHE_TIMESTAMP="$newest"
+    fi
 }
 
 emit() {
@@ -120,7 +147,7 @@ main() {
     emit > "$PROM_TMP"
     mv -f "$PROM_TMP" "$PROM_FILE"
     chmod 0644 "$PROM_FILE"
-    echo "[INFO] ${PENDING_ALL} pending (${PENDING_SECURITY} security), reboot_required=${REBOOT_REQUIRED}."
+    echo "[INFO] ${PENDING_ALL} pending (${PENDING_SECURITY} security), reboot_required=${REBOOT_REQUIRED}, success=${SUCCESS}."
 }
 
 main "$@"
