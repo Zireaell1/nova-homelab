@@ -42,6 +42,7 @@
     --reset
   when: "'Logged out' in tailscale_status.stdout or tailscale_status.rc != 0"
   changed_when: true
+  no_log: true
 # - name: Re-apply configuration updates (Subsequent runs)
 #   ansible.builtin.command: "tailscale up --advertise-routes={{ vault_primary_ip }}/32 --advertise-tags=tag:homelab --accept-dns=false --reset"
 #   when:
