@@ -7,11 +7,11 @@ podman_unprivileged_port_start: 53
 podman_networks:
   - { name: home, internal: true }
   - { name: monitoring-backend, internal: true }
-  - { name: authelia }
+  - { name: authelia, internal: true }
   - { name: frigate }
   - { name: grafana }
   - { name: homeassistant }
-  - { name: homepage }
+  - { name: homepage, internal: true }
   - { name: immich }
   - { name: loki }
   - { name: nut-exporter }
