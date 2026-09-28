@@ -30,13 +30,13 @@ Network=openrgb.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
-HealthCmd=["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6742"]
+HealthCmd=["grep", "-qE", ":1A56 [0-9A-F]+:0000 0A", "/proc/net/tcp", "/proc/net/tcp6"]
 HealthInterval=60s
 HealthTimeout=10s
 HealthRetries=3
 HealthStartPeriod=60s
 
-HealthStartupCmd=["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6742"]
+HealthStartupCmd=["grep", "-qE", ":1A56 [0-9A-F]+:0000 0A", "/proc/net/tcp", "/proc/net/tcp6"]
 HealthStartupInterval=2s
 HealthStartupTimeout=5s
 HealthStartupSuccess=1
