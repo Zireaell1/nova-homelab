@@ -9,3 +9,6 @@ grafana_loki_datasource_name: "loki-datasource"
 
 # renovate: datasource=docker depName=docker.io/grafana/grafana
 grafana_version: "13.2.2"
+
+grafana_node_exporter_full_commit: "99a25cc154c21c4fcbae1aa24352bf1b6764d847"
+grafana_node_exporter_full_sha256: "dfea296a1e210aa668197614d3708b56718a99be7794a1c2c012cd51da7ecb89"

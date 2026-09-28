@@ -11,6 +11,7 @@
     - "{{ monitoring_path }}/grafana/provisioning"
     - "{{ monitoring_path }}/grafana/provisioning/dashboards"
     - "{{ monitoring_path }}/grafana/dashboards"
+    - "{{ monitoring_path }}/grafana/dashboards/Community"
 
 - name: Sync dashboard files
   ansible.posix.synchronize:
@@ -23,6 +24,16 @@
     rsync_opts:
       - "--chmod=D0755,F0644"
       - "--chown={{ ansible_user }}:{{ ansible_user }}"
+      - "--filter=P /Community/"
+
+- name: Fetch Node Exporter Full (pinned)
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/rfmoz/grafana-dashboards/{{ grafana_node_exporter_full_commit }}/prometheus/node-exporter-full.json"
+    dest: "{{ monitoring_path }}/grafana/dashboards/Community/node-exporter-full.json"
+    checksum: "sha256:{{ grafana_node_exporter_full_sha256 }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
 
 - name: Deploy Grafana
   ansible.builtin.include_role:
