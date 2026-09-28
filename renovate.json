@@ -1,8 +1,18 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "group:allNonMajor"
   ],
+  "timezone": "Europe/Warsaw",
+  "schedule": [
+    "* * 1,15 * *"
+  ],
+  "updateNotScheduled": false,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 20,
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
   "labels": [
     "dependencies"
   ],
@@ -39,16 +49,6 @@
       "ignoreUnstable": false,
       "respectLatest": false,
       "allowedVersions": "/^v?\\d+\\.\\d+\\.\\d+(-(beta|rc)\\.?\\d*)?$/"
-    },
-    {
-      "matchDatasources": [
-        "docker",
-        "pypi",
-        "galaxy-collection",
-        "github-releases",
-        "github-tags"
-      ],
-      "minimumReleaseAge": "7 days"
     }
   ]
 }
