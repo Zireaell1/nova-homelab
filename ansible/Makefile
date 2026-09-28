@@ -18,7 +18,7 @@ CMD = uv run ansible-playbook $(TAG_FLAG) $(CHECK_FLAG) $(BECOME_FLAG)
 
 # --- PLAYBOOK LISTS ---
 ROOT_PLAYBOOKS := site
-DIR_PLAYBOOKS := nova_system nova_services orion_system orion_services nova_update nova_update_check
+DIR_PLAYBOOKS := nova_system nova_services orion_system orion_services nova_update nova_update_check orion_update
 
 .PHONY: help deps lint check $(ROOT_PLAYBOOKS) $(DIR_PLAYBOOKS)
 
@@ -39,6 +39,7 @@ help:
 	@echo "  make orion_system        (Auto -K)"
 	@echo "  make nova_update         (Auto -K)"
 	@echo "  make nova_update_check   (Auto -K)"
+	@echo "  make orion_update        (Auto -K)"
 	@echo "  make nova_services"
 	@echo "  make orion_services"
 	@echo ""
@@ -62,7 +63,7 @@ check:
 	uv run python ../scripts/ci/run.py
 
 # --- TARGET-SPECIFIC VARIABLES ---
-nova_system orion_system nova_update nova_update_check: BECOME_FLAG = -K
+nova_system orion_system nova_update nova_update_check orion_update: BECOME_FLAG = -K
 
 # --- RUN RULES ---
 $(ROOT_PLAYBOOKS):
