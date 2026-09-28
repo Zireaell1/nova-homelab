@@ -1,80 +1,26 @@
 ---
-- name: Verify base directory structure
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-  loop:
-    - "{{ quadlet_path }}"
-    - "{{ stacks_path }}/pihole"
+- name: Deploy Pi-hole
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: pihole
+    podman_service_dirs:
+      - "{{ stacks_path }}/pihole"
+      - "{{ stacks_path }}/pihole/etc-pihole"
+    podman_service_templates:
+      - src: pihole.env.j2
+        dest: "{{ stacks_path }}/pihole/pihole.env"
+        mode: "0644"
+      - src: pihole.secrets.env.j2
+        dest: "{{ stacks_path }}/pihole/pihole.secrets.env"
+        mode: "0600"
+        no_log: true
+    podman_service_quadlets: ["pihole.container"]
+    podman_service_images: ["{{ pihole_image }}:{{ pihole_version }}"]
 
-- name: Check if data directories exist
-  ansible.builtin.stat:
-    path: "{{ item }}"
-  loop:
-    - "{{ stacks_path }}/pihole/etc-pihole"
-  register: pihole_dirs_stat
-
-- name: Create data directories natively (Initial setup only)
-  ansible.builtin.file:
-    path: "{{ item.item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0777"
-  loop: "{{ pihole_dirs_stat.results }}"
-  when: not item.stat.exists
-
-- name: Upload .env file
-  ansible.builtin.template:
-    src: "pihole.env.j2"
-    dest: "{{ stacks_path }}/pihole/pihole.env"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart pihole
-
-- name: Upload secrets .env file
-  ansible.builtin.template:
-    src: "pihole.secrets.env.j2"
-    dest: "{{ stacks_path }}/pihole/pihole.secrets.env"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0600"
-  no_log: true
-  notify: Restart pihole
-
-- name: Upload .container file
-  ansible.builtin.template:
-    src: "pihole.container.j2"
-    dest: "{{ quadlet_path }}/pihole.container"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart pihole
-
-- name: Download Podman images
-  containers.podman.podman_image:
-    name: "{{ pihole_image }}:{{ pihole_version }}"
-    state: present
-
-- name: Flush handlers to restart stack if configurations changed
-  ansible.builtin.meta: flush_handlers
-
-- name: Ensure stack is started and enabled
-  ansible.builtin.systemd:
-    daemon_reload: true
-    name: pihole.service
-    state: started
-    enabled: true
-    scope: user
-  ignore_errors: "{{ ansible_check_mode }}"
-
-- name: Wait for Pi-hole to listen on port 53
+- name: Wait for Pi-hole to answer on 127.0.0.1:53
   ansible.builtin.wait_for:
     port: 53
     host: 127.0.0.1
-    timeout: 10
+    timeout: 60
   ignore_errors: "{{ ansible_check_mode }}"
