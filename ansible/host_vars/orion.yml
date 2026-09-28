@@ -7,3 +7,5 @@ rpi_base_static_hosts:
   - "{{ service_endpoints['prometheus']['subdomain'] }}"
   - "{{ service_endpoints['loki']['subdomain'] }}"
   - "{{ service_endpoints['authelia']['subdomain'] }}"
+
+sshd_allow_tcp_forwarding: "local"

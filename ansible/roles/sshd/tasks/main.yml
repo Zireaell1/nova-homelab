@@ -1,0 +1,28 @@
+---
+- name: Ensure sshd_config.d directory exists
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Configure SSH hardening (key-only, no root)
+  ansible.builtin.template:
+    src: 40-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/40-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Reload sshd
+
+- name: Flush handlers to apply sshd changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure sshd is enabled and running
+  ansible.builtin.service:
+    name: "{{ sshd_service_name[ansible_facts['os_family']] }}.service"
+    state: started
+    enabled: true
+  ignore_errors: "{{ ansible_check_mode }}"

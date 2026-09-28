@@ -1,0 +1,6 @@
+---
+sshd_allow_tcp_forwarding: "no"
+
+sshd_service_name:
+  RedHat: sshd
+  Debian: ssh
