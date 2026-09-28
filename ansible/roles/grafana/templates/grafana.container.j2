@@ -21,6 +21,7 @@ NoNewPrivileges=true
 Memory={{ grafana_memory_limit }}
 
 # --- Storage ---
+Volume={{ monitoring_path }}/grafana/secrets:/run/secrets:ro,Z
 Volume={{ monitoring_path }}/grafana/provisioning:/etc/grafana/provisioning:ro,Z
 Volume={{ monitoring_path }}/grafana/dashboards:/var/lib/grafana/dashboards:ro,Z
 Volume={{ monitoring_path }}/grafana/data:/var/lib/grafana:Z
@@ -33,7 +34,6 @@ Network=monitoring-backend.network
 Timezone={{ timezone }}
 
 EnvironmentFile={{ monitoring_path }}/grafana/grafana.env
-EnvironmentFile={{ monitoring_path }}/grafana/grafana.secrets.env
 
 HealthCmd=["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
 HealthInterval=60s

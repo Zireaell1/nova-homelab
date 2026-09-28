@@ -7,7 +7,7 @@ contactPoints:
         - uid: discord_webhook
           type: discord
           settings:
-            url: "${VAR_DISCORD_WEBHOOK_URL}"
+            url: "$__file{/run/secrets/discord_webhook_url}"
             use_discord_username: true
             use_embed_description: true
             title: '{% raw %}{{ template "nova.title" . }}{% endraw %}'
