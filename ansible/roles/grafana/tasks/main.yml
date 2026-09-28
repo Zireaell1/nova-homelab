@@ -73,3 +73,14 @@
         mode: "0644"
     podman_service_quadlets: ["grafana.container"]
     podman_service_images: ["{{ grafana_image }}:{{ grafana_version }}"]
+
+- name: Keep the Grafana admin password in sync with the vault
+  ansible.builtin.command:
+    cmd: podman exec -i grafana grafana cli admin reset-admin-password --password-from-stdin
+    stdin: "{{ vault_grafana_admin_password }}"
+  register: grafana_admin_reset
+  until: grafana_admin_reset.rc == 0
+  retries: 6
+  delay: 10
+  changed_when: false
+  no_log: true
