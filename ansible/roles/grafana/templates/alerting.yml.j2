@@ -1647,15 +1647,17 @@ groups:
                 refId: A
           noDataState: OK
           execErrState: Error
+          for: 336h
           isPaused: false
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} security update(s) waiting."
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has had {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} security update(s) waiting for two weeks."
             impact: "Known vulnerabilities stay unpatched until they are installed."
-            action: "Nova: `make nova_update` · Orion: `up` in a shell on the Pi"
+            action: "`make nova_update` · `make orion_update`"
           notification_settings:
             receiver: Discord
+            repeat_interval: 168h
 
         - uid: updates_reboot_required
           title: Reboot Required
@@ -1687,6 +1689,7 @@ groups:
             action: "Reboot when convenient: `sudo systemctl reboot`"
           notification_settings:
             receiver: Discord
+            repeat_interval: 24h
 
         - uid: updates_collector_stale
           title: Update Collector Has Stopped Running
