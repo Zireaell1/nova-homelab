@@ -10,7 +10,7 @@ Image={{ nut_exporter_image }}:{{ nut_exporter_version }}
 ContainerName=nut-exporter
 StopTimeout=20
 
-Exec=--nut.server=host.svc.internal --nut.username={{ nut_ups_exporter_user }} --nut.vars_enable= --log.level=warn
+Exec=--nut.server=host.svc.internal --nut.username={{ nut_ups_exporter_user }} --nut.vars_enable=
 
 # --- Identity / Namespaces ---
 User=65534:65534
@@ -19,6 +19,7 @@ User=65534:65534
 DropCapability=all
 NoNewPrivileges=true
 ReadOnly=true
+DNS=none
 
 # --- Resource Limits ---
 Memory={{ nut_exporter_memory_limit }}
