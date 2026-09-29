@@ -24,7 +24,7 @@
     rsync_opts:
       - "--chmod=D0755,F0644"
       - "--chown={{ ansible_user }}:{{ ansible_user }}"
-      - "--filter=P /Community/"
+      - "--filter=P_/Community/"
 
 - name: Fetch Node Exporter Full (pinned)
   ansible.builtin.get_url:
@@ -34,6 +34,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
+  ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Deploy Grafana
   ansible.builtin.include_role:
