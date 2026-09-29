@@ -6,6 +6,98 @@ groups:
       folder: Ansible Provisioned Alerts
       interval: 1m
       rules:
+        - uid: host_oom_kill
+          title: Kernel OOM Kill
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: increase(node_vmstat_oom_kill[10m]) > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }}: the kernel OOM-killed a process in the last 10 minutes."
+            impact: "A container or service was killed for memory — it is restarting or gone, and it may happen again."
+            action: "`journalctl -k -b | grep -i 'killed process'` · raise that service's `Memory=` or find the leak"
+          notification_settings:
+            receiver: Discord
+
+        - uid: textfile_collector_error
+          title: Textfile Collector Broken
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: node_textfile_scrape_error == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 10m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }}: a .prom file in the textfile directory is unreadable."
+            impact: "The whole textfile collector is dropped while one file is bad — backup, update, SMART, cert and git-mirror metrics all go stale at once."
+            action: "`ls -l /opt/alloy-metrics` · `journalctl -u alloy -e | grep textfile` · fix or delete the malformed file"
+          notification_settings:
+            receiver: Discord
+
+        - uid: selinux_not_enforcing
+          title: SELinux Not Enforcing
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: node_selinux_current_mode != 1 and on(instance) node_selinux_enabled == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }}: SELinux is no longer in enforcing mode."
+            impact: "Every container and host confinement the setup relies on is off."
+            action: "`getenforce` · `sudo setenforce 1` · find who changed it: `journalctl -b | grep -iE 'setenforce|MAC_STATUS'`"
+          notification_settings:
+            receiver: Discord
+
         - uid: podman_container_crashed
           title: Podman Container Crashed
           condition: A
@@ -532,6 +624,222 @@ groups:
       folder: Ansible Provisioned Alerts
       interval: 5m
       rules:
+        - uid: host_memory_low
+          title: Host Memory Low
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.10
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has only {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} memory available."
+            impact: "The next allocation spike ends in swapping or an OOM kill."
+            action: "Podman dashboard → memory by container · `systemd-cgtop -m`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: container_memory_near_limit
+          title: Container Near Memory Limit
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: (podman_container_mem_usage_bytes / (podman_container_mem_limit_bytes > 0) > 0.9) * on(id) group_left(name) podman_container_info
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.name {{ '}}' }} uses {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} of its memory limit."
+            impact: "At the limit the kernel OOM-kills it inside its cgroup."
+            action: "Raise `<role>_memory_limit` in the role defaults, or look for a leak on the Podman dashboard"
+          notification_settings:
+            receiver: Discord
+
+        - uid: hardware_temperature_high
+          title: Hardware Temperature High
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: node_hwmon_temp_celsius > on(instance, chip, sensor) (node_hwmon_temp_crit_celsius - 10) and on(instance, chip, sensor) node_hwmon_temp_crit_celsius > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 10m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} {{ '{{' }} $labels.chip {{ '}}' }}/{{ '{{' }} $labels.sensor {{ '}}' }} at {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} °C, within 10 °C of its critical point."
+            impact: "Thermal throttling first, then a hard shutdown at the critical temperature."
+            action: "Check the fans (`node_hwmon_fan_rpm`), dust and the rack airflow"
+          notification_settings:
+            receiver: Discord
+
+        - uid: disk_temperature_high
+          title: Disk Temperature High
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: smartmon_temperature_celsius_raw_value > 60
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.disk {{ '}}' }} at {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} °C."
+            impact: "Above ~60 °C HDD life drops sharply and NVMe drives start to throttle."
+            action: "Check the drive bay fan and airflow · SMART dashboard"
+          notification_settings:
+            receiver: Discord
+
+        - uid: network_link_flapping
+          title: Network Link Flapping
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: increase(node_network_carrier_changes_total{device=~"en.*|wl.*"}[1h]) > 4
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} {{ '{{' }} $labels.device {{ '}}' }} lost its link {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} times in an hour."
+            impact: "Every drop interrupts DNS, cameras or the e-ink display; on wifi it is the N-97 symptom."
+            action: "Cable/port on the switch · `journalctl -u NetworkManager -e` · on Orion: `nmcli dev wifi`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: conntrack_table_filling
+          title: Conntrack Table Filling
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: node_nf_conntrack_entries / node_nf_conntrack_entries_limit > 0.8
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 10m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} conntrack table {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} full."
+            impact: "When it is full the kernel drops new connections — DNS and every container network stop accepting."
+            action: "`sudo conntrack -S` · find the source with `sudo conntrack -L | awk '{print $5}' | sort | uniq -c | sort -rn | head`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: frigate_skipping_frames
+          title: Frigate Skipping Frames
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: frigate_skipped_fps > 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Frigate is skipping {{ '{{' }} printf `%.1f` $values.A.Value {{ '}}' }} fps on {{ '{{' }} $labels.camera_name {{ '}}' }}."
+            impact: "Detection cannot keep up — events on that camera can be missed."
+            action: "Frigate → System → detector inference speed · lower `detect.fps` or check the NPU"
+          notification_settings:
+            receiver: Discord
+
         - uid: systemd_unit_failed
           title: Systemd Unit Failed
           condition: A
@@ -901,6 +1209,128 @@ groups:
       folder: Ansible Provisioned Alerts
       interval: 15m
       rules:
+        - uid: clock_unsynchronised
+          title: Clock Not Synchronised
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: node_timex_sync_status == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 30m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} clock is not synchronised."
+            impact: "TOTP codes, Authelia sessions and certificate checks all depend on the clock; Authelia no longer checks NTP itself."
+            action: "`chronyc tracking` · `chronyc sources -v` · `systemctl status chronyd`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: tailscale_route_not_approved
+          title: Tailscale Route Not Approved
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: tailscaled_advertised_routes > tailscaled_approved_routes
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Nova advertises a subnet route that the tailnet has not approved."
+            impact: "Remote clients cannot reach Nova's LAN address — HTTPS and DNS over the tailnet stop working."
+            action: "Admin console → Machines → nova → Edit route settings · or add it to `autoApprovers`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: loki_logs_dropped
+          title: Logs Dropped Before Loki
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: increase(loki_write_dropped_entries_total[1h]) > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Alloy on {{ '{{' }} $labels.instance {{ '}}' }} dropped {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} log lines in the last hour."
+            impact: "The journal-based alerts (kernel I/O errors, SELinux denials, Zigbee errors) are blind for the dropped lines."
+            action: "`systemctl --user status loki` · `journalctl -u alloy -e | grep loki.write`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: prometheus_tsdb_problems
+          title: Prometheus Storage Problems
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: increase(prometheus_tsdb_compactions_failed_total[6h]) > 0 or increase(prometheus_tsdb_wal_corruptions_total[6h]) > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Prometheus had a failed compaction or a WAL corruption."
+            impact: "Blocks stop being compacted and disk use grows; a corrupt WAL can lose recent samples."
+            action: "`podman logs prometheus | grep -iE 'compact|corrupt'` · disk space on the monitoring LV"
+          notification_settings:
+            receiver: Discord
+
         - uid: backup_has_not_run
           title: Backup Has Not Run
           condition: A
