@@ -624,6 +624,33 @@ groups:
       folder: Ansible Provisioned Alerts
       interval: 5m
       rules:
+        - uid: log_error_burst
+          title: Log Error Burst
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 1800
+                to: 0
+              datasourceUid: "{{ grafana_loki_datasource_name }}"
+              model:
+                editorMode: code
+                expr: 'sum by (host, job, container, unit) (count_over_time({job=~"container|os"} | detected_level=~"(?i)(error|critical|fatal)" [30m])) > 30'
+                queryType: instant
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} or $labels.container $labels.unit {{ '}}' }} on {{ '{{' }} $labels.host {{ '}}' }} logged {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} error lines in 30 minutes."
+            impact: "Something is failing repeatedly — often the first sign of a broken dependency, a full disk or a crash loop."
+            action: "Grafana Explore: `{host=\"{{ '{{' }} $labels.host {{ '}}' }}\", container=\"{{ '{{' }} $labels.container {{ '}}' }}\"} | detected_level=~\"(?i)error\"` · `podman logs --since 30m {{ '{{' }} $labels.container {{ '}}' }}` or `journalctl --since -30min -u {{ '{{' }} $labels.unit {{ '}}' }}`"
+          notification_settings:
+            receiver: Discord
+
         - uid: host_memory_low
           title: Host Memory Low
           condition: A
@@ -1282,7 +1309,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: increase(loki_write_dropped_entries_total[1h]) > 0
+                expr: sum by (instance, reason) (increase(loki_write_dropped_entries_total[1h])) > 10
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -1295,9 +1322,9 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Alloy on {{ '{{' }} $labels.instance {{ '}}' }} dropped {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} log lines in the last hour."
+            summary: "Alloy on {{ '{{' }} $labels.instance {{ '}}' }} dropped {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} log lines in the last hour (reason: {{ '{{' }} $labels.reason {{ '}}' }})."
             impact: "The journal-based alerts (kernel I/O errors, SELinux denials, Zigbee errors) are blind for the dropped lines."
-            action: "`systemctl --user status loki` · `journalctl -u alloy -e | grep loki.write`"
+            action: "Why Loki refused them: `sum by (reason) (increase(loki_discarded_samples_total[1h]))` · `journalctl -u alloy -e | grep loki.write`"
           notification_settings:
             receiver: Discord
 
