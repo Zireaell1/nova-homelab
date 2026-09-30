@@ -20,3 +20,12 @@
     daemon_reload: true
   when: alloy_enable_updates
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart boot metrics timer
+  ansible.builtin.systemd:
+    name: homelab-boot-metrics.timer
+    state: restarted
+    enabled: true
+    daemon_reload: true
+  when: alloy_enable_boot_metrics
+  ignore_errors: "{{ ansible_check_mode }}"

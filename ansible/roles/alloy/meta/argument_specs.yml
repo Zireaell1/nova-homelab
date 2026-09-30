@@ -4,7 +4,7 @@ argument_specs:
     short_description: Grafana Alloy with host collectors and textfile scripts
     description:
       - Root plane. Installs Alloy, deploys the per-host config, and optionally the
-        smartmon and pending-updates textfile collectors.
+        smartmon, pending-updates and boot-timing collectors.
     options:
       alloy_config_template:
         type: str
@@ -31,3 +31,7 @@ argument_specs:
         type: str
         default: "*-*-* 06:00:00"
         description: systemd OnCalendar= for homelab-updates.timer.
+      alloy_enable_boot_metrics:
+        type: bool
+        default: true
+        description: Deploy the boot-timing collector and its once-per-boot timer.

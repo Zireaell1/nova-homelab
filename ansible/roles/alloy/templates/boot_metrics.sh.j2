@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+#
+# Boot timing for the node exporter textfile collector: how long each boot
+# stage took, and the slowest units, from systemd's own monotonic timestamps.
+#
+# ==============================================================================
+# Commands used in this script (all read-only):
+#
+# * systemctl show -p FirmwareTimestampMonotonic -p LoaderTimestampMonotonic \
+#     -p InitRDTimestampMonotonic -p UserspaceTimestampMonotonic \
+#     -p FinishTimestampMonotonic
+#       : The manager's boot milestones in µs, the same numbers
+#         `systemd-analyze time` prints. Finish stays 0 until boot completes.
+# * systemd-analyze blame --no-pager
+#       : Units sorted by activation time; the top five become metrics.
+# * journalctl -b -1 -o short-unix --no-pager
+#       : The previous boot's journal, for how long its shutdown took.
+#         Needs a persistent journal; silently skipped when there is none.
+# ==============================================================================
+set -Eeuo pipefail
+
+PROM_DIR="{{ textfile_metrics_path }}"
+PROM_FILE="${PROM_DIR}/homelab_boot.prom"
+PROM_TMP="${PROM_DIR}/.homelab_boot.prom.$$"
+trap 'rm -f "$PROM_TMP"' EXIT
+
+SYSTEMCTL="${SYSTEMCTL:-systemctl}"
+ANALYZE="${ANALYZE:-systemd-analyze}"
+JOURNALCTL="${JOURNALCTL:-journalctl}"
+
+shutdown_metrics() {
+    local log start end
+    log="$("$JOURNALCTL" -b -1 -o short-unix --no-pager 2>/dev/null)" || return 0
+    [ -n "$log" ] || return 0
+    start="$(awk '/systemd-logind\[[0-9]+\]: (The system will (reboot|power off)|System is (rebooting|powering down))/ { print $1; exit }' <<<"$log")"
+    end="$(awk 'END { print $1 }' <<<"$log")"
+    if [ -z "$start" ] || [ -z "$end" ]; then
+        return 0
+    fi
+    echo "# HELP homelab_shutdown_seconds Previous shutdown: logind's announcement to the last journal line of that boot"
+    echo "# TYPE homelab_shutdown_seconds gauge"
+    awk -v s="$start" -v e="$end" 'BEGIN { printf "homelab_shutdown_seconds %.3f\n", e - s }'
+    echo "# HELP homelab_shutdown_unit_seconds Stop time of the five slowest units during the previous shutdown"
+    echo "# TYPE homelab_shutdown_unit_seconds gauge"
+    awk -v s="$start" '
+        $1 + 0 < s + 0 { next }
+        match($0, /systemd\[[0-9]+\]: Stopping [^ ]+/) {
+            u = substr($0, RSTART, RLENGTH); sub(/.*Stopping /, "", u); sub(/\.\.\.$/, "", u)
+            t[u] = $1; next
+        }
+        match($0, /systemd\[[0-9]+\]: Stopped [^ ]+/) {
+            u = substr($0, RSTART, RLENGTH); sub(/.*Stopped /, "", u); sub(/\.$/, "", u)
+            if (u in t) { d[u] = $1 - t[u]; delete t[u] }
+        }
+        END { for (u in d) printf "%.3f %s\n", d[u], u }' <<<"$log" \
+    | sort -rn \
+    | awk 'NR <= 5 { gsub(/["\\]/, "", $2); printf "homelab_shutdown_unit_seconds{unit=\"%s\"} %s\n", $2, $1 }'
+}
+
+for _ in {1..60}; do
+    declare -A ts=()
+    while IFS='=' read -r key value; do
+        ts["$key"]="$value"
+    done < <("$SYSTEMCTL" show \
+        -p FirmwareTimestampMonotonic -p LoaderTimestampMonotonic \
+        -p InitRDTimestampMonotonic -p UserspaceTimestampMonotonic \
+        -p FinishTimestampMonotonic)
+    [ "${ts[FinishTimestampMonotonic]:-0}" -gt 0 ] && break
+    unset ts
+    sleep 10
+done
+
+if [ "${ts[FinishTimestampMonotonic]:-0}" -eq 0 ]; then
+    echo >&2 "[ERROR] Boot has not finished after 10 minutes; no metrics written."
+    exit 1
+fi
+
+firmware=${ts[FirmwareTimestampMonotonic]:-0}
+loader=${ts[LoaderTimestampMonotonic]:-0}
+initrd=${ts[InitRDTimestampMonotonic]:-0}
+userspace=${ts[UserspaceTimestampMonotonic]:-0}
+finish=${ts[FinishTimestampMonotonic]}
+
+kernel_end=$(( initrd > 0 ? initrd : userspace ))
+stage_us=(
+    "firmware $(( firmware > 0 ? firmware - loader : 0 ))"
+    "loader ${loader}"
+    "kernel ${kernel_end}"
+    "initrd $(( initrd > 0 ? userspace - initrd : 0 ))"
+    "userspace $(( finish - userspace ))"
+)
+
+{
+    echo "# HELP homelab_boot_stage_seconds Duration of each boot stage, as systemd-analyze time reports it"
+    echo "# TYPE homelab_boot_stage_seconds gauge"
+    for s in "${stage_us[@]}"; do
+        read -r stage us <<<"$s"
+        awk -v st="$stage" -v us="$us" 'BEGIN { printf "homelab_boot_stage_seconds{stage=\"%s\"} %.3f\n", st, us / 1e6 }'
+    done
+    echo "# HELP homelab_boot_unit_seconds Activation time of the five slowest units this boot"
+    echo "# TYPE homelab_boot_unit_seconds gauge"
+    "$ANALYZE" blame --no-pager 2>/dev/null | head -n 5 | awk '
+        {
+            total = 0
+            for (i = 1; i < NF; i++) {
+                v = $i
+                if (v ~ /min$/)     { sub(/min$/, "", v); total += v * 60 }
+                else if (v ~ /ms$/) { sub(/ms$/, "", v);  total += v / 1000 }
+                else if (v ~ /us$/) { sub(/us$/, "", v);  total += v / 1e6 }
+                else if (v ~ /h$/)  { sub(/h$/, "", v);   total += v * 3600 }
+                else if (v ~ /s$/)  { sub(/s$/, "", v);   total += v }
+            }
+            unit = $NF
+            gsub(/["\\]/, "", unit)
+            printf "homelab_boot_unit_seconds{unit=\"%s\"} %.3f\n", unit, total
+        }'
+    shutdown_metrics
+} > "$PROM_TMP"
+
+mv -f "$PROM_TMP" "$PROM_FILE"
+chmod 0644 "$PROM_FILE"
+echo "[INFO] Boot took $(( finish / 1000000 ))s from kernel start to default.target."

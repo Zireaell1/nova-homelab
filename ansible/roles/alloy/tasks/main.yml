@@ -96,6 +96,32 @@
         mode: "0644"
       notify: Restart updates timer
 
+- name: Boot metrics block
+  when: alloy_enable_boot_metrics
+  block:
+    - name: Deploy boot metrics script
+      ansible.builtin.template:
+        src: boot_metrics.sh.j2
+        dest: /usr/local/bin/homelab-boot-metrics.sh
+        owner: root
+        group: root
+        mode: "0755"
+        validate: "bash -n %s"
+
+    - name: Deploy boot metrics service and timer
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "/etc/systemd/system/{{ item.dest }}"
+        owner: root
+        group: root
+        mode: "0644"
+      loop:
+        - { src: boot-metrics.service.j2, dest: homelab-boot-metrics.service }
+        - { src: boot-metrics.timer.j2, dest: homelab-boot-metrics.timer }
+      loop_control:
+        label: "{{ item.dest }}"
+      notify: Restart boot metrics timer
+
 - name: Flush handlers to restart Alloy if configurations changed
   ansible.builtin.meta: flush_handlers
 

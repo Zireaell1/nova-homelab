@@ -1,0 +1,12 @@
+[Unit]
+Description=Collect boot timing metrics
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/homelab-boot-metrics.sh
+
+PrivateTmp=true
+ProtectHome=true
+NoNewPrivileges=true
+
+TimeoutStartSec=15min
