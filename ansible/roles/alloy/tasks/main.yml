@@ -70,6 +70,19 @@
         state: present
       when: alloy_updates_packages[ansible_facts['os_family']] | length > 0
 
+    - name: Refresh apt package lists daily without upgrading (Debian)
+      ansible.builtin.copy:
+        dest: /etc/apt/apt.conf.d/99homelab-periodic
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          // Managed by Ansible
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "0";
+          APT::Update::Post-Invoke-Success { "mkdir -p /var/lib/apt/periodic && touch /var/lib/apt/periodic/update-success-stamp || true"; };
+      when: ansible_facts['os_family'] == 'Debian'
+
     - name: Deploy updates collector script
       ansible.builtin.template:
         src: "updates_{{ ansible_facts['os_family'] }}.sh.j2"
