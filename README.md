@@ -143,3 +143,9 @@ If you want to see exactly how this was built, check out the docs:
 5. [Services Intro](docs/05-services-intro.md)
 6. [Security Services](docs/06-security-services.md)
 7. [Smart Home and CCTV Services](docs/07-smart-home-cctv-services.md)
+
+## Credits
+Third-party material that lives in or is fetched by this repo (the services themselves are linked under *Deployed Services*):
+* `roles/alloy/files/smartmon.sh` — adapted from [prometheus-community/node-exporter-textfile-collector-scripts](https://github.com/prometheus-community/node-exporter-textfile-collector-scripts) (Apache-2.0); the update collectors follow its `apt_info.sh` / `yum.sh`.
+* Node Exporter Full — [rfmoz/grafana-dashboards](https://github.com/rfmoz/grafana-dashboards) (Apache-2.0), downloaded at deploy time.
+* 3D-printed rack parts — credited in [docs/01-hardware-and-rack.md](docs/01-hardware-and-rack.md).
