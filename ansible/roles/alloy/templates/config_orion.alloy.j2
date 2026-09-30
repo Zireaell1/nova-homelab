@@ -44,6 +44,8 @@ loki.write "remote_loki" {
 
         batch_wait = "30s"
         batch_size = "2MiB"
+
+        max_backoff_retries = 0
     }
 }
 
