@@ -43,6 +43,12 @@
 
 (standard) {
 	encode
+	handle_errors 5xx {
+		root * /errors
+		rewrite * /5xx.html
+		header Cache-Control "no-store"
+		file_server
+	}
 }
 
 (secure_headers) {

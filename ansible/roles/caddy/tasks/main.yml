@@ -10,6 +10,7 @@
     - "{{ user_bin_path }}"
     - "{{ stacks_path }}/caddy/caddy-build"
     - "{{ caddy_srv_path }}"
+    - "{{ stacks_path }}/caddy/errors"
 
 - name: Copy static files served by Caddy
   ansible.builtin.copy:
@@ -19,6 +20,14 @@
     group: "{{ ansible_user }}"
     mode: "0644"
   loop: "{{ caddy_static_files }}"
+
+- name: Copy Caddy error pages
+  ansible.builtin.copy:
+    src: errors/
+    dest: "{{ stacks_path }}/caddy/errors/"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
 
 - name: Upload Containerfile
   ansible.builtin.template:
