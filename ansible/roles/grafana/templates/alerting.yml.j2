@@ -6,6 +6,68 @@ groups:
       folder: Ansible Provisioned Alerts
       interval: 1m
       rules:
+        - uid: modem_unreachable
+          title: Modem Unreachable
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: probe_success{probe="modem"} == 0 and on() probe_success{probe="gateway"} == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 1m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The modem stopped answering ping while the gateway is fine."
+            impact: "The whole house is offline — the modem is rebooting, hung or without power. This message arrives once the internet is back."
+            action: "Modem uptime / session time in its web UI · was it the scheduled reboot? compare the modem's clock with real time · UPS: `network_ups_tools_ups_status{flag=\"OB\"}`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: wan_down
+          title: Internet Down, Modem Up
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: max(probe_success{hop="internet"}) == 0 and on() max(probe_success{probe="modem"}) == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 2m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Every internet probe fails while the modem itself answers."
+            impact: "Offline on the mobile side — carrier outage, lost data session or no signal. Nothing on Nova or the LAN is at fault. This message arrives once the internet is back."
+            action: "Modem web UI: signal (RSRP/SINR), network type, session counter · WAN dashboard for when it started"
+          notification_settings:
+            receiver: Discord
+
         - uid: host_oom_kill
           title: Kernel OOM Kill
           condition: A
@@ -624,6 +686,37 @@ groups:
       folder: Ansible Provisioned Alerts
       interval: 5m
       rules:
+        - uid: wan_packet_loss
+          title: Internet Packet Loss
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: avg_over_time(probe_success{probe=~"quad9|cloudflare"}[10m]) < 0.9 and on() max(probe_success{probe="modem"}) == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 10m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.probe {{ '}}' }}: {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} of pings answered over 10 minutes."
+            impact: "The mobile link is up but lossy — calls, streams and remote access stutter."
+            action: "Modem signal (RSRP/SINR, band) · WAN dashboard RTT panel · usually weather, cell load or antenna position"
+          notification_settings:
+            receiver: Discord
+
         - uid: log_error_burst
           title: Log Error Burst
           condition: A
