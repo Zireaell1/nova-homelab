@@ -97,11 +97,12 @@
         (podman_service_unit_files is changed) or
         (podman_service_changed_extra | bool)
       }}
-    podman_service_sockets_changed: >-
+    podman_service_timers_changed: >-
       {{ podman_service_unit_files.results | default([])
          | selectattr('changed')
          | map(attribute='item')
-         | select('search', '\.socket$')
+         | map('regex_replace', '\.service$', '.timer')
+         | select('search', '\.timer$')
          | list }}
 
 - name: Reload user systemd for {{ podman_service_name }}
@@ -116,9 +117,11 @@
     state: >-
       {{ 'restarted'
          if ((podman_service_restart_all | bool
-              and (not item.endswith('.socket')
-                   or item in podman_service_sockets_changed))
-             or item in podman_service_quadlets_changed)
+              and not item.endswith('.socket')
+              and not item.endswith('.timer'))
+             or item in podman_service_quadlets_changed
+             or item in podman_service_sockets_changed
+             or item in podman_service_timers_changed)
          else 'started' }}
     enabled: true
     scope: user
