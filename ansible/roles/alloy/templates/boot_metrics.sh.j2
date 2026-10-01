@@ -13,8 +13,8 @@
 #         `systemd-analyze time` prints. Finish stays 0 until boot completes.
 # * systemd-analyze blame --no-pager
 #       : Units sorted by activation time; the top five become metrics.
-# * journalctl -b -1 -o short-unix --no-pager
-#       : The previous boot's journal, for how long its shutdown took.
+# * journalctl -b -1 -o short-unix --no-pager [_COMM=… | -n 1 | --since @…]
+#       : Narrow reads of the previous boot's journal, for how long its shutdown took.
 #         Needs a persistent journal; silently skipped when there is none.
 # ==============================================================================
 set -Eeuo pipefail
@@ -29,14 +29,14 @@ ANALYZE="${ANALYZE:-systemd-analyze}"
 JOURNALCTL="${JOURNALCTL:-journalctl}"
 
 shutdown_metrics() {
-    local log start end
-    log="$("$JOURNALCTL" -b -1 -o short-unix --no-pager 2>/dev/null)" || return 0
-    [ -n "$log" ] || return 0
-    start="$(awk '/systemd-logind\[[0-9]+\]: (The system will (reboot|power off)|System is (rebooting|powering down))/ { print $1; exit }' <<<"$log")"
-    end="$(awk 'END { print $1 }' <<<"$log")"
-    if [ -z "$start" ] || [ -z "$end" ]; then
+    local announce start end stops
+    announce="$("$JOURNALCTL" -b -1 -o short-unix --no-pager _COMM=systemd-logind 2>/dev/null)" || return 0
+    start="$(awk '/(The system will (reboot|power off)|System is (rebooting|powering down))/ { s = $1 } END { print s }' <<<"$announce")"
+    end="$("$JOURNALCTL" -b -1 -n 1 -o short-unix --no-pager 2>/dev/null | awk '{ e = $1 } END { print e }')"
+    if ! [[ "$start" =~ ^[0-9]+(\.[0-9]+)?$ && "$end" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
         return 0
     fi
+    stops="$("$JOURNALCTL" -b -1 -o short-unix --no-pager --since "@${start%.*}" _COMM=systemd 2>/dev/null)" || stops=""
     echo "# HELP homelab_shutdown_seconds Previous shutdown: logind's announcement to the last journal line of that boot"
     echo "# TYPE homelab_shutdown_seconds gauge"
     awk -v s="$start" -v e="$end" 'BEGIN { printf "homelab_shutdown_seconds %.3f\n", e - s }'
@@ -52,7 +52,7 @@ shutdown_metrics() {
             u = substr($0, RSTART, RLENGTH); sub(/.*Stopped /, "", u); sub(/\.$/, "", u)
             if (u in t) { d[u] = $1 - t[u]; delete t[u] }
         }
-        END { for (u in d) printf "%.3f %s\n", d[u], u }' <<<"$log" \
+        END { for (u in d) printf "%.3f %s\n", d[u], u }' <<<"$stops" \
     | sort -rn \
     | awk 'NR <= 5 { gsub(/["\\]/, "", $2); printf "homelab_shutdown_unit_seconds{unit=\"%s\"} %s\n", $2, $1 }'
 }
