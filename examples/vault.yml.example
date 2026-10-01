@@ -27,6 +27,8 @@ vault_gateway_home: ""
 vault_gateway_homelab: ""
 vault_gateway_iot: ""
 
+vault_modem_ip: ""
+
 # Immich
 vault_immich_storage_password: ""
 
@@ -76,9 +78,6 @@ vault_caddy_cf_api_token: ""
 vault_caddy_frigate_auth_secret: ""
 
 # Pi-Hole
-# Format: 'DNS1;DNS2'
-vault_pihole_dns_upstreams: ""
-
 # Password for web UI
 vault_pihole_webserver_api_password: ""
 

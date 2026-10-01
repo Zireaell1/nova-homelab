@@ -29,10 +29,7 @@
     conn_name: "{{ primary_network_interface_name }}"
     ifname: "{{ primary_network_interface_name }}"
     type: ethernet
-    dns4:
-      - "127.0.0.1"
-      - "9.9.9.11"
-      - "149.112.112.11"
+    dns4: "{{ ['127.0.0.1'] + dns_upstreams }}"
     dns4_ignore_auto: true
     state: present
     conn_reload: true

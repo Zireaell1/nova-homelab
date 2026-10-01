@@ -193,3 +193,106 @@ prometheus.relabel "containers" {
         action = "labeldrop"
     }
 }
+
+prometheus.exporter.blackbox "wan" {
+    config = `
+modules:
+  icmp:
+    prober: icmp
+    timeout: 2s
+    icmp:
+      preferred_ip_protocol: ip4
+  http_204:
+    prober: http
+    timeout: 5s
+    http:
+      preferred_ip_protocol: ip4
+      valid_status_codes: [204]
+      follow_redirects: false
+  dns_a:
+    prober: dns
+    timeout: 3s
+    dns:
+      preferred_ip_protocol: ip4
+      transport_protocol: udp
+      query_name: example.com
+      query_type: A
+      valid_rcodes: [NOERROR]
+`
+
+    target {
+        name    = "gateway"
+        address = "{{ vault_gateway_homelab }}"
+        module  = "icmp"
+        labels  = { "probe" = "gateway", "hop" = "lan" }
+    }
+
+    target {
+        name    = "modem"
+        address = "{{ vault_modem_ip }}"
+        module  = "icmp"
+        labels  = { "probe" = "modem", "hop" = "modem" }
+    }
+
+    target {
+        name    = "quad9"
+        address = "9.9.9.9"
+        module  = "icmp"
+        labels  = { "probe" = "quad9", "hop" = "internet" }
+    }
+
+    target {
+        name    = "cloudflare"
+        address = "1.1.1.1"
+        module  = "icmp"
+        labels  = { "probe" = "cloudflare", "hop" = "internet" }
+    }
+
+    target {
+        name    = "http"
+        address = "http://connectivitycheck.gstatic.com/generate_204"
+        module  = "http_204"
+        labels  = { "probe" = "http", "hop" = "internet" }
+    }
+
+    target {
+        name    = "dns"
+        address = "{{ dns_upstreams[0] }}:53"
+        module  = "dns_a"
+        labels  = { "probe" = "dns", "hop" = "internet" }
+    }
+}
+
+discovery.relabel "wan_fast" {
+    targets = prometheus.exporter.blackbox.wan.targets
+
+    rule {
+        source_labels = ["probe"]
+        regex         = "http"
+        action        = "drop"
+    }
+}
+
+discovery.relabel "wan_http" {
+    targets = prometheus.exporter.blackbox.wan.targets
+
+    rule {
+        source_labels = ["probe"]
+        regex         = "http"
+        action        = "keep"
+    }
+}
+
+prometheus.scrape "wan" {
+    targets         = discovery.relabel.wan_fast.output
+    forward_to      = [prometheus.remote_write.local_prom.receiver]
+    scrape_interval = "15s"
+    scrape_timeout  = "10s"
+}
+
+prometheus.scrape "wan_http" {
+    targets         = discovery.relabel.wan_http.output
+    forward_to      = [prometheus.remote_write.local_prom.receiver]
+    scrape_interval = "60s"
+    scrape_timeout  = "10s"
+}

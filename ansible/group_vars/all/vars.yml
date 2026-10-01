@@ -10,3 +10,7 @@ eink_display_fetch_interval: 60
 nova_hostname: "nova-2"
 
 nut_ups_exporter_user: "ups_exporter"
+
+dns_upstreams:
+  - "9.9.9.11"
+  - "149.112.112.11"
