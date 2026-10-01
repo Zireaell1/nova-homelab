@@ -92,10 +92,16 @@ count_pending_security() {
 
 check_reboot() {
     local verdict=""
-    run_dnf needs-restarting --json
-    verdict="$(printf '%s' "$DNF_OUT" \
-        | python3 -c 'import json, sys; print(int(json.load(sys.stdin)[0]["reboot_required"]))' 2>/dev/null)" \
-        || verdict=""
+    run_dnf --disablerepo='*' needs-restarting --json
+    if [ -n "$DNF_OUT" ]; then
+        verdict="$(printf '%s' "$DNF_OUT" | python3 -c '
+import json, sys
+try:
+    print(int(json.load(sys.stdin)[0]["reboot_required"]))
+except Exception:
+    pass
+')"
+    fi
     case "$verdict" in
         0 | 1)
             REBOOT_REQUIRED="$verdict"
