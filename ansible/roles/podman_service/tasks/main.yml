@@ -97,6 +97,12 @@
         (podman_service_unit_files is changed) or
         (podman_service_changed_extra | bool)
       }}
+    podman_service_sockets_changed: >-
+      {{ podman_service_unit_files.results | default([])
+         | selectattr('changed')
+         | map(attribute='item')
+         | select('search', '\.socket$')
+         | list }}
     podman_service_timers_changed: >-
       {{ podman_service_unit_files.results | default([])
          | selectattr('changed')
