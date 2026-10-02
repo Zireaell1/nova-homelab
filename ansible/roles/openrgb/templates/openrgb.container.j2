@@ -17,6 +17,7 @@ UserNS=keep-id:uid=0,gid=0
 # --- Security / Capabilities ---
 DropCapability=all
 NoNewPrivileges=true
+ReadOnly=true
 DNS=none
 
 # --- Resource Limits ---
@@ -24,6 +25,9 @@ Memory={{ openrgb_memory_limit }}
 
 # --- Devices ---
 AddDevice=/dev/asrock_rgb_hid
+
+# --- Storage ---
+Tmpfs=/root/.config:rw,size=16m,mode=0700
 
 # --- Networking ---
 Network=openrgb.network
