@@ -25,27 +25,40 @@
     state: started
     enabled: true
 
-- name: Check current Tailscale connection status
-  ansible.builtin.command: tailscale status
-  register: tailscale_status
+- name: Read Tailscale state
+  ansible.builtin.command: tailscale status --json --peers=false
+  register: tailscale_status_raw
   changed_when: false
   check_mode: false
   failed_when: false
 
-- name: Authenticate and register node (First run only)
-  ansible.builtin.command: >
+- name: Log in to the tailnet (first run, or after a logout)
+  ansible.builtin.command: >-
     tailscale up
-    --authkey={{ vault_tailscale_auth_key }}
-    --advertise-routes={{ vault_primary_ip }}/32
-    --advertise-tags=tag:homelab
-    --accept-dns=false
-    --reset
-  when: "'Logged out' in tailscale_status.stdout or tailscale_status.rc != 0"
+    --auth-key={{ vault_tailscale_auth_key }}
+    --advertise-tags={{ tailscale_advertise_tags | join(',') }}
+    --advertise-routes={{ tailscale_advertise_routes | join(',') }}
+    --accept-dns={{ tailscale_accept_dns | lower }}
+  when: >-
+    tailscale_status_raw.rc != 0
+    or (tailscale_status_raw.stdout | from_json).BackendState == 'NeedsLogin'
   changed_when: true
   no_log: true
-# - name: Re-apply configuration updates (Subsequent runs)
-#   ansible.builtin.command: "tailscale up --advertise-routes={{ vault_primary_ip }}/32 --advertise-tags=tag:homelab --accept-dns=false --reset"
-#   when:
-#     - "'Logged out' not in tailscale_status.stdout"
-#     - tailscale_status.rc == 0
-#   changed_when: true
+
+- name: Read Tailscale preferences
+  ansible.builtin.command: tailscale debug prefs
+  register: tailscale_prefs_raw
+  changed_when: false
+  check_mode: false
+
+- name: Apply Tailscale preferences
+  ansible.builtin.command: >-
+    tailscale set
+    --advertise-routes={{ tailscale_advertise_routes | join(',') }}
+    --accept-dns={{ tailscale_accept_dns | lower }}
+  vars:
+    tailscale_prefs: "{{ tailscale_prefs_raw.stdout | from_json }}"
+  when: >-
+    (tailscale_prefs.AdvertiseRoutes | default([], true) | sort) != (tailscale_advertise_routes | sort)
+    or (tailscale_prefs.CorpDNS | bool) != (tailscale_accept_dns | bool)
+  changed_when: true

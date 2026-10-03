@@ -1,0 +1,8 @@
+---
+tailscale_advertise_routes:
+  - "{{ vault_primary_ip }}/32"
+
+tailscale_advertise_tags:
+  - tag:homelab
+
+tailscale_accept_dns: false
