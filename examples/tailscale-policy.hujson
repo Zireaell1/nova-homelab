@@ -1,0 +1,41 @@
+{
+    // Replace with own users
+	"groups": {
+		"group:family": ["USER_ADMIN", "USER_1", "USER_2"],
+	},
+
+	"tagOwners": {
+		"tag:Homelab": ["autogroup:admin"],
+	},
+
+    // Replace with homelab server IP
+	"hosts": {
+		"nova-lan": "HOMELAB_IP",
+	},
+
+	"grants": [
+		{
+			"src": ["group:family"],
+			"dst": ["tag:Homelab", "nova-lan"],
+			"ip":  ["tcp:443", "udp:443", "tcp:53", "udp:53", "tcp:8555", "udp:8555"],
+		},
+	],
+
+    // Replace with homelab server IP
+	"autoApprovers": {
+		"routes": {
+			"HOMELAB_IP/32": ["tag:Homelab"],
+		},
+	},
+
+	"ssh": [],
+
+    // Replace with own user (admin)
+	"tests": [
+		{
+			"src":    "USER_ADMIN",
+			"accept": ["tag:Homelab:443", "nova-lan:443", "nova-lan:53"],
+			"deny":   ["tag:Homelab:22", "nova-lan:22", "nova-lan:3000"],
+		},
+	],
+}
