@@ -2331,6 +2331,36 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: boot_collector_failed
+          title: Boot Collector Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_boot_collector_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The boot metrics collector on {{ '{{' }} $labels.instance {{ '}}' }} failed."
+            impact: "Boot and shutdown timings show the previous good run."
+            action: "`journalctl -u homelab-boot-metrics.service -b` — the [ERROR] line names the failing command"
+          notification_settings:
+            receiver: Discord
+
         - uid: smart_critical_warning
           title: SMART Critical Warning
           condition: A

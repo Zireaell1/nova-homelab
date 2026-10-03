@@ -23,7 +23,29 @@ trap 'echo >&2 "[ERROR] line ${LINENO}: exit $? — ${BASH_COMMAND}"' ERR
 PROM_DIR="{{ textfile_metrics_path }}"
 PROM_FILE="${PROM_DIR}/homelab_boot.prom"
 PROM_TMP="${PROM_DIR}/.homelab_boot.prom.$$"
-trap 'rm -f "$PROM_TMP"' EXIT
+STATUS_FILE="${PROM_DIR}/homelab_boot_status.prom"
+STATUS_TMP="${PROM_DIR}/.homelab_boot_status.prom.$$"
+
+write_status() {
+    cat > "$STATUS_TMP" <<PROM
+# HELP homelab_boot_collector_success Whether the boot collector completed without error (1) or not (0)
+# TYPE homelab_boot_collector_success gauge
+homelab_boot_collector_success $1
+# HELP homelab_boot_collector_last_run_timestamp_seconds When the boot collector last finished
+# TYPE homelab_boot_collector_last_run_timestamp_seconds gauge
+homelab_boot_collector_last_run_timestamp_seconds $(date +%s)
+PROM
+    chmod 0644 "$STATUS_TMP"
+    mv -f "$STATUS_TMP" "$STATUS_FILE"
+}
+
+on_exit() {
+    local rc=$?
+    rm -f "$PROM_TMP"
+    write_status "$(( rc == 0 ? 1 : 0 ))" || rm -f "$STATUS_TMP"
+}
+trap on_exit EXIT
+trap 'exit 143' TERM INT
 
 SYSTEMCTL="${SYSTEMCTL:-systemctl}"
 ANALYZE="${ANALYZE:-systemd-analyze}"
