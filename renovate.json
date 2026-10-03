@@ -35,7 +35,7 @@
         "ansible/roles/*/defaults/*.yml"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)(?: packageName=(?<packageName>.*?))?(?: versioning=(?<versioning>.*?))?\\n\\s*.*?:\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?"
+        "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)(?: packageName=(?<packageName>.*?))?(?: versioning=(?<versioning>.*?))?\\n\\s*.*?:\\s*[\"']?(?<currentValue>[^\"'\\s@]+)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?[\"']?"
       ]
     }
   ],
@@ -48,6 +48,35 @@
       "ignoreUnstable": false,
       "respectLatest": false,
       "allowedVersions": "/^v?\\d+\\.\\d+\\.\\d+(-(beta|rc)\\.?\\d*)?$/"
+    },
+    {
+      "description": "GHCR exposes no release timestamps, so minimumReleaseAge would block these forever. Skip the gate, and flag the PR for a manual release-date check.",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "ghcr.io/**"
+      ],
+      "minimumReleaseAgeBehaviour": "timestamp-optional",
+      "addLabels": [
+        "no-release-age"
+      ],
+      "prBodyNotes": [
+        "**No release-age delay:** GHCR publishes no release timestamps, so the 7-day `minimumReleaseAge` was not applied to this update. Check the release date upstream before merging."
+      ]
+    },
+    {
+      "description": "Immich dictates Postgres/Valkey versions via its compose file; digest refreshes only",
+      "matchDepNames": [
+        "immich-postgres",
+        "immich-redis"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "patch"
+      ],
+      "enabled": false
     }
   ]
 }
