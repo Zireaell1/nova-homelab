@@ -37,6 +37,33 @@
     - Reload systemd user daemon
     - Show Podman network recreate warning
 
+- name: Stop retired services
+  ansible.builtin.systemd:
+    name: "{{ item.1 | regex_replace('\\.container$', '.service') }}"
+    state: stopped
+    scope: user
+  loop: "{{ podman_retired_services | subelements('quadlets') }}"
+  loop_control:
+    label: "{{ item.1 }}"
+  failed_when: false
+
+- name: Remove retired quadlets
+  ansible.builtin.file:
+    path: "{{ quadlet_path }}/{{ item.1 }}"
+    state: absent
+  loop: "{{ podman_retired_services | subelements('quadlets') }}"
+  loop_control:
+    label: "{{ item.1 }}"
+  notify: Reload systemd user daemon
+
+- name: Purge retired service data
+  ansible.builtin.file:
+    path: "{{ stacks_path }}/{{ item.name }}"
+    state: absent
+  loop: "{{ podman_retired_services | selectattr('purge', 'defined') | selectattr('purge') | list }}"
+  loop_control:
+    label: "{{ stacks_path }}/{{ item.name }}"
+
 - name: Find orphaned network quadlets
   ansible.builtin.find:
     paths: "{{ quadlet_path }}"
@@ -44,14 +71,36 @@
     excludes: "{{ podman_networks | map(attribute='name') | map('regex_replace', '$', '.network') | list }}"
   register: podman_user_stale_networks
 
-- name: Remove orphaned network quadlets
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: absent
+- name: Find deployed quadlets that still join an orphaned network
+  ansible.builtin.find:
+    paths: "{{ quadlet_path }}"
+    patterns: "*.container"
+    contains: '^\s*Network\s*=\s*{{ item.path | basename | regex_escape }}\s*$'
   loop: "{{ podman_user_stale_networks.files }}"
   loop_control:
     label: "{{ item.path | basename }}"
+  register: podman_user_stale_network_users
+
+- name: Remove orphaned network quadlets no container joins any more
+  ansible.builtin.file:
+    path: "{{ item.item.path }}"
+    state: absent
+  loop: "{{ podman_user_stale_network_users.results }}"
+  loop_control:
+    label: "{{ item.item.path | basename }}"
+  when: item.matched == 0
   notify: Reload systemd user daemon
+
+- name: Report orphaned networks kept for now
+  ansible.builtin.debug:
+    msg: >-
+      Kept {{ item.item.path | basename }}: still joined by
+      {{ item.files | map(attribute='path') | map('basename') | join(', ') }}.
+      It goes on the next run, once that quadlet no longer names it.
+  loop: "{{ podman_user_stale_network_users.results }}"
+  loop_control:
+    label: "{{ item.item.path | basename }}"
+  when: item.matched > 0
 
 - name: Deploy Systemd Service file
   ansible.builtin.template:

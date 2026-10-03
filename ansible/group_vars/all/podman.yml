@@ -22,3 +22,10 @@ podman_networks:
   - { name: immich-backend, internal: true }
   - { name: openrgb, internal: true }
   - { name: restic, internal: true }
+
+# Services removed from the repo. For each entry podman_user stops the unit,
+# deletes its quadlet files and reloads systemd. Nothing else is restarted, and
+# data under stacks_path stays unless purge: true. Drop an entry once every
+# host has run it.
+#   - { name: peanut, quadlets: [peanut.container], purge: false }
+podman_retired_services: []
