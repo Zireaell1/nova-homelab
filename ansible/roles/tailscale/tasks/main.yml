@@ -39,6 +39,7 @@
     --advertise-tags={{ tailscale_advertise_tags | join(',') }}
     --advertise-routes={{ tailscale_advertise_routes | join(',') }}
     --accept-dns={{ tailscale_accept_dns | lower }}
+    --reset
   when: >-
     tailscale_status_raw.rc != 0
     or (tailscale_status_raw.stdout | from_json).BackendState == 'NeedsLogin'
