@@ -4,7 +4,7 @@ argument_specs:
     short_description: Grafana Alloy with host collectors and textfile scripts
     description:
       - Root plane. Installs Alloy, deploys the per-host config, and optionally the
-        smartmon, pending-updates and boot-timing collectors.
+        smartmon, smartd self-test, pending-updates and boot-timing collectors.
     options:
       alloy_config_template:
         type: str
@@ -35,3 +35,15 @@ argument_specs:
         type: bool
         default: true
         description: Deploy the boot-timing collector and its once-per-boot timer.
+      alloy_smartd_conf_path:
+        type: str
+        default: /etc/smartmontools/smartd.conf
+        description: Where smartd reads its config (Fedora path; the block runs on Nova only).
+      alloy_smartd_device_overrides:
+        type: list
+        elements: dict
+        default: []
+        description: Per-device smartd lines (device by-id path + directives) placed before DEVICESCAN.
+        options:
+          device: { type: str, required: true }
+          directives: { type: str, required: true }

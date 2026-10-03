@@ -44,3 +44,7 @@ secondary_network_interface_name: "enp2s0"
 
 nut_ups_vendorid: "0463"
 nut_ups_productid: "ffff"
+
+alloy_smartd_device_overrides:
+  - device: /dev/disk/by-id/ata-WDC_WD43PURZ-74BWPY0_WD-WX32DB4NA9AL
+    directives: "-H -f -l error -l selftest -s S/../.././03"

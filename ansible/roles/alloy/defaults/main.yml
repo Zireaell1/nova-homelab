@@ -12,3 +12,7 @@ alloy_updates_packages:
   Debian: []
 
 alloy_updates_on_calendar: "*-*-* 06:00:00"
+
+alloy_smartd_conf_path: /etc/smartmontools/smartd.conf
+
+alloy_smartd_device_overrides: []

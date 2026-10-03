@@ -29,3 +29,9 @@
     daemon_reload: true
   when: alloy_enable_boot_metrics
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart smartd
+  ansible.builtin.systemd:
+    name: smartd.service
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"

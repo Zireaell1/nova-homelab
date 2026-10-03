@@ -61,6 +61,16 @@
         mode: "0644"
       notify: Restart smartmon service
 
+    - name: Deploy smartd configuration (self-test schedule)
+      ansible.builtin.template:
+        src: smartd.conf.j2
+        dest: "{{ alloy_smartd_conf_path }}"
+        owner: root
+        group: root
+        mode: "0644"
+        backup: true
+      notify: Restart smartd
+
 - name: Updates collector block
   when: alloy_enable_updates
   block:
@@ -142,6 +152,14 @@
 - name: Ensure smartmon daemon is enabled and running
   ansible.builtin.systemd:
     name: smartmon.service
+    state: started
+    enabled: true
+  when: alloy_enable_smartmon
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Ensure smartd is enabled and running
+  ansible.builtin.systemd:
+    name: smartd.service
     state: started
     enabled: true
   when: alloy_enable_smartmon
