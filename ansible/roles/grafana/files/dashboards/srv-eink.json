@@ -142,7 +142,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -258,7 +258,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -376,7 +376,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -482,7 +482,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -571,7 +571,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -635,7 +635,7 @@
                                 "wrapLogMessage": true
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -737,7 +737,7 @@
                                 "textMode": "auto"
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -836,7 +836,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -935,7 +935,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1021,7 +1021,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1107,7 +1107,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1189,7 +1189,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1279,7 +1279,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1310,6 +1310,29 @@
                                             "version": "v0"
                                         },
                                         "refId": "A"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "increase(eink_blinks_total[1h]) * 2",
+                                                "instant": false,
+                                                "interval": "1h",
+                                                "legendFormat": "of which blinks",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "B"
                                     }
                                 }
                             ],
@@ -1371,16 +1394,58 @@
                                             {
                                                 "color": "green",
                                                 "value": 0
-                                            },
-                                            {
-                                                "color": "red",
-                                                "value": 80
                                             }
                                         ]
                                     },
                                     "unit": "short"
                                 },
-                                "overrides": []
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "options": "of which blinks",
+                                            "scope": "series"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "custom.drawStyle",
+                                                "value": "line"
+                                            },
+                                            {
+                                                "id": "custom.stacking",
+                                                "value": {
+                                                    "group": "A",
+                                                    "mode": "none"
+                                                }
+                                            },
+                                            {
+                                                "id": "custom.fillOpacity",
+                                                "value": 0
+                                            },
+                                            {
+                                                "id": "custom.lineWidth",
+                                                "value": 2
+                                            },
+                                            {
+                                                "id": "custom.lineStyle",
+                                                "value": {
+                                                    "dash": [
+                                                        10,
+                                                        10
+                                                    ],
+                                                    "fill": "dash"
+                                                }
+                                            },
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "blue",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
                             },
                             "options": {
                                 "legend": {
@@ -1391,12 +1456,12 @@
                                 },
                                 "tooltip": {
                                     "hideZeros": false,
-                                    "mode": "single",
+                                    "mode": "multi",
                                     "sort": "none"
                                 }
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -1426,6 +1491,28 @@
                                             "version": "v0"
                                         },
                                         "refId": "A"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "eink_partials_limit",
+                                                "instant": false,
+                                                "legendFormat": "Limit",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "B"
                                     }
                                 }
                             ],
@@ -1477,10 +1564,9 @@
                                             "mode": "none"
                                         },
                                         "thresholdsStyle": {
-                                            "mode": "dashed"
+                                            "mode": "off"
                                         }
                                     },
-                                    "max": 10,
                                     "min": 0,
                                     "thresholds": {
                                         "mode": "absolute",
@@ -1488,23 +1574,54 @@
                                             {
                                                 "color": "green",
                                                 "value": 0
-                                            },
-                                            {
-                                                "color": "red",
-                                                "value": 8
                                             }
                                         ]
                                     },
                                     "unit": "short"
                                 },
-                                "overrides": []
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "options": "Limit",
+                                            "scope": "series"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "red",
+                                                    "mode": "fixed"
+                                                }
+                                            },
+                                            {
+                                                "id": "custom.lineStyle",
+                                                "value": {
+                                                    "dash": [
+                                                        10,
+                                                        10
+                                                    ],
+                                                    "fill": "dash"
+                                                }
+                                            },
+                                            {
+                                                "id": "custom.fillOpacity",
+                                                "value": 0
+                                            },
+                                            {
+                                                "id": "custom.showPoints",
+                                                "value": "never"
+                                            }
+                                        ]
+                                    }
+                                ]
                             },
                             "options": {
                                 "legend": {
                                     "calcs": [],
                                     "displayMode": "list",
                                     "placement": "bottom",
-                                    "showLegend": false
+                                    "showLegend": true
                                 },
                                 "tooltip": {
                                     "hideZeros": false,
@@ -1513,7 +1630,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.1"
+                        "version": "13.2.2"
                     }
                 }
             }
