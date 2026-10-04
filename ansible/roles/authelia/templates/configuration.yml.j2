@@ -245,6 +245,9 @@ regulation:
   ban_time: '15 minutes'
 
 session:
+  expiration: '12 hours'
+  inactivity: '1 hour'
+  remember_me: '3 months'
   cookies:
     - name: 'authelia_session'
       domain: '{{ vault_domain }}'
