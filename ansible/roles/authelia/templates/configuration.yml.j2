@@ -164,11 +164,21 @@ access_control:
     # ===============================================================================
     # User Services
     # ===============================================================================
+    # Frigate keeps two-factor for admins
+    - domain: '{{ service_endpoints['frigate']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+
     - domain:
         - '{{ service_endpoints['frigate']['subdomain'] }}.{{ vault_domain }}'
         - '{{ service_endpoints['eink']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ service_endpoints['files']['subdomain'] }}.{{ vault_domain }}'
         - '{{ vault_domain }}'
-      policy: 'two_factor'
+      policy: 'one_factor'
       networks:
         - 'internal'
         - 'tailscale'
@@ -176,21 +186,13 @@ access_control:
         - ['group:user']
         - ['group:admin']
 
+    # One-factor access for dashboard
     - domain: '{{ service_endpoints['files']['subdomain'] }}.{{ vault_domain }}'
       policy: 'one_factor'
       networks:
         - 'dashboard'
       subject:
         - ['group:dashboard-group']
-
-    - domain: '{{ service_endpoints['files']['subdomain'] }}.{{ vault_domain }}'
-      policy: 'two_factor'
-      networks:
-        - 'internal'
-        - 'tailscale'
-      subject:
-        - ['group:user']
-        - ['group:admin']
 
     # ===============================================================================
     # Admin Services
