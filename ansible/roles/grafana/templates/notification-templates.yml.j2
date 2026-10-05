@@ -26,6 +26,7 @@ templates:
         {{- end }}
         {{- with .Alerts.Resolved }}{{ if $.Alerts.Firing }}
         **Resolved**{{ end }}
-        {{- range . }}{{ template "nova.alert" . }}{{ end }}{{ end }}
+        {{- range . }}{{ template "nova.alert" . }}
+        -# from {{ .StartsAt.Local.Format "Jan 2 15:04" }} to {{ .EndsAt.Local.Format "15:04" }}{{ end }}{{ end }}
         {{- end }}
 {% endraw %}
