@@ -33,6 +33,12 @@ Network=home.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+HealthCmd=["grep", "-qE", ":075B [0-9A-F]+:0000 0A", "/proc/net/tcp", "/proc/net/tcp6"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+
 [Service]
 Restart=always
 RestartSec=10
