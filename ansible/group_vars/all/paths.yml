@@ -13,6 +13,8 @@ caddy_srv_path: "{{ stacks_path }}/caddy/srv"
 
 git_backup_dir: "{{ user_backups_path }}/git_repos"
 
+ansible_escrow_dir: "{{ user_backups_path }}/ansible"
+
 quadlet_path: "{{ user_config_path }}/containers/systemd"
 user_units_path: "{{ user_config_path }}/systemd/user"
 

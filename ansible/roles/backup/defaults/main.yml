@@ -6,5 +6,7 @@ backup_restic_password_file: "{{ user_config_path }}/restic/.repo_pass"
 
 backup_b2_quota_bytes: 9000000000
 
+backup_escrow_vault: "{{ inventory_dir }}/group_vars/all/vault.yml"
+
 backup_canary_file: "{{ user_backups_path }}/canary.txt"
 backup_canary_max_age: 172800

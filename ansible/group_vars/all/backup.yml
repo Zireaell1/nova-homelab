@@ -12,6 +12,7 @@ backup_targets:
   - name: restic
     paths:
       - "{{ git_backup_dir }}"
+      - "{{ ansible_escrow_dir }}"
   - name: vaultwarden
     stop: true
     paths:

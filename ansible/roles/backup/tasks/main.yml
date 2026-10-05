@@ -21,8 +21,28 @@
     - "{{ local_backup_path }}"
     - "{{ user_backups_path }}"
     - "{{ git_backup_dir }}"
+    - "{{ ansible_escrow_dir }}"
     - "{{ user_config_path }}/rclone"
     - "{{ user_config_path }}/restic"
+
+- name: Refuse to escrow a plaintext vault
+  ansible.builtin.assert:
+    that:
+      - lookup('ansible.builtin.pipe', 'head -c 14 ' ~ (backup_escrow_vault | quote)) == '$ANSIBLE_VAULT'
+    fail_msg: "{{ backup_escrow_vault }} is not encrypted; refusing to copy it into the backup set."
+    quiet: true
+
+- name: Escrow the encrypted vault and inventory into the backup set
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_escrow_dir }}/"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0600"
+    decrypt: false
+  loop:
+    - "{{ backup_escrow_vault }}"
+    - "{{ inventory_file }}"
 
 - name: Deploy Restic password
   ansible.builtin.copy:

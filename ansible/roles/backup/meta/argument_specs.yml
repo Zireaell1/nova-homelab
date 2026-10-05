@@ -41,6 +41,9 @@ argument_specs:
         type: int
         default: 9000000000
         description: Cloud sync is skipped when the projected size exceeds this.
+      backup_escrow_vault:
+        type: path
+        description: Encrypted Ansible Vault on the controller, copied as ciphertext into ansible_escrow_dir.
       backup_canary_file:
         type: path
         default: "{{ user_backups_path }}/canary.txt"
