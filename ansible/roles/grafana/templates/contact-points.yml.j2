@@ -13,3 +13,14 @@ contactPoints:
             title: '{% raw %}{{ template "nova.title" . }}{% endraw %}'
             message: '{% raw %}{{ template "nova.message" . }}{% endraw %}'
           disableResolveMessage: false
+
+
+muteTimes:
+    - orgId: 1
+      name: weekly-maintenance
+      time_intervals:
+        - weekdays: ['sunday']
+          times:
+            - start_time: '01:55'
+              end_time: '02:50'
+          location: '{{ timezone }}'

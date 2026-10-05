@@ -743,6 +743,8 @@ groups:
             action: "Grafana Explore: `{host=\"{{ '{{' }} $labels.host {{ '}}' }}\", container=\"{{ '{{' }} $labels.container {{ '}}' }}\"} | detected_level=~\"(?i)error\"` · `podman logs --since 30m {{ '{{' }} $labels.container {{ '}}' }}` or `journalctl --since -30min -u {{ '{{' }} $labels.unit {{ '}}' }}`"
           notification_settings:
             receiver: Discord
+            mute_time_intervals:
+              - weekly-maintenance
 
         - uid: host_memory_low
           title: Host Memory Low
