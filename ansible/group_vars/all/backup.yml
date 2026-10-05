@@ -19,6 +19,10 @@ backup_targets:
       - "{{ stacks_path }}/vaultwarden/data"
     excludes:
       - "{{ stacks_path }}/vaultwarden/data/icon_cache"
+  - name: authelia-postgres
+    stop: true
+    paths:
+      - "{{ stacks_path }}/authelia/postgres"
   - name: zigbee2mqtt
     stop: true
     paths:
