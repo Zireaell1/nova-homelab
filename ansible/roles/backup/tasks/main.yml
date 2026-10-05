@@ -97,6 +97,15 @@
     mode: "0700"
     validate: "bash -n %s"
 
+- name: Generate backup result script (ExecStopPost)
+  ansible.builtin.template:
+    src: homelab-backup-result.sh.j2
+    dest: "{{ user_bin_path }}/homelab-backup-result.sh"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0700"
+    validate: "bash -n %s"
+
 - name: Deploy Systemd Service file
   ansible.builtin.template:
     src: "homelab-backup.service.j2"

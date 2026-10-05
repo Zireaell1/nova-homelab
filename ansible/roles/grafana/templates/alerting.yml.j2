@@ -1483,6 +1483,36 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: backup_unit_killed
+          title: Backup Run Killed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_unit_success{result=~"timeout|signal|core-dump|oom-kill|watchdog"} == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "The last backup run was killed ({{ '{{' }} $labels.result {{ '}}' }}) before it could report."
+            impact: "No snapshot from that run, and services it stopped may still be down."
+            action: "`journalctl --user -u homelab-backup.service -n 80` · `systemctl --user --failed` · check `homelab_backup_services_down`"
+          notification_settings:
+            receiver: Discord
+
         - uid: backup_metrics_absent
           title: Backup Metrics Absent
           condition: A

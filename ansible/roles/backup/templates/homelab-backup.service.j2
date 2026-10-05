@@ -12,6 +12,7 @@ Type=oneshot
 
 ExecStartPre=-{{ user_bin_path }}/git-sync.sh
 ExecStart={{ user_bin_path }}/homelab-backup.sh
+ExecStopPost={{ user_bin_path }}/homelab-backup-result.sh
 
 StandardOutput=journal
 StandardError=journal

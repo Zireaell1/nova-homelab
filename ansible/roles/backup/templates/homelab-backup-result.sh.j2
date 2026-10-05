@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# ExecStopPost of homelab-backup.service. systemd runs it after every run, even one
+# that was SIGKILLed, timed out or OOM-killed, when the script's own traps never ran.
+# $SERVICE_RESULT is set by systemd: success, exit-code, signal, timeout, oom-kill, ...
+set -euo pipefail
+
+dir="{{ textfile_metrics_path }}"
+[ -d "$dir" ] || exit 0
+
+result="${SERVICE_RESULT:-unknown}"
+ok=0
+[ "$result" = "success" ] && ok=1
+
+tmp="${dir}/.homelab_backup_unit.prom.$$"
+cat > "$tmp" <<PROM
+# HELP homelab_backup_unit_success 1 when homelab-backup.service ended cleanly. result names how it ended otherwise.
+# TYPE homelab_backup_unit_success gauge
+homelab_backup_unit_success{result="${result}"} ${ok}
+PROM
+mv -f "$tmp" "${dir}/homelab_backup_unit.prom"
