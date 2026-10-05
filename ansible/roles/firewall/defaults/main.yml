@@ -13,9 +13,9 @@ firewall_zones:
       - ssh
       - dhcpv6-client
     ports:
-      - "443/udp"
-      - "41641/udp"
-      - "8555/tcp"
+      - "443/udp" # HTTP/3 (Caddy)
+      - "41641/udp" # tailscaled's default listen port: direct peer connections instead of DERP relays
+      - "8555/tcp" # Frigate WebRTC (go2rtc)
       - "8555/udp"
 
   - name: isolated

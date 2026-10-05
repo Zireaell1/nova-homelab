@@ -32,7 +32,7 @@ help:
 	@echo "  make check               (structural checks from scripts/ci, same as CI)"
 	@echo ""
 	@echo "Playbooks (root directory):"
-	@echo "  make site"
+	@echo "  make site                (Auto -K; all four plays, for a rebuild or a full idempotency check)"
 	@echo ""
 	@echo "Playbooks (playbooks/ directory):"
 	@echo "  make nova_system         (Auto -K)"
@@ -63,7 +63,7 @@ check:
 	uv run python ../scripts/ci/run.py
 
 # --- TARGET-SPECIFIC VARIABLES ---
-nova_system orion_system nova_update nova_update_check orion_update: BECOME_FLAG = -K
+site nova_system orion_system nova_update nova_update_check orion_update: BECOME_FLAG = -K
 
 # --- RUN RULES ---
 $(ROOT_PLAYBOOKS):
