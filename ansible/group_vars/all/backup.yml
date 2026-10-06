@@ -30,5 +30,11 @@ backup_targets:
       - "{{ stacks_path }}/zigbee2mqtt/config/devices.yaml"
       - "{{ stacks_path }}/zigbee2mqtt/config/groups.yaml"
   - name: homeassistant
+    stop: true
     paths:
+      - "{{ stacks_path }}/homeassistant/config"
+    excludes:
       - "{{ stacks_path }}/homeassistant/config/backups"
+      - "{{ stacks_path }}/homeassistant/config/tts"
+      - "{{ stacks_path }}/homeassistant/config/.cache"
+      - "{{ stacks_path }}/homeassistant/config/home-assistant.log*"
