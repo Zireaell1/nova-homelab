@@ -177,7 +177,6 @@ access_control:
         - '{{ service_endpoints['frigate']['subdomain'] }}.{{ vault_domain }}'
         - '{{ service_endpoints['eink']['subdomain'] }}.{{ vault_domain }}'
         - '{{ service_endpoints['files']['subdomain'] }}.{{ vault_domain }}'
-        - '{{ vault_domain }}'
       policy: 'one_factor'
       networks:
         - 'internal'
@@ -204,6 +203,7 @@ access_control:
         - '{{ service_endpoints['go2rtc']['subdomain'] }}.{{ vault_domain }}'
         - '{{ service_endpoints['zigbee2mqtt']['subdomain'] }}.{{ vault_domain }}'
         - '{{ service_endpoints['pihole']['subdomain'] }}.{{ vault_domain }}'
+        - '{{ vault_domain }}'
       policy: 'two_factor'
       networks:
         - 'internal'
