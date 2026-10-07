@@ -109,6 +109,74 @@ camera_groups:
 ui:
   timezone: {{ timezone }}
 
+classification:
+  custom:
+    Garage Door:
+      enabled: true
+      name: Garage Door
+      threshold: 0.8
+      state_config:
+        cameras:
+          Back:
+            crop:
+              - 0.5053338181415636
+              - 0.04605251916045667
+              - 0.6280679168076173
+              - 0.2608371918260507
+        motion: true
+    Garage Gate Left:
+      enabled: true
+      name: Garage Gate Left
+      threshold: 0.8
+      state_config:
+        cameras:
+          Back:
+            crop:
+              - 0.13672315161051168
+              - 0.07672151211561502
+              - 0.24527816473286937
+              - 0.266692785079741
+        motion: true
+    Main Gate:
+      enabled: true
+      name: Main Gate
+      threshold: 0.8
+      state_config:
+        cameras:
+          Front:
+            crop:
+              - 0.8116026071788176
+              - 0.23512556090304623
+              - 0.9404712042345398
+              - 0.4606456057505599
+        motion: true
+    Side Gate:
+      enabled: true
+      name: Side Gate
+      threshold: 0.8
+      state_config:
+        cameras:
+          Front:
+            crop:
+              - 0.6380374112339803
+              - 0.18931425767707852
+              - 0.7345468056453954
+              - 0.3582056978970552
+        motion: true
+    Garage Gate Right:
+      enabled: true
+      name: Garage Gate Right
+      threshold: 0.8
+      state_config:
+        cameras:
+          Back:
+            crop:
+              - 0.3484976109132039
+              - 0.0803993795030526
+              - 0.44498828303410864
+              - 0.2492580557146359
+        motion: true
+
 cameras:
   Front:
     enabled: true
