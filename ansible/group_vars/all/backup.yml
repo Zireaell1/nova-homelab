@@ -9,6 +9,7 @@ backup_targets:
   - name: frigate
     paths:
       - "{{ frigate_storage_path }}/exports"
+      - "{{ stacks_path }}/frigate/config/model_cache"
   - name: restic
     paths:
       - "{{ git_backup_dir }}"
