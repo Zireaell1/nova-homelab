@@ -44,6 +44,8 @@ Network=restic.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 HealthCmd=["/bin/promtool", "check", "healthy", "--url=http://127.0.0.1:9090"]
 HealthInterval=60s
 HealthTimeout=10s

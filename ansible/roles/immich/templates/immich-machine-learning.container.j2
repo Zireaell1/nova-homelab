@@ -33,6 +33,8 @@ Network=immich-backend.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 EnvironmentFile={{ stacks_path }}/immich/immich-machine-learning.env
 
 HealthCmd=["python3", "healthcheck.py"]

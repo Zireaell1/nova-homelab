@@ -38,6 +38,8 @@ Network=immich-backend.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 EnvironmentFile={{ stacks_path }}/immich/immich.env
 EnvironmentFile={{ stacks_path }}/immich/immich.secrets.env
 

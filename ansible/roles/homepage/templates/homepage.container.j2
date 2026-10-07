@@ -34,6 +34,8 @@ Network=homepage.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 Environment=HOMEPAGE_ALLOWED_HOSTS={{ vault_domain }}
 Environment=LOG_TARGETS=stdout
 

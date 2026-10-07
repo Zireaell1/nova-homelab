@@ -39,6 +39,8 @@ Network=home.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 HealthCmd=["node", "-e", "require('net').connect(8080,'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"]
 HealthInterval=60s
 HealthTimeout=10s

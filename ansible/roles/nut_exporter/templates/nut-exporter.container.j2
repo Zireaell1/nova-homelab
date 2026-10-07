@@ -32,6 +32,8 @@ AddHost=host.svc.internal:{{ host_svc_address }}
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 EnvironmentFile={{ stacks_path }}/nut-exporter/nut-exporter.secrets.env
 
 HealthCmd=["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9199/metrics"]

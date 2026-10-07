@@ -35,6 +35,8 @@ Network=authelia-backend.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 Environment=AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/secrets/JWT_SECRET
 Environment=AUTHELIA_SESSION_SECRET_FILE=/secrets/SESSION_SECRET
 Environment=AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE=/secrets/STORAGE_PASSWORD

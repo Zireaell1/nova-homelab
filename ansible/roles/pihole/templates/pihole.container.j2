@@ -36,6 +36,8 @@ PublishPort={{ host_svc_address }}:8080:80
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 EnvironmentFile={{ stacks_path }}/pihole/pihole.env
 EnvironmentFile={{ stacks_path }}/pihole/pihole.secrets.env
 

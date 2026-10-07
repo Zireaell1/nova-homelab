@@ -43,6 +43,8 @@ Network=home.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 EnvironmentFile={{ stacks_path }}/frigate/frigate.secrets.env
 
 HealthCmd=["/bin/sh", "-c", "test -f /dev/shm/.frigate-is-stopping && exit 0; curl --fail --silent --show-error http://127.0.0.1:5000/api/version || exit 1"]

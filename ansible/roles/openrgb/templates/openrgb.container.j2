@@ -35,6 +35,8 @@ Network=openrgb.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 HealthCmd=["grep", "-qE", ":1A56 [0-9A-F]+:0000 0A", "/proc/net/tcp", "/proc/net/tcp6"]
 HealthInterval=60s
 HealthTimeout=10s

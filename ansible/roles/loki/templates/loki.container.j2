@@ -26,13 +26,15 @@ Volume={{ monitoring_path }}/loki/loki.yaml:/etc/loki/local-config.yaml:ro,Z
 Volume={{ monitoring_path }}/loki/data:/loki:Z
 
 # --- Networking ---
+PublishPort=127.0.0.1:3100:3100
+
 Network=loki.network
 Network=monitoring-backend.network
 
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
-PublishPort=127.0.0.1:3100:3100
+Environment=TZ={{ timezone }}
 
 HealthCmd=["/usr/bin/loki", "-health", "-health.url=http://127.0.0.1:3100/ready"]
 HealthInterval=60s

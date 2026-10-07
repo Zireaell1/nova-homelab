@@ -31,6 +31,8 @@ Network=vaultwarden.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.env
 EnvironmentFile={{ stacks_path }}/vaultwarden/vaultwarden.secrets.env
 

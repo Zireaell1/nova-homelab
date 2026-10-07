@@ -35,6 +35,8 @@ Network=authelia-backend.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 Environment=POSTGRES_USER=authelia
 Environment=POSTGRES_PASSWORD_FILE=/STORAGE_PASSWORD
 

@@ -30,6 +30,8 @@ Network=restic.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 Environment=OPTIONS="--private-repos --prometheus --prometheus-no-auth --proxy-auth-username Remote-User"
 
 HealthCmd=["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8000/metrics"]
