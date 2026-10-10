@@ -66,17 +66,22 @@
       ]
     },
     {
-      "description": "Immich dictates Postgres/Valkey versions via its compose file; digest refreshes only",
+      "description": "Postgres/Valkey follow the Immich release compose, not their own registries; scripts/ci/check_immich_compose.py enforces it",
       "matchDepNames": [
         "immich-postgres",
         "immich-redis"
       ],
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch"
-      ],
       "enabled": false
+    },
+    {
+      "description": "Immich PRs: the DB/cache pins may have to move with the release",
+      "matchDepNames": [
+        "immich",
+        "immich-machine-learning"
+      ],
+      "prBodyNotes": [
+        "**Before merging:** read the release notes. If CI fails on *Immich's Postgres and Valkey pins*, copy the two values it prints into `roles/immich/defaults/main.yml`."
+      ]
     }
   ]
 }
