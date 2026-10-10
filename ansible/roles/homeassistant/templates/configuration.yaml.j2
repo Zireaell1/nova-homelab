@@ -59,5 +59,7 @@ prometheus:
       override_metric: power_watts
     sensor.*_energy:
       override_metric: energy_kwh
+    sensor.*_battery:
+      override_metric: battery_percent
 
   filter: !include ansible_managed/prometheus_filter.yaml
