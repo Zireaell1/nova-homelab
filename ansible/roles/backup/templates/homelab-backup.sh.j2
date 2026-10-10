@@ -2,9 +2,9 @@
 #
 # Homelab backup: restic to a local repo, rclone to B2.
 #
-# Jinja note: bash's ${#array[@]} contains "{#", which Jinja parses as a
-# comment opener. Every array length below is wrapped in {% raw %}…{% endraw %};
-# do not "clean" those guards away.
+# {% raw %}Jinja note: bash's ${#array[@]} contains "{#", which Jinja parses as a
+# comment opener. Every array length below is wrapped in a raw/endraw block;
+# do not "clean" those guards away.{% endraw %}
 
 set -Eeuo pipefail
 
