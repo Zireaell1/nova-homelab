@@ -36,6 +36,8 @@ Timezone={{ timezone }}
 
 Environment=TZ={{ timezone }}
 
+Environment=MACHINE_LEARNING_MODEL_REVISION={{ immich_machine_learning_model_revision }}
+
 HealthCmd=["python3", "healthcheck.py"]
 HealthInterval=60s
 HealthTimeout=10s
