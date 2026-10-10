@@ -43,10 +43,10 @@ scrape_configs:
     static_configs:
       - targets: ['homeassistant:8123']
 
-#  - job_name: immich_api
-#    static_configs:
-#      - targets: ['immich:8081']
-#
-#  - job_name: immich_microservices
-#    static_configs:
-#      - targets: ['immich:8082']
+  - job_name: immich_api
+    static_configs:
+      - targets: ['immich:8081']
+
+  - job_name: immich_microservices
+    static_configs:
+      - targets: ['immich:8082']
