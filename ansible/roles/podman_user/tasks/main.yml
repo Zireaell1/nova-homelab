@@ -32,6 +32,15 @@
     fail_msg: "Every podman_networks entry needs a unique id between 2 and 254 (it becomes the subnet's third octet)."
     quiet: true
 
+- name: Validate bridge names
+  ansible.builtin.assert:
+    that: (item.ifname | default('pn-' ~ item.name)) | length <= 15
+    fail_msg: "{{ item.name }}: bridge name '{{ item.ifname | default('pn-' ~ item.name) }}' is over 15 characters (kernel limit); set a shorter ifname:"
+    quiet: true
+  loop: "{{ podman_networks }}"
+  loop_control:
+    label: "{{ item.name }}"
+
 - name: Deploy podman network quadlets
   ansible.builtin.template:
     src: "network.j2"

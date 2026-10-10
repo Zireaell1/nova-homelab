@@ -30,6 +30,20 @@ def check() -> list[str]:
             )
         seen[net_id] = name
 
+    bridges: dict[str, str] = {}
+    for n in networks:
+        name = n.get("name", "?")
+        bridge = n.get("ifname") or f"pn-{name}"
+        if len(bridge) > 15:
+            bad.append(
+                f"podman_networks: '{name}' bridge '{bridge}' is over 15 characters; set a shorter ifname:"
+            )
+        if bridge in bridges:
+            bad.append(
+                f"podman_networks: '{name}' and '{bridges[bridge]}' share bridge name '{bridge}'"
+            )
+        bridges[bridge] = name
+
     declared = {n["name"] for n in networks}
     used: set[str] = set()
     for f in sorted(ROLES.glob("*/templates/*.container.j2")):

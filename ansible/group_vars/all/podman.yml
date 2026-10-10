@@ -8,6 +8,7 @@ podman_unprivileged_port_start: 53
 #   .1 gateway | .2 caddy (front doors only) | .128-.254 dynamic (IPRange)
 # caddy: true   -> caddy joins it at .2 (rendered in caddy.container.j2)
 # egress: false -> no default route: reachable through published ports, no internet
+# ifname: x     -> bridge name when pn-<name> would pass 15 chars (kernel limit)
 podman_network_prefix: "10.89"
 podman_networks:
   # Front doors: caddy is the hub
@@ -17,15 +18,15 @@ podman_networks:
   - { name: vaultwarden, id: 13, caddy: true }
   - { name: zigbee2mqtt, id: 14, caddy: true }
   - { name: restic, id: 15, internal: true, caddy: true }
-  - { name: homeassistant, id: 16, caddy: true }
+  - { name: homeassistant, id: 16, caddy: true, ifname: pn-ha }
   - { name: immich, id: 17, caddy: true }
   - { name: prometheus, id: 18, caddy: true, egress: false }
   - { name: loki, id: 19, caddy: true, egress: false }
   - { name: grafana, id: 20, caddy: true }
   # Backends
-  - { name: authelia-backend, id: 30, internal: true }
-  - { name: immich-backend, id: 31, internal: true }
-  - { name: monitoring-backend, id: 32, internal: true }
+  - { name: authelia-backend, id: 30, internal: true, ifname: pn-authelia-be }
+  - { name: immich-backend, id: 31, internal: true, ifname: pn-immich-be }
+  - { name: monitoring-backend, id: 32, internal: true, ifname: pn-monitor-be }
   - { name: home, id: 33, internal: true }
   - { name: openrgb, id: 34, internal: true }
   - { name: nut-exporter, id: 35 }

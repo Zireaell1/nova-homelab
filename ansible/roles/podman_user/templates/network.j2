@@ -3,7 +3,7 @@ Description={{ item.description | default(item.name ~ ' network') }}
 
 [Network]
 NetworkName={{ item.name }}
-InterfaceName={{ ('pn-' ~ item.name)[:15] }}
+InterfaceName={{ item.ifname | default('pn-' ~ item.name) }}
 Subnet={{ podman_network_prefix }}.{{ item.id }}.0/24
 Gateway={{ podman_network_prefix }}.{{ item.id }}.1
 IPRange={{ podman_network_prefix }}.{{ item.id }}.128/25
