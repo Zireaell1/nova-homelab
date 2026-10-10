@@ -2468,7 +2468,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: homeassistant_sensor_battery_percent < 15
+                expr: homeassistant_battery_percent < 15
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -2499,7 +2499,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: predict_linear(homeassistant_sensor_battery_percent[14d], 30 * 86400) < 5 and homeassistant_sensor_battery_percent < 50
+                expr: predict_linear(homeassistant_battery_percent[14d], 30 * 86400) < 5 and homeassistant_battery_percent < 50
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
