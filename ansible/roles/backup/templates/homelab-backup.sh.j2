@@ -334,6 +334,23 @@ mkdir -p "$(dirname "$CANARY_FILE")"
 echo "$SCRIPT_START_TIME" > "$CANARY_FILE"
 echo "$CANARY_FILE" >> "$INCLUDE_FILE"
 
+MANIFEST_FILE="$(dirname "$CANARY_FILE")/versions.txt"
+log "Writing version manifest to ${MANIFEST_FILE}"
+{% raw %}
+{
+    echo "# homelab-backup $(date -Is): what was running when this snapshot was taken"
+    echo "host: $(hostname)  kernel: $(uname -r)  os: $(. /etc/os-release && echo "$PRETTY_NAME")"
+    podman --version
+    echo
+    echo "## containers (name, image, image id, status)"
+    podman ps -a --format '{{.Names}}\t{{.Image}}\t{{.ImageID}}\t{{.Status}}' | sort
+    echo
+    echo "## images (repository:tag, digest, id)"
+    podman images --digests --format '{{.Repository}}:{{.Tag}}\t{{.Digest}}\t{{.ID}}' | sort
+} > "$MANIFEST_FILE" 2>&1 || warn "Could not write the version manifest; the backup continues without it."
+{% endraw %}
+echo "$MANIFEST_FILE" >> "$INCLUDE_FILE"
+
 SERVICES_TO_STOP=(
 {% for t in backup_targets if t.stop | default(false) %}
   "{{ t.name }}.service"
