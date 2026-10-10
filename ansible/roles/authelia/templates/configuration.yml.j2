@@ -289,7 +289,7 @@ identity_providers:
     clients:
       - client_id: '{{ vault_authelia_paperless_client_id }}'
         client_name: 'Paperless'
-        client_secret: '{{ vault_authelia_paperless_client_secret }}'
+        client_secret: {% raw %}{{ secret "/secrets/PAPERLESS_CLIENT_SECRET" | msquote }}{% endraw %}
         public: false
         authorization_policy: 'two_factor'
         require_pkce: true

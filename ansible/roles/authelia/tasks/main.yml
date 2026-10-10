@@ -38,6 +38,8 @@
         dest: "{{ stacks_path }}/authelia/pgsecrets/STORAGE_PASSWORD"
       - content: "{{ vault_authelia_rsa2048 }}"
         dest: "{{ stacks_path }}/authelia/secrets/rsa.2048.key"
+      - content: "{{ vault_authelia_paperless_client_secret }}"
+        dest: "{{ stacks_path }}/authelia/secrets/PAPERLESS_CLIENT_SECRET"
       - content: "{{ vault_authelia_users_database }}"
         dest: "{{ stacks_path }}/authelia/config/users_database.yml"
     podman_service_quadlets:
