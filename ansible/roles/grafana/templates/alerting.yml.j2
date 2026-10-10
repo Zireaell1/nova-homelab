@@ -2453,6 +2453,99 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: ha_battery_low
+          title: Device Battery Low
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homeassistant_sensor_battery_percent < 15
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 1h
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.friendly_name {{ '}}' }} battery at {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }}%."
+            impact: "The device stops reporting soon; a door or button goes silent without anyone noticing."
+            action: "Replace the battery. Battery type: the device page in HA (Battery Notes, if installed)."
+          notification_settings:
+            receiver: Discord
+
+        - uid: ha_battery_draining
+          title: Device Battery Draining Fast
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: predict_linear(homeassistant_sensor_battery_percent[14d], 30 * 86400) < 5 and homeassistant_sensor_battery_percent < 50
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 6h
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.friendly_name {{ '}}' }} is on course to be empty within a month (trend: {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }}% in 30 days)."
+            impact: "An abnormal drain usually means a weak Zigbee route (constant retries) or a failing battery."
+            action: "Check the device's link quality in Zigbee2MQTT; a mains-powered router near it often fixes it."
+          notification_settings:
+            receiver: Discord
+
+        - uid: ha_device_unavailable
+          title: Home Device Unavailable
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: 'homeassistant_entity_available{entity=~"sensor\\..*_battery|binary_sensor\\..*_contact_contact"} == 0'
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 30m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.friendly_name {{ '}}' }} has been unavailable for 30 minutes."
+            impact: "A sensor that is unavailable reports nothing: doors and buttons on it are blind."
+            action: "Zigbee2MQTT → Devices → last seen / link quality; the battery is the usual cause."
+          notification_settings:
+            receiver: Discord
+
         - uid: smart_spare_below_threshold
           title: SMART Spare Below Threshold
           condition: A
