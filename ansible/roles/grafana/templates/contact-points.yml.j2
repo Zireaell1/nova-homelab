@@ -24,3 +24,11 @@ muteTimes:
             - start_time: '01:55'
               end_time: '02:50'
           location: '{{ timezone }}'
+    - orgId: 1
+      name: weekend-daytime
+      time_intervals:
+        - weekdays: ['saturday', 'sunday']
+          times:
+            - start_time: '10:00'
+              end_time: '20:00'
+          location: '{{ timezone }}'

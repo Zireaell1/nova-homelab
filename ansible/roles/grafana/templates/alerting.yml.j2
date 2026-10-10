@@ -2239,7 +2239,9 @@ groups:
             action: "`make nova_update` · `make orion_update`"
           notification_settings:
             receiver: Discord
-            repeat_interval: 168h
+            repeat_interval: 48h
+            active_time_intervals:
+              - weekend-daytime
 
         - uid: updates_reboot_required
           title: Reboot Required
@@ -2271,7 +2273,9 @@ groups:
             action: "Reboot when convenient: `sudo systemctl reboot`"
           notification_settings:
             receiver: Discord
-            repeat_interval: 24h
+            repeat_interval: 48h
+            active_time_intervals:
+              - weekend-daytime
 
         - uid: updates_collector_stale
           title: Update Collector Has Stopped Running
