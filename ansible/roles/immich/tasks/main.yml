@@ -15,20 +15,12 @@
       - content: "{{ vault_immich_storage_password }}"
         dest: "{{ stacks_path }}/immich/secrets/STORAGE_PASSWORD"
     podman_service_templates:
-      - src: immich-config.json.j2
-        dest: "{{ stacks_path }}/immich/immich-config.json"
-        mode: "0644"
+      # - src: immich-config.json.j2
+      #   dest: "{{ stacks_path }}/immich/immich-config.json"
+      #   mode: "0644"
       - src: immich.env.j2
         dest: "{{ stacks_path }}/immich/immich.env"
         mode: "0644"
-      - src: immich.secrets.env.j2
-        dest: "{{ stacks_path }}/immich/immich.secrets.env"
-        mode: "0600"
-        no_log: true
-      - src: immich-machine-learning.env.j2
-        dest: "{{ stacks_path }}/immich/immich-machine-learning.env"
-        mode: "0600"
-        no_log: true
     podman_service_quadlets:
       - immich-postgres.container
       - immich-redis.container
@@ -37,5 +29,5 @@
     podman_service_images:
       - "{{ immich_postgres_image }}:{{ immich_postgres_version }}"
       - "{{ immich_redis_image }}:{{ immich_redis_version }}"
-      - "{{ immich_machine_learning_image }}:{{ immich_machine_learning_version }}"
+      - "{{ immich_machine_learning_image }}:{{ immich_machine_learning_version }}-openvino"
       - "{{ immich_image }}:{{ immich_version }}"

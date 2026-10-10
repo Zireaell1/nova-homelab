@@ -39,3 +39,9 @@ backup_targets:
       - "{{ stacks_path }}/homeassistant/config/tts"
       - "{{ stacks_path }}/homeassistant/config/.cache"
       - "{{ stacks_path }}/homeassistant/config/home-assistant.log*"
+  - name: immich
+    paths:
+      - "{{ immich_path }}/data/library"
+      - "{{ immich_path }}/data/upload"
+      - "{{ immich_path }}/data/profile"
+      - "{{ immich_path }}/data/backups"

@@ -53,6 +53,8 @@
       tags: ["vaultwarden", "services"]
     - role: homepage
       tags: ["homepage", "services"]
+    - role: immich
+      tags: ["immich", "services"]
 
     # --- Access control ---
     - role: authelia

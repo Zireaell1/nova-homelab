@@ -16,7 +16,7 @@ immich_machine_learning_image: "ghcr.io/immich-app/immich-machine-learning"
 # renovate: datasource=docker depName=immich-machine-learning packageName=ghcr.io/immich-app/immich-machine-learning
 immich_machine_learning_version: "v3.2.2"
 
-immich_postgres_memory_limit: "500m"
+immich_postgres_memory_limit: "2g"
 
 immich_postgres_image: "ghcr.io/immich-app/postgres"
 

@@ -29,7 +29,8 @@ AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
 
 # --- Storage ---
 Volume={{ immich_storage_path }}/data:/data:Z
-Volume={{ stacks_path }}/immich/immich-config.json:/usr/src/app/immich-config.json:Z
+# Volume={{ stacks_path }}/immich/immich-config.json:/usr/src/app/immich-config.json:Z
+Volume={{ stacks_path }}/immich/secrets/STORAGE_PASSWORD:/run/secrets/DB_PASSWORD:ro,z
 
 # --- Networking ---
 Network=immich.network
@@ -41,7 +42,8 @@ Timezone={{ timezone }}
 Environment=TZ={{ timezone }}
 
 EnvironmentFile={{ stacks_path }}/immich/immich.env
-EnvironmentFile={{ stacks_path }}/immich/immich.secrets.env
+
+Environment=DB_PASSWORD_FILE=/run/secrets/DB_PASSWORD
 
 HealthCmd=["immich-healthcheck"]
 HealthInterval=60s

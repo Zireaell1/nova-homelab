@@ -6,7 +6,7 @@ RequiresMountsFor={{ stacks_path }}/immich/model-cache
 
 [Container]
 # --- Image / Exec ---
-Image={{ immich_machine_learning_image }}:{{ immich_machine_learning_version }}
+Image={{ immich_machine_learning_image }}:{{ immich_machine_learning_version }}-openvino
 ContainerName=immich-machine-learning
 StopTimeout=20
 
@@ -29,13 +29,12 @@ Volume={{ stacks_path }}/immich/model-cache:/cache:Z
 
 # --- Networking ---
 Network=immich-backend.network
+Network=immich.network
 
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
 Environment=TZ={{ timezone }}
-
-EnvironmentFile={{ stacks_path }}/immich/immich-machine-learning.env
 
 HealthCmd=["python3", "healthcheck.py"]
 HealthInterval=60s
