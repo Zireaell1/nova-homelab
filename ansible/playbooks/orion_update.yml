@@ -19,3 +19,8 @@
       ansible.builtin.debug:
         msg: "WARNING: A reboot is required after the APT upgrade. Please restart Orion manually."
       when: reboot_required.stat.exists
+
+    - name: Refresh update metrics
+      ansible.builtin.systemd:
+        name: homelab-updates.service
+        state: started

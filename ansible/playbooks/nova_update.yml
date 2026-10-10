@@ -22,3 +22,8 @@
       ansible.builtin.debug:
         msg: "WARNING: A reboot is required after the DNF update. Please restart the system manually."
       when: (reboot_required.stdout | from_json)[0].reboot_required | bool
+
+    - name: Refresh update metrics
+      ansible.builtin.systemd:
+        name: homelab-updates.service
+        state: started
