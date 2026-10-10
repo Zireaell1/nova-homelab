@@ -36,20 +36,11 @@ Volume={{ stacks_path }}/caddy/srv:/srv:Z
 Volume={{ stacks_path }}/caddy/errors:/errors:ro,Z
 
 # --- Networking ---
-Network=authelia.network
-
-Network=homepage.network
-
-Network=frigate.network
-Network=vaultwarden.network
-Network=zigbee2mqtt.network
-Network=restic.network
-Network=homeassistant.network
-Network=immich.network
-
-Network=prometheus.network
-Network=loki.network
-Network=grafana.network
+# One Network= per front door (caddy: true in podman_networks), always at .2, so every
+# trusted-proxy setting can name exactly one address. Order follows podman_networks.
+{% for net in podman_networks | selectattr('caddy', 'defined') | selectattr('caddy') %}
+Network={{ net.name }}.network:ip={{ podman_caddy_ips[net.name] }}
+{% endfor %}
 
 AddHost=host.svc.internal:{{ host_svc_address }}
 

@@ -23,6 +23,15 @@
     mode: "0644"
   notify: Show Podman config restart warning
 
+- name: Validate the network registry
+  ansible.builtin.assert:
+    that:
+      - podman_networks | map(attribute='id') | list | length == podman_networks | length
+      - podman_networks | map(attribute='id') | unique | list | length == podman_networks | length
+      - podman_networks | map(attribute='id') | select('ge', 2) | select('le', 254) | list | length == podman_networks | length
+    fail_msg: "Every podman_networks entry needs a unique id between 2 and 254 (it becomes the subnet's third octet)."
+    quiet: true
+
 - name: Deploy podman network quadlets
   ansible.builtin.template:
     src: "network.j2"

@@ -91,7 +91,7 @@ http:// {
 # ===============================================================================
 
 :9091 {
-	bind 0.0.0.0
+	bind 127.0.0.1 {{ podman_caddy_ips['prometheus'] }}
 
 	respond /healthz "OK" 200
 	metrics /metrics

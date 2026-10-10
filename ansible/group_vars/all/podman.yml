@@ -4,24 +4,38 @@ podman_user_env:
 
 podman_unprivileged_port_start: 53
 
+# every network has a pinned /24 = <prefix>.<id>.0/24.
+#   .1 gateway | .2 caddy (front doors only) | .128-.254 dynamic (IPRange)
+# caddy: true   -> caddy joins it at .2 (rendered in caddy.container.j2)
+# egress: false -> no default route: reachable through published ports, no internet
+podman_network_prefix: "10.89"
 podman_networks:
-  - { name: home, internal: true }
-  - { name: monitoring-backend, internal: true }
-  - { name: authelia, internal: true }
-  - { name: frigate }
-  - { name: grafana }
-  - { name: homeassistant }
-  - { name: homepage, internal: true }
-  - { name: immich }
-  - { name: loki }
-  - { name: nut-exporter }
-  - { name: prometheus }
-  - { name: vaultwarden }
-  - { name: zigbee2mqtt }
-  - { name: authelia-backend, internal: true }
-  - { name: immich-backend, internal: true }
-  - { name: openrgb, internal: true }
-  - { name: restic, internal: true }
+  # Front doors: caddy is the hub
+  - { name: authelia, id: 10, internal: true, caddy: true }
+  - { name: homepage, id: 11, internal: true, caddy: true }
+  - { name: frigate, id: 12, caddy: true }
+  - { name: vaultwarden, id: 13, caddy: true }
+  - { name: zigbee2mqtt, id: 14, caddy: true }
+  - { name: restic, id: 15, internal: true, caddy: true }
+  - { name: homeassistant, id: 16, caddy: true }
+  - { name: immich, id: 17, caddy: true }
+  - { name: prometheus, id: 18, caddy: true, egress: false }
+  - { name: loki, id: 19, caddy: true, egress: false }
+  - { name: grafana, id: 20, caddy: true }
+  # Backends
+  - { name: authelia-backend, id: 30, internal: true }
+  - { name: immich-backend, id: 31, internal: true }
+  - { name: monitoring-backend, id: 32, internal: true }
+  - { name: home, id: 33, internal: true }
+  - { name: openrgb, id: 34, internal: true }
+  - { name: nut-exporter, id: 35 }
+
+# Caddy's address on each front door, e.g. podman_caddy_ips['grafana'] -> 10.89.20.2.
+# The one source for every "trusted proxy" setting.
+podman_caddy_ips: >-
+  {{ dict(podman_networks | selectattr('caddy', 'defined') | selectattr('caddy') | map(attribute='name')
+          | zip(podman_networks | selectattr('caddy', 'defined') | selectattr('caddy') | map(attribute='id')
+                | map('string') | map('regex_replace', '^', podman_network_prefix ~ '.') | map('regex_replace', '$', '.2'))) }}
 
 # Services removed from the repo. For each entry podman_user stops the unit,
 # deletes its quadlet files and reloads systemd. Nothing else is restarted, and

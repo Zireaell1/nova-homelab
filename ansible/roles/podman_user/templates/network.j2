@@ -3,16 +3,17 @@ Description={{ item.description | default(item.name ~ ' network') }}
 
 [Network]
 NetworkName={{ item.name }}
+InterfaceName={{ ('pn-' ~ item.name)[:15] }}
+Subnet={{ podman_network_prefix }}.{{ item.id }}.0/24
+Gateway={{ podman_network_prefix }}.{{ item.id }}.1
+IPRange={{ podman_network_prefix }}.{{ item.id }}.128/25
 {% if item.internal | default(false) %}
 Internal=true
 {% endif %}
 {% if item.isolate | default(true) %}
-Options=isolate=true
+Options=isolate=strict
 {% endif %}
-{% if item.subnet is defined %}
-Subnet={{ item.subnet }}
-{% endif %}
-{% if item.gateway is defined %}
-Gateway={{ item.gateway }}
+{% if not (item.egress | default(true)) and not (item.internal | default(false)) %}
+Options=no_default_route=true
 {% endif %}
 NetworkDeleteOnStop=true
