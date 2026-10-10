@@ -11,6 +11,8 @@ ContainerName=pihole
 StopTimeout=20
 
 # --- Identity / Namespaces ---
+# keep-id alone would run start.sh as uid 1000; the image needs root to set up,
+# then drops FTL to pihole
 UserNS=keep-id:uid=1000,gid=1000
 User=0:0
 
