@@ -111,6 +111,18 @@
          | select('search', '\.timer$')
          | list }}
 
+- name: Check that every quadlet still parses ({{ podman_service_name }})
+  ansible.builtin.shell:
+    cmd: /usr/lib/systemd/system-generators/podman-system-generator --user --dryrun > /dev/null
+  register: podman_service_dryrun
+  changed_when: false
+  failed_when: >-
+    podman_service_dryrun.rc != 0
+    or (podman_service_dryrun.stderr_lines
+        | reject('search', '^Loading source unit file')
+        | list | length > 0)
+  when: podman_service_changed | bool
+
 - name: Reload user systemd for {{ podman_service_name }}
   ansible.builtin.systemd:
     daemon_reload: true
