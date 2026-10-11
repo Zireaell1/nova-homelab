@@ -48,8 +48,8 @@
                                             "kind": "DataQuery",
                                             "spec": {
                                                 "editorMode": "code",
-                                                "expr": "sum by (code) (rate(caddy_http_request_duration_seconds_count[5m]))",
-                                                "legendFormat": "{{code}}",
+                                                "expr": "sum by (host) (rate(caddy_http_request_duration_seconds_count{handler=\"subroute\", host=~\"$site\"}[$__rate_interval]))",
+                                                "legendFormat": "{{host}}",
                                                 "range": true
                                             },
                                             "version": "v0"
@@ -65,7 +65,7 @@
                     "description": "",
                     "id": 1,
                     "links": [],
-                    "title": "Traffic (RPS)",
+                    "title": "Requests per site",
                     "vizConfig": {
                         "group": "timeseries",
                         "kind": "VizConfig",
@@ -84,7 +84,7 @@
                                         "barAlignment": 0,
                                         "barWidthFactor": 0.6,
                                         "drawStyle": "line",
-                                        "fillOpacity": 0,
+                                        "fillOpacity": 60,
                                         "gradientMode": "none",
                                         "hideFrom": {
                                             "legend": false,
@@ -103,12 +103,13 @@
                                         "spanNulls": false,
                                         "stacking": {
                                             "group": "A",
-                                            "mode": "none"
+                                            "mode": "normal"
                                         },
                                         "thresholdsStyle": {
                                             "mode": "off"
                                         }
                                     },
+                                    "min": 0,
                                     "thresholds": {
                                         "mode": "absolute",
                                         "steps": [
@@ -127,24 +128,26 @@
                                 "overrides": []
                             },
                             "options": {
-                                "annotations": {
-                                    "clustering": -1,
-                                    "multiLane": false
-                                },
                                 "legend": {
-                                    "calcs": [],
-                                    "displayMode": "list",
-                                    "placement": "bottom",
-                                    "showLegend": true
+                                    "calcs": [
+                                        "mean",
+                                        "max"
+                                    ],
+                                    "displayMode": "table",
+                                    "enableFacetedFilter": false,
+                                    "placement": "right",
+                                    "showLegend": true,
+                                    "sortBy": "Mean",
+                                    "sortDesc": true
                                 },
                                 "tooltip": {
-                                    "hideZeros": true,
+                                    "hideZeros": false,
                                     "mode": "multi",
-                                    "sort": "none"
+                                    "sort": "desc"
                                 }
                             }
                         },
-                        "version": "13.0.1"
+                        "version": "13.2.2"
                     }
                 }
             },
@@ -167,8 +170,8 @@
                                             "kind": "DataQuery",
                                             "spec": {
                                                 "editorMode": "code",
-                                                "expr": "sum(rate(caddy_http_response_size_bytes_sum[5m]))",
-                                                "legendFormat": "Outbound Bandwidth",
+                                                "expr": "sum by (class) (label_replace(rate(caddy_http_request_duration_seconds_count{handler=\"subroute\", host=~\"$site\"}[$__rate_interval]), \"class\", \"${1}xx\", \"code\", \"(.)..\"))",
+                                                "legendFormat": "{{class}}",
                                                 "range": true
                                             },
                                             "version": "v0"
@@ -184,7 +187,7 @@
                     "description": "",
                     "id": 2,
                     "links": [],
-                    "title": "Outbound Bandwidth",
+                    "title": "New panel",
                     "vizConfig": {
                         "group": "timeseries",
                         "kind": "VizConfig",
@@ -203,7 +206,7 @@
                                         "barAlignment": 0,
                                         "barWidthFactor": 0.6,
                                         "drawStyle": "line",
-                                        "fillOpacity": 20,
+                                        "fillOpacity": 60,
                                         "gradientMode": "none",
                                         "hideFrom": {
                                             "legend": false,
@@ -222,127 +225,32 @@
                                         "spanNulls": false,
                                         "stacking": {
                                             "group": "A",
-                                            "mode": "none"
+                                            "mode": "normal"
                                         },
                                         "thresholdsStyle": {
                                             "mode": "off"
                                         }
                                     },
+                                    "min": 0,
                                     "thresholds": {
                                         "mode": "absolute",
                                         "steps": [
                                             {
                                                 "color": "green",
                                                 "value": 0
-                                            },
-                                            {
-                                                "color": "red",
-                                                "value": 80
                                             }
                                         ]
                                     },
-                                    "unit": "bytes"
-                                },
-                                "overrides": []
-                            },
-                            "options": {
-                                "annotations": {
-                                    "clustering": -1,
-                                    "multiLane": false
-                                },
-                                "legend": {
-                                    "calcs": [],
-                                    "displayMode": "list",
-                                    "placement": "bottom",
-                                    "showLegend": true
-                                },
-                                "tooltip": {
-                                    "hideZeros": false,
-                                    "mode": "single",
-                                    "sort": "none"
-                                }
-                            }
-                        },
-                        "version": "13.0.1"
-                    }
-                }
-            },
-            "panel-3": {
-                "kind": "Panel",
-                "spec": {
-                    "data": {
-                        "kind": "QueryGroup",
-                        "spec": {
-                            "queries": [
-                                {
-                                    "kind": "PanelQuery",
-                                    "spec": {
-                                        "hidden": false,
-                                        "query": {
-                                            "datasource": {
-                                                "name": "prometheus-datasource"
-                                            },
-                                            "group": "prometheus",
-                                            "kind": "DataQuery",
-                                            "spec": {
-                                                "editorMode": "code",
-                                                "exemplar": false,
-                                                "expr": "sum by (code) (increase(caddy_http_request_duration_seconds_count[$__range]))",
-                                                "instant": true,
-                                                "legendFormat": "{{code}}",
-                                                "range": false
-                                            },
-                                            "version": "v0"
-                                        },
-                                        "refId": "A"
-                                    }
-                                }
-                            ],
-                            "queryOptions": {},
-                            "transformations": []
-                        }
-                    },
-                    "description": "",
-                    "id": 3,
-                    "links": [],
-                    "title": "Total Requests by Status",
-                    "vizConfig": {
-                        "group": "bargauge",
-                        "kind": "VizConfig",
-                        "spec": {
-                            "fieldConfig": {
-                                "defaults": {
-                                    "color": {
-                                        "mode": "palette-classic"
-                                    },
-                                    "decimals": 0,
-                                    "thresholds": {
-                                        "mode": "absolute",
-                                        "steps": [
-                                            {
-                                                "color": "green",
-                                                "value": 0
-                                            },
-                                            {
-                                                "color": "red",
-                                                "value": 80
-                                            }
-                                        ]
-                                    },
-                                    "unit": "short"
+                                    "unit": "reqps"
                                 },
                                 "overrides": [
                                     {
                                         "matcher": {
                                             "id": "byName",
-                                            "options": "200",
+                                            "options": "2xx",
                                             "scope": "series"
                                         },
                                         "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "200 (OK)"
-                                            },
                                             {
                                                 "id": "color",
                                                 "value": {
@@ -355,34 +263,10 @@
                                     {
                                         "matcher": {
                                             "id": "byName",
-                                            "options": "101",
+                                            "options": "3xx",
                                             "scope": "series"
                                         },
                                         "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "101 (Switching Protocols)"
-                                            },
-                                            {
-                                                "id": "color",
-                                                "value": {
-                                                    "fixedColor": "purple",
-                                                    "mode": "fixed"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "matcher": {
-                                            "id": "byName",
-                                            "options": "302",
-                                            "scope": "series"
-                                        },
-                                        "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "302 (Found / Temp Redirect)"
-                                            },
                                             {
                                                 "id": "color",
                                                 "value": {
@@ -395,18 +279,14 @@
                                     {
                                         "matcher": {
                                             "id": "byName",
-                                            "options": "201",
+                                            "options": "4xx",
                                             "scope": "series"
                                         },
                                         "properties": [
                                             {
-                                                "id": "displayName",
-                                                "value": "201 (Created)"
-                                            },
-                                            {
                                                 "id": "color",
                                                 "value": {
-                                                    "fixedColor": "green",
+                                                    "fixedColor": "yellow",
                                                     "mode": "fixed"
                                                 }
                                             }
@@ -415,94 +295,10 @@
                                     {
                                         "matcher": {
                                             "id": "byName",
-                                            "options": "304",
+                                            "options": "5xx",
                                             "scope": "series"
                                         },
                                         "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "304 (Not Modified)"
-                                            },
-                                            {
-                                                "id": "color",
-                                                "value": {
-                                                    "fixedColor": "blue",
-                                                    "mode": "fixed"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "matcher": {
-                                            "id": "byName",
-                                            "options": "400",
-                                            "scope": "series"
-                                        },
-                                        "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "400 (Bad Request)"
-                                            },
-                                            {
-                                                "id": "color",
-                                                "value": {
-                                                    "fixedColor": "orange",
-                                                    "mode": "fixed"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "matcher": {
-                                            "id": "byName",
-                                            "options": "206",
-                                            "scope": "series"
-                                        },
-                                        "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "206 (Partial Content)"
-                                            },
-                                            {
-                                                "id": "color",
-                                                "value": {
-                                                    "fixedColor": "green",
-                                                    "mode": "fixed"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "matcher": {
-                                            "id": "byName",
-                                            "options": "425",
-                                            "scope": "series"
-                                        },
-                                        "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "425 (Too Early)"
-                                            },
-                                            {
-                                                "id": "color",
-                                                "value": {
-                                                    "fixedColor": "orange",
-                                                    "mode": "fixed"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "matcher": {
-                                            "id": "byName",
-                                            "options": "500",
-                                            "scope": "series"
-                                        },
-                                        "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "500 (Internal Server Error)"
-                                            },
                                             {
                                                 "id": "color",
                                                 "value": {
@@ -515,98 +311,14 @@
                                     {
                                         "matcher": {
                                             "id": "byName",
-                                            "options": "502",
+                                            "options": "1xx",
                                             "scope": "series"
                                         },
                                         "properties": [
                                             {
-                                                "id": "displayName",
-                                                "value": "502 (Bad Gateway)"
-                                            },
-                                            {
                                                 "id": "color",
                                                 "value": {
-                                                    "fixedColor": "dark-red",
-                                                    "mode": "fixed"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "matcher": {
-                                            "id": "byName",
-                                            "options": "401",
-                                            "scope": "series"
-                                        },
-                                        "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "401 (Unauthorized)"
-                                            },
-                                            {
-                                                "id": "color",
-                                                "value": {
-                                                    "fixedColor": "orange",
-                                                    "mode": "fixed"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "matcher": {
-                                            "id": "byName",
-                                            "options": "403",
-                                            "scope": "series"
-                                        },
-                                        "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "403 (Forbidden)"
-                                            },
-                                            {
-                                                "id": "color",
-                                                "value": {
-                                                    "fixedColor": "orange",
-                                                    "mode": "fixed"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "matcher": {
-                                            "id": "byName",
-                                            "options": "404",
-                                            "scope": "series"
-                                        },
-                                        "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "404 (Not Found)"
-                                            },
-                                            {
-                                                "id": "color",
-                                                "value": {
-                                                    "fixedColor": "orange",
-                                                    "mode": "fixed"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "matcher": {
-                                            "id": "byName",
-                                            "options": "303",
-                                            "scope": "series"
-                                        },
-                                        "properties": [
-                                            {
-                                                "id": "displayName",
-                                                "value": "303 (See Other)"
-                                            },
-                                            {
-                                                "id": "color",
-                                                "value": {
-                                                    "fixedColor": "blue",
+                                                    "fixedColor": "purple",
                                                     "mode": "fixed"
                                                 }
                                             }
@@ -615,31 +327,20 @@
                                 ]
                             },
                             "options": {
-                                "displayMode": "basic",
                                 "legend": {
                                     "calcs": [],
                                     "displayMode": "list",
                                     "placement": "bottom",
-                                    "showLegend": false
+                                    "showLegend": true
                                 },
-                                "maxVizHeight": 300,
-                                "minVizHeight": 16,
-                                "minVizWidth": 8,
-                                "namePlacement": "auto",
-                                "orientation": "horizontal",
-                                "reduceOptions": {
-                                    "calcs": [
-                                        "lastNotNull"
-                                    ],
-                                    "fields": "",
-                                    "values": false
-                                },
-                                "showUnfilled": true,
-                                "sizing": "auto",
-                                "valueMode": "color"
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "multi",
+                                    "sort": "desc"
+                                }
                             }
                         },
-                        "version": "13.0.1"
+                        "version": "13.2.2"
                     }
                 }
             }
@@ -653,7 +354,7 @@
                         "spec": {
                             "element": {
                                 "kind": "ElementReference",
-                                "name": "panel-3"
+                                "name": "panel-1"
                             },
                             "height": 8,
                             "width": 12,
@@ -672,19 +373,6 @@
                             "width": 12,
                             "x": 12,
                             "y": 0
-                        }
-                    },
-                    {
-                        "kind": "GridLayoutItem",
-                        "spec": {
-                            "element": {
-                                "kind": "ElementReference",
-                                "name": "panel-1"
-                            },
-                            "height": 8,
-                            "width": 12,
-                            "x": 0,
-                            "y": 8
                         }
                     }
                 ]
@@ -725,6 +413,46 @@
         },
         "title": "Caddy",
         "uid": "srv-caddy",
-        "variables": []
+        "variables": [
+            {
+                "kind": "QueryVariable",
+                "spec": {
+                    "allValue": ".*",
+                    "allowCustomValue": true,
+                    "current": {
+                        "text": [
+                            "All"
+                        ],
+                        "value": [
+                            "$__all"
+                        ]
+                    },
+                    "definition": "label_values(caddy_http_request_duration_seconds_count{handler=\"subroute\"},host)",
+                    "hide": "dontHide",
+                    "includeAll": true,
+                    "multi": true,
+                    "name": "site",
+                    "options": [],
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus-datasource"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "qryType": 1,
+                            "query": "label_values(caddy_http_request_duration_seconds_count{handler=\"subroute\"},host)",
+                            "refId": "PrometheusVariableQueryEditor-VariableQuery"
+                        },
+                        "version": "v0"
+                    },
+                    "refresh": "onDashboardLoad",
+                    "regex": "",
+                    "regexApplyTo": "value",
+                    "skipUrlSync": false,
+                    "sort": "alphabeticalAsc"
+                }
+            }
+        ]
     }
 }
