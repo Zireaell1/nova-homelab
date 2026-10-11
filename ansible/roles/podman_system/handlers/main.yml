@@ -14,6 +14,8 @@
   listen: Reload systemd daemon and warn about required reboot
 
 - name: Restore container path SELinux contexts
-  ansible.builtin.command: "restorecon -R -F {{ item }}"
-  loop: "{{ podman_system_container_paths }}"
+  ansible.builtin.command: "restorecon -R -F {{ item.item }}"
+  loop: "{{ podman_system_sefcontext.results | selectattr('changed') | list }}"
+  loop_control:
+    label: "{{ item.item }}"
   changed_when: true

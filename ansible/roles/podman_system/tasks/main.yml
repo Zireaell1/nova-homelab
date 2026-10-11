@@ -52,4 +52,5 @@
     setype: container_file_t
     state: present
   loop: "{{ podman_system_container_paths }}"
+  register: podman_system_sefcontext
   notify: Restore container path SELinux contexts
