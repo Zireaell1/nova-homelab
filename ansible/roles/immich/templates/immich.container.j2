@@ -18,6 +18,7 @@ GroupAdd=keep-groups
 UserNS=keep-id:uid=0,gid=0
 
 # --- Security / Capabilities ---
+SecurityLabelLevel=s0:c101,c201
 DropCapability=all
 NoNewPrivileges=true
 
@@ -28,7 +29,7 @@ Memory={{ immich_memory_limit }}
 AddDevice=/dev/dri/renderD128:/dev/dri/renderD128
 
 # --- Storage ---
-Volume={{ immich_storage_path }}/data:/data:Z
+Volume={{ immich_storage_path }}/data:/data
 # Volume={{ stacks_path }}/immich/immich-config.json:/usr/src/app/immich-config.json:Z
 Volume={{ stacks_path }}/immich/secrets/STORAGE_PASSWORD:/run/secrets/DB_PASSWORD:ro,z
 
