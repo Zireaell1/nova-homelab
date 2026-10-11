@@ -19,6 +19,14 @@ argument_specs:
         type: int
         default: 300
         description: Seconds between smartmon.sh runs.
+      alloy_enable_intel_gpu:
+        type: bool
+        default: false
+        description: Deploy igt-gpu-tools and the intel_gpu_top textfile collector (Intel iGPU hosts).
+      alloy_intel_gpu_interval_seconds:
+        type: int
+        default: 15
+        description: Seconds per intel_gpu_top sample (one .prom write each).
       alloy_enable_updates:
         type: bool
         default: true

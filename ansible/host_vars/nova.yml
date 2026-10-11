@@ -1,6 +1,8 @@
 ---
 alloy_enable_smartmon: true
 
+alloy_enable_intel_gpu: true
+
 alloy_config_template: "config_nova.alloy.j2"
 
 hardware_data_drives:

@@ -35,3 +35,10 @@
     name: smartd.service
     state: restarted
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart intel gpu metrics service
+  ansible.builtin.systemd:
+    name: intel-gpu-metrics.service
+    state: restarted
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"

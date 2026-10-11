@@ -1,0 +1,25 @@
+[Unit]
+Description=Intel GPU metrics for Prometheus (intel_gpu_top -> textfile)
+After=local-fs.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -I /usr/local/bin/intel_gpu_metrics.py {{ alloy_intel_gpu_interval_seconds }} {{ textfile_metrics_path }}/intel_gpu.prom
+Restart=always
+RestartSec=30
+
+CapabilityBoundingSet=CAP_PERFMON CAP_SYS_PTRACE CAP_DAC_READ_SEARCH
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths={{ textfile_metrics_path }}
+ProtectHome=true
+PrivateTmp=true
+PrivateNetwork=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+RestrictAddressFamilies=AF_UNIX
+MemoryMax=64M
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

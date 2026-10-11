@@ -71,6 +71,32 @@
         backup: true
       notify: Restart smartd
 
+- name: Intel GPU metrics block
+  when: alloy_enable_intel_gpu
+  block:
+    - name: Install igt-gpu-tools (intel_gpu_top)
+      ansible.builtin.package:
+        name: igt-gpu-tools
+        state: present
+
+    - name: Deploy Intel GPU metrics script
+      ansible.builtin.copy:
+        src: intel_gpu_metrics.py
+        dest: /usr/local/bin/intel_gpu_metrics.py
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart intel gpu metrics service
+
+    - name: Deploy Intel GPU metrics systemd service
+      ansible.builtin.template:
+        src: intel-gpu-metrics.service.j2
+        dest: /etc/systemd/system/intel-gpu-metrics.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart intel gpu metrics service
+
 - name: Updates collector block
   when: alloy_enable_updates
   block:
@@ -155,6 +181,14 @@
     state: started
     enabled: true
   when: alloy_enable_smartmon
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Ensure Intel GPU metrics service is enabled and running
+  ansible.builtin.systemd:
+    name: intel-gpu-metrics.service
+    state: started
+    enabled: true
+  when: alloy_enable_intel_gpu
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Ensure smartd is enabled and running

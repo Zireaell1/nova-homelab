@@ -5,6 +5,10 @@ alloy_enable_updates: true
 
 alloy_enable_boot_metrics: true
 
+alloy_enable_intel_gpu: false
+
+alloy_intel_gpu_interval_seconds: 15
+
 alloy_updates_packages:
   RedHat:
     - dnf5-plugins

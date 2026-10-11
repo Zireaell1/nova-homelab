@@ -2397,6 +2397,67 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: intel_gpu_collector_failed
+          title: GPU Metrics Collector Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: intel_gpu_collector_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 10m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The GPU metrics collector on {{ '{{' }} $labels.instance {{ '}}' }} is failing."
+            impact: "GPU panels are empty; Frigate/Immich GPU use is unmonitored."
+            action: "`journalctl -u intel-gpu-metrics -n 30` — the line above the [ERROR] is intel_gpu_top's own message"
+          notification_settings:
+            receiver: Discord
+
+        - uid: intel_gpu_collector_stale
+          title: GPU Metrics Collector Has Stopped
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - intel_gpu_collector_last_sample_timestamp_seconds > 600
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "GPU metrics on {{ '{{' }} $labels.instance {{ '}}' }} are {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} old."
+            impact: "GPU panels show frozen numbers."
+            action: "`systemctl status intel-gpu-metrics` · `journalctl -u intel-gpu-metrics -n 30`"
+          notification_settings:
+            receiver: Discord
+
         - uid: smart_critical_warning
           title: SMART Critical Warning
           condition: A
