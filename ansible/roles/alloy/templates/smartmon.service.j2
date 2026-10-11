@@ -9,6 +9,25 @@ ExecStart=/usr/local/bin/smartmon_daemon.sh
 Restart=always
 RestartSec=10
 
+ProtectSystem=strict
+ReadWritePaths={{ textfile_metrics_path }}
+ProtectHome=true
+PrivateTmp=true
+PrivateNetwork=true
+NoNewPrivileges=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX
+
 StandardOutput=journal
 StandardError=journal
 

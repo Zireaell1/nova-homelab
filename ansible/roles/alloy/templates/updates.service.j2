@@ -5,8 +5,23 @@ Description=Collect pending package update metrics
 Type=oneshot
 ExecStart=/usr/local/bin/homelab-updates.sh
 
-PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths={{ textfile_metrics_path }}
 ProtectHome=true
+PrivateTmp=true
+PrivateNetwork=true
 NoNewPrivileges=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX
 
 TimeoutStartSec=300
