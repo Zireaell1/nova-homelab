@@ -2428,6 +2428,70 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: frigate_gpu_decode_missing
+          title: Frigate Is Not Decoding on the GPU
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: >-
+                  (sum(intel_gpu_client_memory_bytes{unit="frigate", type="resident"}) or on() vector(0)) < 10000000
+                  and on() (intel_gpu_collector_success == 1)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Frigate's ffmpeg holds no GPU memory: the camera streams are being decoded on the CPU."
+            impact: "Higher CPU load and power; detection can lag on busy scenes."
+            action: "Frigate → System → camera ffmpeg args (`preset-intel-qsv-h264`) · `podman logs frigate 2>&1 | grep -iE 'qsv|vaapi|hwaccel'` · `/dev/dri` still in the container?"
+          notification_settings:
+            receiver: Discord
+
+        - uid: gpu_video_engine_saturated
+          title: GPU Video Engine Saturated
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: max(intel_gpu_engine_busy_percent{engine=~"video|videoenhance"}) > 85
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The GPU's video engines have been over 85 % busy for 15 minutes ({{ '{{' }} humanize $values.A.Value {{ '}}' }} %)."
+            impact: "Frigate's decoding competes with Immich transcodes; camera frames can drop."
+            action: "Grafana → Host Status → GPU → *Who uses the GPU* · lower Immich's video transcode concurrency"
+          notification_settings:
+            receiver: Discord
+
         - uid: intel_gpu_collector_stale
           title: GPU Metrics Collector Has Stopped
           condition: A
