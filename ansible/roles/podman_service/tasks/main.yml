@@ -119,7 +119,7 @@
   failed_when: >-
     podman_service_dryrun.rc != 0
     or (podman_service_dryrun.stderr_lines
-        | reject('search', '^Loading source unit file')
+        | reject('search', 'Loading source unit file /')
         | list | length > 0)
   when: podman_service_changed | bool
 
