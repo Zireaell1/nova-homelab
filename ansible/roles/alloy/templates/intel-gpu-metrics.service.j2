@@ -9,6 +9,7 @@ Restart=always
 RestartSec=30
 
 CapabilityBoundingSet=CAP_PERFMON CAP_SYS_PTRACE CAP_DAC_READ_SEARCH
+SupplementaryGroups=alloy
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths={{ textfile_metrics_path }}
@@ -17,9 +18,20 @@ PrivateTmp=true
 PrivateNetwork=true
 ProtectControlGroups=true
 ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
 RestrictAddressFamilies=AF_UNIX
-MemoryMax=64M
+MemoryMax=128M
 Nice=10
+UMask=0077
 
 [Install]
 WantedBy=multi-user.target
