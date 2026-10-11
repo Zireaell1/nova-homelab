@@ -1,125 +1,125 @@
 ---
-vault_domain: ""
-vault_admin_username: ""
+# Every key carries one class tag. On a rebuild the tag says where the value comes from:
+#
+#   [site]    a fact about this network or host, not a secret; read it off the router/host
+#   [ext]     issued by an outside service or device; copy it from there
+#   [gen]     random; any new value works, a redeploy applies it everywhere
+#   [pair:X]  random, but must match another value in group X; regenerate the group together
+#   [keep]    must be the OLD value: data on disk is encrypted, initialised or paired with it
+#   [record]  not read by Ansible; kept so the value can be found (typed into a UI)
+#
 
-vault_discord_webhook_url: ""
+vault_domain: "" # [site]
+vault_admin_username: "" # [site]
+
+vault_discord_webhook_url: "" # [ext] Discord channel -> Integrations -> Webhooks
 
 # Network
-vault_primary_ip: ""
-vault_secondary_ip: ""
+vault_primary_ip: "" # [site]
+vault_secondary_ip: "" # [site]
 
-vault_dashboard_tablet_ip: ""
-vault_printer_ip: ""
-vault_switch_ip: ""
+vault_dashboard_tablet_ip: "" # [site]
+vault_printer_ip: "" # [site]
+vault_switch_ip: "" # [site]
 
-vault_camera_back_ip: ""
-vault_camera_doorbell_ip: ""
-vault_camera_entry_ip: ""
-vault_camera_front_ip: ""
+vault_camera_back_ip: "" # [site]
+vault_camera_doorbell_ip: "" # [site]
+vault_camera_entry_ip: "" # [site]
+vault_camera_front_ip: "" # [site]
 
-vault_network_cctv: ""
-vault_network_home: ""
-vault_network_homelab: ""
-vault_network_iot: ""
-vault_network_tailscale: ""
+vault_network_cctv: "" # [site]
+vault_network_home: "" # [site]
+vault_network_homelab: "" # [site]
+vault_network_iot: "" # [site]
+vault_network_tailscale: "" # [site]
 
-vault_gateway_home: ""
-vault_gateway_homelab: ""
-vault_gateway_iot: ""
+vault_gateway_home: "" # [site]
+vault_gateway_homelab: "" # [site]
+vault_gateway_iot: "" # [site]
 
-vault_modem_ip: ""
+vault_modem_ip: "" # [site]
 
 # Immich
-vault_immich_storage_password: ""
+vault_immich_storage_password: "" # [keep] Postgres was initialised with it; letters and digits only (Immich rejects others)
 
-# Eink Display
-vault_eink_display_password: ""
-vault_eink_display_username: ""
+# E-ink display (an Authelia user: its hash lives in vault_authelia_users_database)
+vault_eink_display_username: "" # [pair:authelia-users]
+vault_eink_display_password: "" # [pair:authelia-users]
 
-# Orion Alloy
-vault_prometheus_service_account_password: ""
-vault_prometheus_service_account_username: ""
+# Orion Alloy (Authelia users, same as above)
+vault_prometheus_service_account_username: "" # [pair:authelia-users]
+vault_prometheus_service_account_password: "" # [pair:authelia-users]
 
-vault_loki_service_account_password: ""
-vault_loki_service_account_username: ""
+vault_loki_service_account_username: "" # [pair:authelia-users]
+vault_loki_service_account_password: "" # [pair:authelia-users]
 
 # Tailscale
-vault_tailscale_auth_key: ""
-vault_tailscale_node_name: ""
-vault_tailscale_ip: ""
+vault_tailscale_auth_key: "" # [ext] admin console -> Keys; consumed at enrolment, may be expired
+vault_tailscale_ip: "" # [site] tailscale ip -4
 
 # Backup
-vault_backup_restic_password: ""
+vault_backup_restic_password: "" # [keep] on paper: the repository is encrypted with it
 
-vault_backup_rclone_bucket_name: ""
-vault_backup_rclone_b2_key_id: ""
-vault_backup_rclone_b2_app_key: ""
+vault_backup_rclone_bucket_name: "" # [ext]
+vault_backup_rclone_b2_key_id: "" # [ext]
+vault_backup_rclone_b2_app_key: "" # [ext]
 
 # Vaultwarden
-# podman run --rm -it ghcr.io/dani-garcia/vaultwarden:1.36.0 /vaultwarden hash
-vault_vaultwarden_admin_token: ""
+vault_vaultwarden_admin_token: "" # [gen] podman run --rm -it ghcr.io/dani-garcia/vaultwarden:<ver> /vaultwarden hash
 
 # Zigbee2MQTT
-vault_zigbee2mqtt_network_key: []
+vault_zigbee2mqtt_network_key: [] # [keep] 16 integers; a new key means re-pairing every device
 
 # Grafana
-vault_grafana_admin_password: ""
+vault_grafana_admin_password: "" # [gen] re-applied on every deploy
 
 # NUT
-vault_nut_ups_admin_password: ""
-vault_nut_ups_exporter_password: ""
-vault_nut_ups_ha_password: ""
+vault_nut_ups_admin_password: "" # [gen]
+vault_nut_ups_exporter_password: "" # [gen]
+vault_nut_ups_ha_password: "" # [gen] also typed into HA's NUT integration
 
 # Caddy
-# CloudFlare API token for DNS-01 challange
-vault_caddy_cf_api_token: ""
+vault_caddy_cf_api_token: "" # [ext] Cloudflare, Zone:DNS:Edit, for the DNS-01 challenge
+vault_caddy_frigate_auth_secret: "" # [gen] shared by Caddy and Frigate's proxy config
 
-# Auth secret for authenticating Frigate with Caddy
-vault_caddy_frigate_auth_secret: ""
+# Pi-hole
+vault_pihole_webserver_api_password: "" # [gen] web UI password
+vault_pihole_webserver_app_password: "" # [record][pair:pihole-app] plaintext behind the hash, for API clients
+vault_pihole_webserver_app_password_hash: "" # [pair:pihole-app] generated inside the container from the one above
 
-# Pi-Hole
-# Password for web UI
-vault_pihole_webserver_api_password: ""
+# Frigate cameras
+vault_frigate_doorbell_user: "" # [ext] set on the camera
+vault_frigate_doorbell_password: "" # [ext]
+vault_frigate_front_user: "" # [ext]
+vault_frigate_front_password: "" # [ext]
+vault_frigate_back_user: "" # [ext]
+vault_frigate_back_password: "" # [ext]
+vault_frigate_entry_user: "" # [ext]
+vault_frigate_entry_password: "" # [ext]
 
-# Hash of app password
-vault_pihole_webserver_app_password_hash: ""
+# Mosquitto (every password here is hashed into the pwfile below)
+vault_mosquitto_zigbee2mqtt_user: "" # [pair:mqtt]
+vault_mosquitto_zigbee2mqtt_password: "" # [pair:mqtt]
 
-# App password
-vault_pihole_webserver_app_password: ""
+vault_mosquitto_frigate_user: "" # [pair:mqtt]
+vault_mosquitto_frigate_password: "" # [pair:mqtt]
 
-# Frigate
-vault_frigate_doorbell_user: ""
-vault_frigate_doorbell_password: ""
-vault_frigate_front_user: ""
-vault_frigate_front_password: ""
-vault_frigate_back_user: ""
-vault_frigate_back_password: ""
-vault_frigate_entry_user: ""
-vault_frigate_entry_password: ""
+vault_mosquitto_homeassistant_user: "" # [record][pair:mqtt] typed into HA's MQTT integration
+vault_mosquitto_homeassistant_password: "" # [record][pair:mqtt]
 
-# Mosquitto MQTT
-vault_mosquitto_zigbee2mqtt_user: ""
-vault_mosquitto_zigbee2mqtt_password: ""
-
-vault_mosquitto_frigate_user: ""
-vault_mosquitto_frigate_password: ""
-
-vault_mosquitto_homeassistant_user: ""
-vault_mosquitto_homeassistant_password: ""
-
-vault_mosquitto_pwfile_content: ""
+vault_mosquitto_pwfile_content: "" # [pair:mqtt] mosquitto_passwd output for all three users
 
 # Authelia
-vault_authelia_hmac_secret: ""
-vault_authelia_jwt_secret: ""
-vault_authelia_redis_password: ""
-vault_authelia_session_secret: ""
-vault_authelia_storage_encryption_key: ""
-vault_authelia_storage_password: ""
+vault_authelia_hmac_secret: "" # [gen]
+vault_authelia_jwt_secret: "" # [gen]
+vault_authelia_session_secret: "" # [gen] rotating it logs everyone out
+vault_authelia_redis_password: "" # [gen]
+vault_authelia_storage_encryption_key: "" # [keep] the Authelia DB (TOTP, WebAuthn) is encrypted with it
+vault_authelia_storage_password: "" # [keep] Postgres was initialised with it
 
-vault_authelia_paperless_client_id: ""
-vault_authelia_paperless_client_secret: ""
+vault_authelia_paperless_client_id: "" # [gen] OIDC client for Paperless (not deployed yet)
+vault_authelia_paperless_client_secret: "" # [gen]
 
-vault_authelia_users_database: ""
+vault_authelia_users_database: "" # [keep] every user's argon2 hash, including the [pair:authelia-users] accounts
 
-vault_authelia_rsa2048: ""
+vault_authelia_rsa2048: "" # [gen] rotating it invalidates issued OIDC tokens
