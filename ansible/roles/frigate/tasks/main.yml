@@ -19,7 +19,7 @@
         no_log: true
       - src: config.yaml.j2
         dest: "{{ stacks_path }}/frigate/config/config.yaml"
-        mode: "0644"
+        mode: "0600"
       - src: nginx.conf.j2
         dest: "{{ stacks_path }}/frigate/nginx/nginx.conf"
         mode: "0644"
