@@ -9,6 +9,10 @@ alloy_enable_intel_gpu: false
 
 alloy_intel_gpu_interval_seconds: 15
 
+alloy_enable_intel_npu: false
+
+alloy_intel_npu_interval_seconds: 15
+
 alloy_updates_packages:
   RedHat:
     - dnf5-plugins

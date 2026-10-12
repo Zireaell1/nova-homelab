@@ -1,0 +1,40 @@
+[Unit]
+Description=Intel NPU metrics for Prometheus (sysfs -> textfile)
+After=local-fs.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/intel_npu_metrics.sh {{ alloy_intel_npu_interval_seconds }} {{ textfile_metrics_path }}/intel_npu.prom
+Restart=always
+RestartSec=30
+
+DynamicUser=true
+SupplementaryGroups=alloy
+CapabilityBoundingSet=
+ProtectSystem=strict
+ReadWritePaths={{ textfile_metrics_path }}
+ProtectHome=true
+PrivateTmp=true
+PrivateNetwork=true
+PrivateDevices=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+ProcSubset=pid
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+RestrictAddressFamilies=AF_UNIX
+MemoryMax=32M
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

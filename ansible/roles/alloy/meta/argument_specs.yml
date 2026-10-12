@@ -27,6 +27,14 @@ argument_specs:
         type: int
         default: 15
         description: Seconds per intel_gpu_top sample (one .prom write each).
+      alloy_enable_intel_npu:
+        type: bool
+        default: false
+        description: Deploy the sysfs NPU collector (intel_vpu driver; Frigate's detector).
+      alloy_intel_npu_interval_seconds:
+        type: int
+        default: 15
+        description: Seconds between NPU samples.
       alloy_enable_updates:
         type: bool
         default: true
