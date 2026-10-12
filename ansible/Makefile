@@ -13,8 +13,13 @@ ifdef k
   BECOME_FLAG := -K
 endif
 
+# --- EXTRA VARS (e.g., e=podman_service_changed_extra=true) ---
+ifdef e
+  EXTRA_FLAG := -e "$(e)"
+endif
+
 # --- BASE COMMAND ---
-CMD = uv run ansible-playbook $(TAG_FLAG) $(CHECK_FLAG) $(BECOME_FLAG)
+CMD = uv run ansible-playbook $(TAG_FLAG) $(CHECK_FLAG) $(BECOME_FLAG) $(EXTRA_FLAG)
 
 # --- PLAYBOOK LISTS ---
 ROOT_PLAYBOOKS := site
@@ -44,10 +49,11 @@ help:
 	@echo "  make orion_services"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make nova_services c=1              (dry-run all tasks)"
-	@echo "  make nova_system t=dotfiles c=1     (dry-run only 'dotfiles' tag)"
-	@echo "  make nova_services k=1              (force -K on services)"
-	@echo "  make lint check                     (everything CI runs, locally)"
+	@echo "  make nova_services c=1                                             (dry-run all tasks)"
+	@echo "  make nova_system t=dotfiles c=1                                    (dry-run only 'dotfiles' tag)"
+	@echo "  make nova_services k=1                                             (force -K on services)"
+	@echo "  make lint check                                                    (everything CI runs, locally)"
+	@echo "  make nova_services t=grafana e=podman_service_changed_extra=true   (force a restart)"
 
 # --- SETUP ---
 deps:
