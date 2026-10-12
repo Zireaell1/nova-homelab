@@ -27,12 +27,12 @@ hardware_target_lvs:
     mount_path: /home
     manage_fs_and_mount: true
   - name: monitoring
-    size: 10g
+    size: 20g
     mount_path: "{{ monitoring_path }}"
     manage_fs_and_mount: true
     rootless: true
   - name: immich
-    size: 50g
+    size: 150g
     mount_path: "{{ immich_path }}"
     manage_fs_and_mount: true
     rootless: true
