@@ -1,20 +1,22 @@
 import re
 from collections import Counter
+from pathlib import Path
 
 import jinja2
 import yaml
 
 from _common import GROUP_VARS, ROLES, load, read
 
-TITLE = "Alert rules: unique uids, NoData is healthy, every expr compares"
+TITLE = "Alert rules: unique uids, NoData is healthy, every expr compares, every rule routes to a contact point"
 
 TEMPLATE = ROLES / "grafana/templates/alerting.yml.j2"
+CONTACT_POINTS = ROLES / "grafana/templates/contact-points.yml.j2"
 SEVERITIES = {"critical", "warning"}
 ANNOTATIONS = ("summary", "impact", "action")
 COMPARES = re.compile(r"(==|!=|>=|<=|(?<![-=])>|<(?!-))|\babsent(_over_time)?\(")
 
 
-def render() -> dict:
+def render(template: Path = TEMPLATE) -> dict:
     ctx: dict = {}
     for f in sorted(ROLES.glob("*/defaults/main.yml")) + sorted(
         GROUP_VARS.rglob("*.yml")
@@ -23,7 +25,7 @@ def render() -> dict:
         if isinstance(data, dict):
             ctx |= data
     env = jinja2.Environment(undefined=jinja2.ChainableUndefined)
-    return yaml.safe_load(env.from_string(read(TEMPLATE)).render(**ctx))
+    return yaml.safe_load(env.from_string(read(template)).render(**ctx))
 
 
 def check() -> list[str]:
@@ -31,6 +33,12 @@ def check() -> list[str]:
         doc = render()
     except (jinja2.TemplateError, yaml.YAMLError) as e:
         return [f"{TEMPLATE}: does not render to YAML: {e}"]
+    try:
+        cp = render(CONTACT_POINTS)
+    except (jinja2.TemplateError, yaml.YAMLError) as e:
+        return [f"{CONTACT_POINTS}: does not render to YAML: {e}"]
+    receivers = {c.get("name") for c in cp.get("contactPoints", [])}
+    mutes = {m.get("name") for m in cp.get("muteTimes", [])}
 
     bad = []
     rules = [(g["name"], r) for g in doc.get("groups", []) for r in g.get("rules", [])]
@@ -60,4 +68,14 @@ def check() -> list[str]:
         missing = [a for a in ANNOTATIONS if not (r.get("annotations") or {}).get(a)]
         if missing:
             bad.append(f"{where}: missing annotation(s) {', '.join(missing)}")
+        ns = r.get("notification_settings") or {}
+        if ns.get("receiver") not in receivers:
+            bad.append(
+                f"{where}: notification_settings.receiver {ns.get('receiver')!r} is not a contact point {sorted(receivers)}"
+            )
+        for m in ns.get("mute_time_intervals") or []:
+            if m not in mutes:
+                bad.append(
+                    f"{where}: mute_time_intervals {m!r} is not defined in muteTimes {sorted(mutes)}"
+                )
     return bad

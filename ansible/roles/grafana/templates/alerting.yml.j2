@@ -649,6 +649,8 @@ groups:
             action: "The camera is up, so it's the stream: Frigate → System · `podman logs --tail 50 frigate 2>&1 | grep -i <camera>` · go2rtc page for that stream"
           notification_settings:
             receiver: Discord
+            mute_time_intervals:
+              - weekly-maintenance
 
         - uid: camera_unreachable
           title: Camera Unreachable
@@ -678,6 +680,10 @@ groups:
             summary: "Camera {{ '{{' }} $labels.camera_name {{ '}}' }} doesn't answer ping for 5 minutes."
             impact: "No recording and no detection for that camera."
             action: "Power (PoE port on the switch) and cable · the switch's port status · Grafana → Cameras probe history"
+          notification_settings:
+            receiver: Discord
+            mute_time_intervals:
+              - weekly-maintenance
 
         - uid: camera_switch_unreachable
           title: Camera Switch Unreachable
@@ -707,6 +713,8 @@ groups:
             summary: "The camera switch doesn't answer ping for 5 minutes."
             impact: "Probably every camera is offline: no recording and no detection. Per-camera alerts are held back while this fires."
             action: "Switch power and LEDs · Nova's cable to the switch · power-cycle the switch · then Grafana → Cameras probe history"
+          notification_settings:
+            receiver: Discord
 
         - uid: eink_hardware_fallback
           title: E-Ink Display Hardware Unavailable
