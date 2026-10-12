@@ -140,7 +140,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-  notify: Restart homelab-verify-backup timer
+  notify: Restart homelab-backup timer
 
 # TODO: remove later
 - name: Retire the verify timer (verify runs from homelab-backup's OnSuccess=)

@@ -127,7 +127,7 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
-  notify: Restart podman-prune timer
+  notify: Reload systemd user daemon
 
 # TODO: remove later
 - name: Retire the prune timer (prune runs from homelab-backup's OnSuccess=/OnFailure=)
