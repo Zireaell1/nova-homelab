@@ -4,13 +4,6 @@
     daemon_reload: true
     scope: user
 
-- name: Restart podman-prune timer
-  ansible.builtin.systemd:
-    name: podman-prune.timer
-    state: restarted
-    daemon_reload: true
-    scope: user
-
 - name: Restart prometheus-podman-exporter
   ansible.builtin.systemd:
     name: prometheus-podman-exporter.service

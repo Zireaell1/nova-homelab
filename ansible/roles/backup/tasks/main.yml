@@ -142,14 +142,20 @@
     mode: "0644"
   notify: Restart homelab-verify-backup timer
 
-- name: Deploy Verify Systemd Timer file
-  ansible.builtin.template:
-    src: "homelab-verify-backup.timer.j2"
-    dest: "{{ user_units_path }}/homelab-verify-backup.timer"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart homelab-verify-backup timer
+# TODO: remove later
+- name: Retire the verify timer (verify runs from homelab-backup's OnSuccess=)
+  ansible.builtin.systemd:
+    name: homelab-verify-backup.timer
+    scope: user
+    state: stopped
+    enabled: false
+  failed_when: false
+
+# TODO: remove later
+- name: Remove the verify timer file
+  ansible.builtin.file:
+    path: "{{ user_units_path }}/homelab-verify-backup.timer"
+    state: absent
 
 - name: Generate device freshness script from Jinja2 template (with Bash validation)
   ansible.builtin.template:
@@ -190,6 +196,5 @@
     daemon_reload: true
   loop:
     - homelab-backup.timer
-    - homelab-verify-backup.timer
     - device-backup-freshness.timer
   ignore_errors: "{{ ansible_check_mode }}"

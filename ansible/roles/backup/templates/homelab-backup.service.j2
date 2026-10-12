@@ -7,6 +7,9 @@ ConditionPathIsMountPoint={{ backup_mount }}
 Wants=podman-user-wait-network-online.service
 After=podman-user-wait-network-online.service
 
+OnSuccess=homelab-verify-backup.service podman-prune.service
+OnFailure=podman-prune.service
+
 [Service]
 Type=oneshot
 
@@ -17,7 +20,7 @@ ExecStopPost={{ user_bin_path }}/homelab-backup-result.sh
 StandardOutput=journal
 StandardError=journal
 
-TimeoutStartSec=1h
+TimeoutStartSec=6h
 TimeoutStopSec=5m
 
 CPUWeight=idle

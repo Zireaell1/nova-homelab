@@ -129,14 +129,21 @@
     mode: "0644"
   notify: Restart podman-prune timer
 
-- name: Deploy Systemd Timer file
-  ansible.builtin.template:
-    src: "podman-prune.timer.j2"
-    dest: "{{ user_units_path }}/podman-prune.timer"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0644"
-  notify: Restart podman-prune timer
+# TODO: remove later
+- name: Retire the prune timer (prune runs from homelab-backup's OnSuccess=/OnFailure=)
+  ansible.builtin.systemd:
+    name: podman-prune.timer
+    scope: user
+    state: stopped
+    enabled: false
+  failed_when: false
+
+# TODO: remove later
+- name: Remove the prune timer file
+  ansible.builtin.file:
+    path: "{{ user_units_path }}/podman-prune.timer"
+    state: absent
+  notify: Reload systemd user daemon
 
 - name: Deploy user-owned env file for podman-exporter
   ansible.builtin.copy:
@@ -168,5 +175,4 @@
     daemon_reload: true
   loop:
     - prometheus-podman-exporter.service
-    - podman-prune.timer
   ignore_errors: "{{ ansible_check_mode }}"

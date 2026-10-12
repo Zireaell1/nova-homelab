@@ -3,4 +3,6 @@ Description=Discard unused filesystem blocks weekly
 
 [Timer]
 OnCalendar=
-OnCalendar=weekly
+OnCalendar=Mon *-*-* 00:15:00
+RandomizedDelaySec=0
+AccuracySec=1min
