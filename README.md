@@ -148,6 +148,7 @@ If you want to see exactly how this was built, check out the docs:
 5. [Services Intro](docs/05-services-intro.md)
 6. [Security Services](docs/06-security-services.md)
 7. [Smart Home and CCTV Services](docs/07-smart-home-cctv-services.md)
+8. [The night: what runs when](docs/night-schedule.md)
 
 ## Credits
 Third-party material that lives in or is fetched by this repo (the services themselves are linked under *Deployed Services*):
