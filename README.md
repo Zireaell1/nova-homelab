@@ -52,6 +52,11 @@ Here is a complete list of the services currently managed by Ansible (primarily 
 | **[Zigbee2MQTT](https://www.zigbee2mqtt.io/)** | Translates physical Zigbee network traffic into MQTT. |
 | **[Mosquitto](https://mosquitto.org/)** | Local MQTT broker. |
 
+### Photos
+| Service | Description |
+| :--- | :--- |
+| **[Immich](https://immich.app/)** | Self-hosted photo and video library; machine learning on the iGPU via OpenVINO, Quick Sync transcoding. |
+
 ### Observability
 | Service | Description |
 | :--- | :--- |
