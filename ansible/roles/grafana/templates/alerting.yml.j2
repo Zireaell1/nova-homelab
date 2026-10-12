@@ -661,7 +661,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: max by (camera_name) (probe_success{probe="camera_icmp"}) == 0
+                expr: max by (camera_name) (probe_success{probe="camera_icmp"}) == 0 unless on() (max(probe_success{probe="switch_icmp"}) == 0)
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -678,6 +678,35 @@ groups:
             summary: "Camera {{ '{{' }} $labels.camera_name {{ '}}' }} doesn't answer ping for 5 minutes."
             impact: "No recording and no detection for that camera."
             action: "Power (PoE port on the switch) and cable · the switch's port status · Grafana → Cameras probe history"
+
+        - uid: camera_switch_unreachable
+          title: Camera Switch Unreachable
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: max(probe_success{probe="switch_icmp"}) == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "The camera switch doesn't answer ping for 5 minutes."
+            impact: "Probably every camera is offline: no recording and no detection. Per-camera alerts are held back while this fires."
+            action: "Switch power and LEDs · Nova's cable to the switch · power-cycle the switch · then Grafana → Cameras probe history"
 
         - uid: eink_hardware_fallback
           title: E-Ink Display Hardware Unavailable

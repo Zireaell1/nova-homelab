@@ -367,6 +367,13 @@ modules:
         module  = "tcp"
         labels  = { "probe" = "camera_rtsp", "camera_name" = "Doorbell" }
     }
+
+    target {
+        name    = "switch_icmp"
+        address = "{{ vault_switch_ip }}"
+        module  = "icmp"
+        labels  = { "probe" = "switch_icmp" }
+    }
 }
 
 prometheus.scrape "cameras" {
