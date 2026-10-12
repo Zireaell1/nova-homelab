@@ -3,6 +3,11 @@
   hosts: nova
   become: false
   environment: "{{ podman_user_env }}"
+  pre_tasks:
+    - name: Backup guard
+      ansible.builtin.import_role:
+        name: backup_guard
+      tags: ["always"]
   roles:
     # =====================================================
     # Runtime environment

@@ -2,6 +2,11 @@
 - name: System Maintenance and Updates
   hosts: nova
   become: true
+  pre_tasks:
+    - name: Backup guard
+      ansible.builtin.import_role:
+        name: backup_guard
+      tags: ["always"]
   tasks:
     - name: DNF Update
       ansible.builtin.dnf:

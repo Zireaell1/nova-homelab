@@ -2,6 +2,11 @@
 - name: Nova system and foundation
   hosts: nova
   become: true
+  pre_tasks:
+    - name: Backup guard
+      ansible.builtin.import_role:
+        name: backup_guard
+      tags: ["always"]
   roles:
     # =====================================================
     # Foundation and hardware

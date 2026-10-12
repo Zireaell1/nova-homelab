@@ -1,0 +1,11 @@
+---
+argument_specs:
+  main:
+    short_description: Refuse to change Nova while the nightly backup runs
+    description:
+      - Imported in pre_tasks of the Nova playbooks.
+    options:
+      backup_guard_override:
+        type: bool
+        default: false
+        description: Run even though homelab-backup.service is active.

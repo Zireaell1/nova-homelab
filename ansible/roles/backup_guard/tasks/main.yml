@@ -1,0 +1,21 @@
+---
+- name: Read the nightly backup's state
+  ansible.builtin.systemd:
+    name: homelab-backup.service
+    scope: user
+  register: backup_guard_unit
+  become: false
+  environment: "{{ podman_user_env }}"
+  check_mode: false
+  failed_when: false
+
+- name: Refuse to deploy while the backup is running
+  ansible.builtin.assert:
+    that: >-
+      (backup_guard_unit.status.ActiveState | default('inactive'))
+      not in ['activating', 'active', 'deactivating']
+      or backup_guard_override | bool
+    fail_msg: >-
+      homelab-backup.service is running (normally 01:00 to ~01:10). Wait for it (`systemctl --user status homelab-backup`), or
+      override with -e backup_guard_override=true.
+    quiet: true
