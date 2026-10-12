@@ -630,7 +630,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: frigate_camera_fps == 0
+                expr: frigate_camera_fps == 0 unless on(camera_name) (max by (camera_name) (probe_success{probe="camera_icmp"}) == 0)
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -644,11 +644,40 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "Camera {{ '{{' }} $labels.camera_name {{ '}}' }} has sent no frames for 5 minutes."
+            summary: "Camera {{ '{{' }} $labels.camera_name {{ '}}' }} answers ping but Frigate has had no frames from it for 5 minutes."
             impact: "No recording and no detection for that camera."
-            action: "Check the camera's power and network (`ping` it) · Frigate → System · `podman logs --tail 50 frigate`"
+            action: "The camera is up, so it's the stream: Frigate → System · `podman logs --tail 50 frigate 2>&1 | grep -i <camera>` · go2rtc page for that stream"
           notification_settings:
             receiver: Discord
+
+        - uid: camera_unreachable
+          title: Camera Unreachable
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: max by (camera_name) (probe_success{probe="camera_icmp"}) == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "Camera {{ '{{' }} $labels.camera_name {{ '}}' }} doesn't answer ping for 5 minutes."
+            impact: "No recording and no detection for that camera."
+            action: "Power (PoE port on the switch) and cable · the switch's port status · Grafana → Cameras probe history"
 
         - uid: eink_hardware_fallback
           title: E-Ink Display Hardware Unavailable

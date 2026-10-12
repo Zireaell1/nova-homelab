@@ -296,3 +296,82 @@ prometheus.scrape "wan_http" {
     scrape_interval = "60s"
     scrape_timeout  = "10s"
 }
+
+prometheus.exporter.blackbox "cameras" {
+    config = `
+modules:
+  icmp:
+    prober: icmp
+    timeout: 2s
+    icmp:
+      preferred_ip_protocol: ip4
+  tcp:
+    prober: tcp
+    timeout: 3s
+    tcp:
+      preferred_ip_protocol: ip4
+`
+
+    target {
+        name    = "front_icmp"
+        address = "{{ vault_camera_front_ip }}"
+        module  = "icmp"
+        labels  = { "probe" = "camera_icmp", "camera_name" = "Front" }
+    }
+
+    target {
+        name    = "front_rtsp"
+        address = "{{ vault_camera_front_ip }}:554"
+        module  = "tcp"
+        labels  = { "probe" = "camera_rtsp", "camera_name" = "Front" }
+    }
+
+    target {
+        name    = "entry_icmp"
+        address = "{{ vault_camera_entry_ip }}"
+        module  = "icmp"
+        labels  = { "probe" = "camera_icmp", "camera_name" = "Entry" }
+    }
+
+    target {
+        name    = "entry_rtsp"
+        address = "{{ vault_camera_entry_ip }}:554"
+        module  = "tcp"
+        labels  = { "probe" = "camera_rtsp", "camera_name" = "Entry" }
+    }
+
+    target {
+        name    = "back_icmp"
+        address = "{{ vault_camera_back_ip }}"
+        module  = "icmp"
+        labels  = { "probe" = "camera_icmp", "camera_name" = "Back" }
+    }
+
+    target {
+        name    = "back_rtsp"
+        address = "{{ vault_camera_back_ip }}:554"
+        module  = "tcp"
+        labels  = { "probe" = "camera_rtsp", "camera_name" = "Back" }
+    }
+
+    target {
+        name    = "doorbell_icmp"
+        address = "{{ vault_camera_doorbell_ip }}"
+        module  = "icmp"
+        labels  = { "probe" = "camera_icmp", "camera_name" = "Doorbell" }
+    }
+
+    target {
+        name    = "doorbell_rtsp"
+        address = "{{ vault_camera_doorbell_ip }}:554"
+        module  = "tcp"
+        labels  = { "probe" = "camera_rtsp", "camera_name" = "Doorbell" }
+    }
+}
+
+prometheus.scrape "cameras" {
+    targets         = prometheus.exporter.blackbox.cameras.targets
+    forward_to      = [prometheus.remote_write.local_prom.receiver]
+    scrape_interval = "30s"
+    scrape_timeout  = "10s"
+}
