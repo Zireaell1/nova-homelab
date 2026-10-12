@@ -81,7 +81,9 @@
 	"extensions": {
 		"recommendations": [
 			"redhat.ansible",
-			"github.vscode-github-actions"
+			"github.vscode-github-actions",
+			"ms-python.python",
+			"charliermarsh.ruff"
 		]
 	}
 }
