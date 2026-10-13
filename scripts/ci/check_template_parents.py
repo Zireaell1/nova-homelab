@@ -34,7 +34,10 @@ def created_dirs(tasks: list[dict]) -> set[str]:
         inc = t.get("ansible.builtin.include_role")
         if isinstance(inc, dict) and inc.get("name") == "podman_service":
             v = t.get("vars") or {}
-            dirs |= {str(d) for d in (v.get("podman_service_dirs") or [])}
+            dirs |= {
+                str(d.get("path")) if isinstance(d, dict) else str(d)
+                for d in (v.get("podman_service_dirs") or [])
+            }
             dirs |= {"{{ quadlet_path }}", "{{ user_units_path }}"}
     return dirs
 

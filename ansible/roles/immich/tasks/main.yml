@@ -8,7 +8,8 @@
       - "{{ stacks_path }}/immich"
       - "{{ stacks_path }}/immich/model-cache"
       - "{{ stacks_path }}/immich/secrets"
-      - "{{ stacks_path }}/immich/postgres"
+      - path: "{{ stacks_path }}/immich/postgres"
+        mode: "0700"
       - "{{ immich_storage_path }}"
       - "{{ immich_storage_path }}/data"
     podman_service_secrets:

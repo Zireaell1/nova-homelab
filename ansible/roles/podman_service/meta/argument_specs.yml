@@ -8,8 +8,10 @@ argument_specs:
         required: true
       podman_service_dirs:
         type: list
-        elements: path
+        elements: raw
         default: []
+        description:
+          - A path (created 0755), or a dict with path and mode for a directory the container chmods itself.
       podman_service_templates:
         type: list
         elements: dict

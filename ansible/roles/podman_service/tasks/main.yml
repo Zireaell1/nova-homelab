@@ -12,12 +12,14 @@
 
 - name: Ensure data directories exist for {{ podman_service_name }}
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ item.path | default(item) }}"
     state: directory
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-    mode: "0755"
+    mode: "{{ item.mode | default('0755') }}"
   loop: "{{ podman_service_dirs }}"
+  loop_control:
+    label: "{{ item.path | default(item) }}"
 
 - name: Deploy configuration for {{ podman_service_name }}
   ansible.builtin.template:
