@@ -142,21 +142,6 @@
     mode: "0644"
   notify: Restart homelab-backup timer
 
-# TODO: remove later
-- name: Retire the verify timer (verify runs from homelab-backup's OnSuccess=)
-  ansible.builtin.systemd:
-    name: homelab-verify-backup.timer
-    scope: user
-    state: stopped
-    enabled: false
-  failed_when: false
-
-# TODO: remove later
-- name: Remove the verify timer file
-  ansible.builtin.file:
-    path: "{{ user_units_path }}/homelab-verify-backup.timer"
-    state: absent
-
 - name: Generate device freshness script from Jinja2 template (with Bash validation)
   ansible.builtin.template:
     src: "device-backup-freshness.sh.j2"
