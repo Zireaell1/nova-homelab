@@ -22,6 +22,8 @@ If you look inside the `ansible/` directory, here is how everything is organized
 
 The Python tooling itself (ansible-core, ansible-lint, yamllint) is pinned in `pyproject.toml` / `uv.lock` at the repository root and managed with [uv](https://docs.astral.sh/uv/).
 
+Everything else the control machine needs is in the [`Brewfile`](../Brewfile) at the repository root (`brew bundle` on macOS, `brew bundle check` to see what is missing). Two entries are easy to miss: **rsync**, because a few roles copy whole directories with `ansible.posix.synchronize`, and newer macOS versions ship a different rsync implementation (openrsync); and **restic and rclone**, which the server runs itself, but which you need on your own machine the day you restore from a backup.
+
 Inside the `roles/` directory, each individual service has its own folder. They generally follow this structure:
 * **`defaults/`**: Variables specific only to that role.
 * **`handlers/`**: Triggers that fire at the end of a playbook run (e.g., "Restart service XYZ if a config changed").

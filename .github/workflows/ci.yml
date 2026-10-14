@@ -70,8 +70,8 @@ jobs:
             echo "::endgroup::"
           done
 
-      - name: shellcheck rendered scripts
-        run: shellcheck ansible/roles/alloy/files/smartmon.sh
+      - name: shellcheck role scripts
+        run: shellcheck ansible/roles/*/files/*.sh
 
       - name: Structural checks
         run: python scripts/ci/run.py

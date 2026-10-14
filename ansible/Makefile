@@ -64,6 +64,7 @@ deps:
 lint:
 	uv run ansible-lint
 	uv run yamllint -c .yamllint -s . ../.github/
+	shellcheck roles/*/files/*.sh
 
 check:
 	uv run python ../scripts/ci/run.py
