@@ -7,6 +7,8 @@ Image={{ immich_redis_image }}:{{ immich_redis_version }}
 ContainerName=immich-redis
 StopTimeout=20
 
+Exec=valkey-server --save "" --appendonly no --loglevel warning
+
 # --- Identity / Namespaces ---
 User=999:999
 UserNS=keep-id:uid=999,gid=999
