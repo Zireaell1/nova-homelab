@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
+#
+# Reads the offsite copy back from B2: OnSuccess= of homelab-backup.service.
+#
+# ==============================================================================
+# Commands used in this script (all read-only, --no-lock: nothing is written to B2):
+#
+# * restic dump latest <canary.txt> --no-cache --no-lock   (repository rclone:<b2>/homelab)
+#       : The canary timestamp from the newest snapshot, straight from B2. Fresh = tonight's data arrived and is readable.
+# * restic check --no-lock --read-data-subset=<5%>         (only on backup_verify_b2_check_weekday, Sunday)
+#       : Structure, every index, and a random share of the data packs of the B2 copy itself.
+#
+# Environment: RESTIC_PASSWORD_FILE, RESTIC_REPOSITORY, XDG_CONFIG_HOME (rclone.conf).
+# Writes: homelab_backup_verify.prom every run, homelab_backup_b2_check.prom only when the weekly check ran.
+# ==============================================================================
 
 set -uo pipefail
 

@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+#
+# Mirrors the repositories in git_backup_repos into git_backup_dir right before the snapshot:
+# ExecStartPre=- of homelab-backup.service (a failed mirror never stops the backup; it shows in the metrics).
+#
+# ==============================================================================
+# Commands used in this script:
+#
+# * git -c gc.autoDetach=false clone --mirror <url> <dir>        : First run: a bare mirror (all branches, tags, refs).
+# * git -c gc.autoDetach=false -C <dir> remote update --prune    : Later runs: fetch everything, drop refs deleted upstream.
+#       gc.autoDetach=false: a background gc must not still be writing when the backup reads the mirror.
+#
+# Writes: homelab_git_mirror.prom (per repo: success, last success time; a failure keeps the previous time).
+# ==============================================================================
 
 set -Euo pipefail
 

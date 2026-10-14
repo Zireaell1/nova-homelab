@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+#
+# Freshness of the device repositories on the rest-server (<user>/<tier>/<device>); device-backup-freshness.timer, hourly.
+#
+# ==============================================================================
+# Commands used in this script (all read-only; the repositories are encrypted with client keys, so only files are counted):
+#
+# * find <root> -mindepth 3 -maxdepth 3 -type d       : Discovers <user>/<cloud|local>/<device> repositories.
+# * find <repo>/snapshots -type f -printf '%T@\n'     : Newest snapshot file = time of the device's last backup.
+# * find <repo>/snapshots -type f | wc -l             : Number of snapshots kept.
+# * du -sb <repo>                                     : Size on disk.
+#
+# Writes: homelab_device_backup.prom.
+# ==============================================================================
 
 set -Eeuo pipefail
 

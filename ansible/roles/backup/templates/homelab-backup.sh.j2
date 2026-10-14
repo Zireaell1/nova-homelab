@@ -1,10 +1,38 @@
 #!/usr/bin/env bash
 #
-# Homelab backup: restic to a local repo, rclone to B2.
+# Homelab backup: restic to a local repo, rclone to B2. Runs nightly from homelab-backup.timer
+# (01:00); verify and podman-prune follow through OnSuccess=/OnFailure=.
 #
-# {% raw %}Jinja note: bash's ${#array[@]} contains "{#", which Jinja parses as a
-# comment opener. Every array length below is wrapped in a raw/endraw block;
-# do not "clean" those guards away.{% endraw %}
+# ==============================================================================
+# Commands used in this script, in the order they run:
+#
+# * flock -n 9                                  : One run at a time (lock file in $XDG_RUNTIME_DIR); a second run exits 0.
+# * restic unlock                               : Removes stale locks a killed run left behind; live locks are kept.
+# * restic snapshots                            : Pre-flight: the repository exists and the password opens it.
+# * podman --version / ps -a / images --digests : Writes versions.txt (what ran when this snapshot was taken) into the snapshot.
+# * systemctl --user stop|start <name>.service  : Quiesces every backup_targets entry with stop: true, restarts it right after.
+# * restic backup --files-from --exclude-file --compression max
+#                                               : The snapshot: backup_targets paths + canary.txt + versions.txt.
+# * restic check --read-data-subset=<weekday>/7 : Reads a seventh of the data packs each night, so all of them every week.
+# * rclone lsf <b2>/homelab --include /config + rclone cat <b2>/homelab/config
+#                                               : Repo-identity guard: B2 must hold this repository (byte-equal config) or none.
+# * rclone sync <repo> <b2>/homelab --fast-list --transfers 8 --immutable --retries 5 --retries-sleep 2m --max-delete-size <25%>
+#                                               : Mirrors the repository. --immutable: never overwrite an existing file
+#                                                 (restic never rewrites one). --max-delete-size: a wiped source can't empty B2.
+# * rclone sync <rest-server root> <b2>/devices --include "/*/cloud/**" (same flags)
+#                                               : Device repositories of the cloud tier only; local tier never leaves the house.
+# * restic forget --prune --keep-daily 7 --keep-weekly 4 --keep-monthly 6
+#                                               : Retention, after the sync (B2 gets tonight's snapshot before anything is deleted).
+# * du -sb / find                               : Local size per repository and device tier (quota, delete budget, metrics).
+# * restic snapshots --json | jq length         : Snapshot count for the metrics.
+# * rclone size <b2> --b2-versions --json / rclone size <b2> --json
+#                                               : What B2 bills (hidden versions included) and the current files; the difference is
+#                                                 homelab_backup_b2_hidden_bytes.
+#
+# Environment: RESTIC_PASSWORD_FILE, RESTIC_REPOSITORY, XDG_CONFIG_HOME (rclone reads rclone/rclone.conf from it).
+# Writes: <textfile dir>/homelab_backup.prom (temp file + rename), canary.txt, versions.txt.
+# ==============================================================================
+#
 
 set -Eeuo pipefail
 
