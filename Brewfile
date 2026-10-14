@@ -5,7 +5,6 @@ brew "rsync"       # ansible.posix.synchronize
 
 # --- Checks (CI) ---
 brew "shellcheck"
-brew "jq"
 
 # --- Backups ---
 brew "restic"
