@@ -10,3 +10,13 @@ backup_escrow_vault: "{{ inventory_dir }}/group_vars/all/vault.yml"
 
 backup_canary_file: "{{ user_backups_path }}/canary.txt"
 backup_canary_max_age: 172800
+
+backup_b2_hard_delete: true
+
+backup_rclone_max_delete_percent: 25
+backup_rclone_max_delete_min_bytes: 1073741824
+backup_rclone_retries: 5
+backup_rclone_retries_sleep: "2m"
+
+backup_verify_b2_check_weekday: 7
+backup_verify_b2_read_subset: "5%"

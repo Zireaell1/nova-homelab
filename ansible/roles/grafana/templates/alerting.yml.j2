@@ -1695,7 +1695,7 @@ groups:
           annotations:
             summary: "Offsite sync to B2 failed."
             impact: "The local backup is fine; the offsite copy is out of date."
-            action: "`journalctl --user -u homelab-backup.service -n 100 | grep -i rclone` · usually network, B2 credentials or quota"
+            action: "`journalctl --user -u homelab-backup.service -n 100 | grep -i rclone` · usually network, B2 credentials or quota · `max-delete-size threshold` = the sync wanted to delete more than usual (check the local repo before raising it) · `immutable file modified` = a local pack changed (disk damage: `restic check --read-data`)"
           notification_settings:
             receiver: Discord
 
@@ -1726,6 +1726,66 @@ groups:
             summary: "Test restore from B2 failed: the canary file was missing or stale."
             impact: "The offsite copy may not be restorable."
             action: "`journalctl --user -u homelab-verify-backup.service -n 50`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_b2_repo_mismatch
+          title: B2 Holds a Different Repository
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_b2_repo_mismatch == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "B2 holds a different restic repository than the local one; the offsite sync was refused."
+            impact: "No new offsite copies until resolved. The old B2 history is intact: the guard protected it."
+            action: "Rebuild with a new disk? `make restore_nova mode=seed`, then redeploy `t=backup` · otherwise compare `restic -r <local> cat config` with the B2 copy"
+          notification_settings:
+            receiver: Discord
+
+        - uid: backup_b2_check_failed
+          title: Weekly B2 Check Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_b2_check_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: critical
+          annotations:
+            summary: "The weekly restic check of the B2 copy found a problem."
+            impact: "Parts of the offsite copy may not be restorable."
+            action: "`journalctl --user -u homelab-verify-backup.service -n 100` · rerun by hand: `restic -r rclone:<bucket>/homelab check --no-lock` · the local repo is the source of truth"
           notification_settings:
             receiver: Discord
 

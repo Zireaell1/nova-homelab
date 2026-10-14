@@ -51,3 +51,31 @@ argument_specs:
         type: int
         default: 172800
         description: Seconds; older restored canary fails verification.
+      backup_b2_hard_delete:
+        type: bool
+        default: true
+        description: rclone deletes on B2 for good. Set false only after the bucket has a lifecycle rule that keeps prior versions for N days.
+      backup_rclone_max_delete_percent:
+        type: int
+        default: 25
+        description: A sync may delete at most this share of the local repository size (rclone --max-delete-size); more fails the sync.
+      backup_rclone_max_delete_min_bytes:
+        type: int
+        default: 1073741824
+        description: Floor for the delete limit, so a small repository can still prune.
+      backup_rclone_retries:
+        type: int
+        default: 5
+        description: rclone --retries for the B2 sync (survives a short modem reboot).
+      backup_rclone_retries_sleep:
+        type: str
+        default: "2m"
+        description: rclone --retries-sleep between those retries.
+      backup_verify_b2_check_weekday:
+        type: int
+        default: 7
+        description: Day of the week (1 = Monday, 7 = Sunday) the verify also runs restic check against B2; 0 disables it.
+      backup_verify_b2_read_subset:
+        type: str
+        default: "5%"
+        description: restic check --read-data-subset for that weekly B2 check (B2 download is free up to 3x the stored size a month).

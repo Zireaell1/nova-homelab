@@ -22,6 +22,11 @@ SUCCESS=0
 CANARY_TIMESTAMP=0
 CANARY_AGE=-1
 
+CHECK_WEEKDAY="{{ backup_verify_b2_check_weekday }}"
+CHECK_SUBSET="{{ backup_verify_b2_read_subset }}"
+CHECK_RAN=0
+CHECK_SUCCESS=1
+
 export RESTIC_REPOSITORY="rclone:${RCLONE_TARGET}/homelab"
 
 # ==========================================
@@ -29,7 +34,7 @@ export RESTIC_REPOSITORY="rclone:${RCLONE_TARGET}/homelab"
 # ==========================================
 echo "[INFO] Attempting to retrieve canary file directly from B2 (forcing --no-cache)..."
 
-if RAW_TIMESTAMP=$(restic dump latest "$CANARY_PATH" --no-cache 2>/dev/null); then
+if RAW_TIMESTAMP=$(restic dump latest "$CANARY_PATH" --no-cache --no-lock 2>/dev/null); then
     if [[ "$RAW_TIMESTAMP" =~ ^[0-9]+$ ]]; then
         CANARY_TIMESTAMP=$RAW_TIMESTAMP
         CANARY_AGE=$(( $(date +%s) - CANARY_TIMESTAMP ))
@@ -45,6 +50,22 @@ if RAW_TIMESTAMP=$(restic dump latest "$CANARY_PATH" --no-cache 2>/dev/null); th
     fi
 else
     echo >&2 "[ERROR] Could not reach B2 or extract the canary."
+fi
+
+# ==========================================
+# 2b. WEEKLY CHECK OF THE B2 COPY ITSELF
+# ==========================================
+# The nightly backup checks the local repository; this reads the offsite copy:
+# structure, every index, and a random share of the data packs.
+if [ "$CHECK_WEEKDAY" -ne 0 ] && [ "$(date +%u)" -eq "$CHECK_WEEKDAY" ]; then
+    CHECK_RAN=1
+    echo "[INFO] Weekly restic check of the B2 copy (read-data-subset ${CHECK_SUBSET})..."
+    if restic check --no-lock --read-data-subset="$CHECK_SUBSET"; then
+        echo "[SUCCESS] B2 copy checked."
+    else
+        CHECK_SUCCESS=0
+        echo >&2 "[ERROR] restic check of the B2 copy failed."
+    fi
 fi
 
 # ==========================================
@@ -68,6 +89,20 @@ homelab_backup_verify_canary_age_seconds $CANARY_AGE
 homelab_backup_verify_duration_seconds $VERIFY_DURATION
 EOF
 
+# The weekly check keeps its own file, so the six nights without a check don't overwrite its result.
+if [ "$CHECK_RAN" -eq 1 ] && [ -d "$PROM_TARGET_DIR" ]; then
+    cat <<EOF > "${PROM_TARGET_DIR}/.homelab_backup_b2_check.prom.$$"
+# HELP homelab_backup_b2_check_success Whether the last weekly restic check of the B2 copy passed (1) or failed (0)
+# TYPE homelab_backup_b2_check_success gauge
+homelab_backup_b2_check_success $CHECK_SUCCESS
+
+# HELP homelab_backup_b2_check_timestamp_seconds When the weekly restic check of the B2 copy last ran
+# TYPE homelab_backup_b2_check_timestamp_seconds gauge
+homelab_backup_b2_check_timestamp_seconds $VERIFY_END_TIME
+EOF
+    mv -f "${PROM_TARGET_DIR}/.homelab_backup_b2_check.prom.$$" "${PROM_TARGET_DIR}/homelab_backup_b2_check.prom"
+fi
+
 if [ -d "$PROM_TARGET_DIR" ]; then
     mv "$PROM_TMP_FILE" "${PROM_TARGET_DIR}/homelab_backup_verify.prom"
     echo "[INFO] Metrics saved to $PROM_TARGET_DIR."
@@ -75,7 +110,7 @@ else
     echo "[WARNING] Prometheus metrics directory $PROM_TARGET_DIR does not exist."
 fi
 
-if [ $SUCCESS -eq 1 ]; then
+if [ $SUCCESS -eq 1 ] && [ $CHECK_SUCCESS -eq 1 ]; then
     exit 0
 else
     exit 1

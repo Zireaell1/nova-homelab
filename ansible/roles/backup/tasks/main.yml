@@ -62,21 +62,46 @@
     mode: "0600"
   no_log: true
 
-- name: Check if CRITICAL repository is already initialized
-  ansible.builtin.command: restic snapshots
-  environment:
-    RESTIC_PASSWORD_FILE: "{{ backup_restic_password_file }}"
-    RESTIC_REPOSITORY: "{{ local_backup_path }}"
-  register: backup_restic_critical_check
-  failed_when: false
-  changed_when: false
+- name: Check whether the local repository exists
+  ansible.builtin.stat:
+    path: "{{ local_backup_path }}/config"
+  register: backup_local_repo_config
 
-- name: Initialize CRITICAL repository
+- name: Look for an existing repository on B2 before creating a new one
+  ansible.builtin.command:
+    argv:
+      [
+        rclone,
+        lsf,
+        "{{ backup_rclone_target }}/homelab",
+        --files-only,
+        --max-depth,
+        "1",
+        --include,
+        /config,
+      ]
+  environment:
+    RCLONE_CONFIG: "{{ user_config_path }}/rclone/rclone.conf"
+  register: backup_b2_repo_listing
+  when: not backup_local_repo_config.stat.exists
+  changed_when: false
+  failed_when: backup_b2_repo_listing.rc not in [0, 3]
+
+- name: Refuse to create a new repository while B2 holds one
+  ansible.builtin.assert:
+    that: backup_b2_repo_listing.stdout | trim | length == 0
+    fail_msg: >-
+      {{ local_backup_path }} has no repository, but B2 does. Bring it back first:
+      make restore_nova mode=seed (copies the repository from B2), then deploy the backup role again.
+    quiet: true
+  when: not backup_local_repo_config.stat.exists
+
+- name: Initialize the local repository
   ansible.builtin.command: restic init
   environment:
     RESTIC_PASSWORD_FILE: "{{ backup_restic_password_file }}"
     RESTIC_REPOSITORY: "{{ local_backup_path }}"
-  when: backup_restic_critical_check.rc != 0
+  when: not backup_local_repo_config.stat.exists
   changed_when: true
 
 - name: Generate Git sync script

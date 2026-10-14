@@ -25,10 +25,16 @@ LOCK_FILE="${XDG_RUNTIME_DIR:-/tmp}/homelab-backup.lock"
 
 B2_QUOTA_BYTES="{{ backup_b2_quota_bytes }}"
 
+MAX_DELETE_PERCENT="{{ backup_rclone_max_delete_percent }}"
+MAX_DELETE_MIN_BYTES="{{ backup_rclone_max_delete_min_bytes }}"
+RCLONE_SAFETY=(--fast-list --transfers 8 --immutable
+    --retries "{{ backup_rclone_retries }}" --retries-sleep "{{ backup_rclone_retries_sleep }}")
+
 GLOBAL_SUCCESS=1
 RCLONE_SUCCESS=1
 PRUNE_SUCCESS=1
 QUOTA_EXCEEDED=0
+REPO_MISMATCH=0
 INTERRUPTED=0
 
 LOCAL_BACKUP_DURATION=0
@@ -113,6 +119,40 @@ measure_local() {
     [ -n "$DEVICES_UNKNOWN_TIERS" ]    || DEVICES_UNKNOWN_TIERS=0
 }
 
+max_delete_bytes() {
+    local size="$1" budget
+    budget=$(( size * MAX_DELETE_PERCENT / 100 ))
+    [ "$budget" -lt "$MAX_DELETE_MIN_BYTES" ] && budget=$MAX_DELETE_MIN_BYTES
+    echo "$budget"
+}
+
+check_b2_repo_identity() {
+    local listing remote_cfg rc=0
+    listing=$(rclone lsf "${RCLONE_TARGET}/homelab" --files-only --max-depth 1 \
+                --include "/config" --contimeout 10s --timeout 60s --retries 1 2>/dev/null) || rc=$?
+    if [ "$rc" -eq 3 ] || { [ "$rc" -eq 0 ] && [ -z "$listing" ]; }; then
+        log "No repository on B2 yet; the first sync creates it."
+        return 0
+    fi
+    if [ "$rc" -ne 0 ]; then
+        err "Could not list ${RCLONE_TARGET}/homelab (rclone exit ${rc}); not syncing blind."
+        return 1
+    fi
+    remote_cfg=$(rclone cat "${RCLONE_TARGET}/homelab/config" --contimeout 10s --timeout 60s \
+                    2>/dev/null | base64 -w0) || rc=$?
+    if [ "$rc" -ne 0 ] || [ -z "$remote_cfg" ]; then
+        err "Could not read the repository config on B2 (rclone exit ${rc}); not syncing blind."
+        return 1
+    fi
+    if [ "$remote_cfg" != "$(base64 -w0 < "${REPO_CRITICAL}/config")" ]; then
+        err "B2 holds a DIFFERENT restic repository than ${REPO_CRITICAL}; refusing to sync over it."
+        err "Rebuild? Bring the repository back from B2 first: make restore_nova mode=seed"
+        REPO_MISMATCH=1
+        return 1
+    fi
+    return 0
+}
+
 # ==========================================
 # 4. SERVICES
 # ==========================================
@@ -151,7 +191,7 @@ start_services() {
 # ==========================================
 write_metrics() {
     local end_time="$1" duration="$2" exit_code="$3"
-    local snapshot_count=0 b2_size_bytes=0
+    local snapshot_count=0 b2_size_bytes=0 b2_current_bytes=0 b2_hidden_bytes=0
     local tmp
 
     measure_local
@@ -163,10 +203,16 @@ write_metrics() {
 
     if [ "$INTERRUPTED" -eq 0 ]; then
         local b2_info
-        if b2_info=$(rclone size "${RCLONE_TARGET}" --json \
+        if b2_info=$(rclone size "${RCLONE_TARGET}" --b2-versions --fast-list --json \
                         --contimeout 10s --timeout 60s --retries 1 2>/dev/null); then
             b2_size_bytes=$(echo "$b2_info" | jq -r '.bytes' 2>/dev/null || echo 0)
         fi
+        if b2_info=$(rclone size "${RCLONE_TARGET}" --fast-list --json \
+                        --contimeout 10s --timeout 60s --retries 1 2>/dev/null); then
+            b2_current_bytes=$(echo "$b2_info" | jq -r '.bytes' 2>/dev/null || echo 0)
+        fi
+        [ "$b2_size_bytes" -ge "$b2_current_bytes" ] 2>/dev/null \
+            && b2_hidden_bytes=$(( b2_size_bytes - b2_current_bytes ))
     fi
 
     if [ ! -d "$PROM_TARGET_DIR" ]; then
@@ -225,9 +271,17 @@ homelab_backup_repo_size_bytes{repo="devices_local"} $LOCAL_SIZE_DEVICES_LOCAL
 # TYPE homelab_backup_devices_unknown_tiers gauge
 homelab_backup_devices_unknown_tiers $DEVICES_UNKNOWN_TIERS
 
-# HELP homelab_backup_b2_size_bytes Total size of the B2 bucket (all tiers)
+# HELP homelab_backup_b2_size_bytes Total size of the B2 bucket (all tiers), hidden versions included: what B2 bills
 # TYPE homelab_backup_b2_size_bytes gauge
 homelab_backup_b2_size_bytes $b2_size_bytes
+
+# HELP homelab_backup_b2_hidden_bytes Part of the B2 size held as hidden versions (kept by the bucket lifecycle rule)
+# TYPE homelab_backup_b2_hidden_bytes gauge
+homelab_backup_b2_hidden_bytes $b2_hidden_bytes
+
+# HELP homelab_backup_b2_repo_mismatch Whether B2 holds a different restic repository than the local one (1); the sync was refused
+# TYPE homelab_backup_b2_repo_mismatch gauge
+homelab_backup_b2_repo_mismatch $REPO_MISMATCH
 
 # HELP homelab_backup_b2_quota_bytes Configured ceiling the projected cloud size is compared against
 # TYPE homelab_backup_b2_quota_bytes gauge
@@ -414,9 +468,10 @@ abort_if_interrupted
 log "Syncing local repositories to the cloud..."
 CLOUD_SYNC_START=$(date +%s)
 
+measure_local
+
 if [ "$B2_QUOTA_BYTES" -gt 0 ]; then
     log "Checking quota (max ${B2_QUOTA_BYTES} bytes)..."
-    measure_local
     TOTAL_PROJECTED_SIZE=$((LOCAL_SIZE_HOMELAB + LOCAL_SIZE_DEVICES_CLOUD))
 
     if [ "$TOTAL_PROJECTED_SIZE" -gt "$B2_QUOTA_BYTES" ]; then
@@ -429,8 +484,12 @@ if [ "$B2_QUOTA_BYTES" -gt 0 ]; then
 fi
 
 if [ "$QUOTA_EXCEEDED" -eq 0 ] && [ "$GLOBAL_SUCCESS" -eq 1 ]; then
-    rclone sync "$REPO_CRITICAL" "${RCLONE_TARGET}/homelab" \
-        --fast-list --transfers 8 || RCLONE_SUCCESS=0
+    if check_b2_repo_identity; then
+        rclone sync "$REPO_CRITICAL" "${RCLONE_TARGET}/homelab" "${RCLONE_SAFETY[@]}" \
+            --max-delete-size "$(max_delete_bytes "$LOCAL_SIZE_HOMELAB")B" || RCLONE_SUCCESS=0
+    else
+        RCLONE_SUCCESS=0
+    fi
 else
     warn "Skipping the homelab repo sync."
 fi
@@ -438,8 +497,8 @@ fi
 if [ "$QUOTA_EXCEEDED" -eq 0 ] && [ -d "$REPO_DEVICES_ROOT" ]; then
     log "Syncing external device repositories (cloud tier only)..."
     rclone sync "$REPO_DEVICES_ROOT" "${RCLONE_TARGET}/devices" \
-        --include "/*/cloud/**" \
-        --fast-list --transfers 8 || RCLONE_SUCCESS=0
+        --include "/*/cloud/**" "${RCLONE_SAFETY[@]}" \
+        --max-delete-size "$(max_delete_bytes "$LOCAL_SIZE_DEVICES_CLOUD")B" || RCLONE_SUCCESS=0
 fi
 
 CLOUD_SYNC_DURATION=$(( $(date +%s) - CLOUD_SYNC_START ))
