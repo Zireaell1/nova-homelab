@@ -82,6 +82,17 @@
       "prBodyNotes": [
         "**Before merging:** read the release notes. If CI fails on *Immich's Postgres and Valkey pins*, copy the two values it prints into `roles/immich/defaults/main.yml`."
       ]
+    },
+    {
+      "description": "The HA Android app monthly. Stable versions only (no -beta/-rc).",
+      "matchDepNames": [
+        "home-assistant/android"
+      ],
+      "allowedVersions": "/^\\d{4}\\.\\d+\\.\\d+$/",
+      "schedule": [
+        "* * 1 * *"
+      ],
+      "minimumReleaseAge": "14 days"
     }
   ]
 }
