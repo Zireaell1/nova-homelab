@@ -51,9 +51,19 @@
   check_mode: false
 
 - name: Generate Zellij completions for Fish
-  ansible.builtin.shell: zellij setup --generate-completion fish > {{ user_config_path }}/fish/completions/zellij.fish
-  args:
-    creates: "{{ user_config_path }}/fish/completions/zellij.fish"
+  ansible.builtin.command: zellij setup --generate-completion fish
+  register: dotfiles_zellij_completion
+  changed_when: false
+  check_mode: false
+  when: dotfiles_zellij_check.rc == 0
+
+- name: Install Zellij completions for Fish
+  ansible.builtin.copy:
+    content: "{{ dotfiles_zellij_completion.stdout }}\n"
+    dest: "{{ user_config_path }}/fish/completions/zellij.fish"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
   when: dotfiles_zellij_check.rc == 0
 
 - name: Upload Fastfetch config
