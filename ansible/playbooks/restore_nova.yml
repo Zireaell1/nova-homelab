@@ -1,7 +1,8 @@
 ---
 # Restore on Nova into a fresh folder on the backup disk. Never touches live data:
 # every run gets its own <backup_mount>/restore/<time>.
-# Reads with --no-lock, so it can run next to the nightly backup's repository.
+# The backup guard refuses to start while the nightly backup runs. --no-lock keeps restic from
+# writing anything into the repository (no root-owned lock files for the user's backup to trip on).
 #
 #   make restore_nova                                  everything, latest snapshot, local repository
 #   make restore_nova targets=vaultwarden,zigbee2mqtt  only these backup_targets
