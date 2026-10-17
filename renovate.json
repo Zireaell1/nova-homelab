@@ -93,6 +93,19 @@
         "* * 1 * *"
       ],
       "minimumReleaseAge": "14 days"
+    },
+    {
+      "description": "GitHub Actions only run CI, nothing deploys from them: merge minor/patch/digest updates once the required CI checks are green.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest",
+        "pinDigest"
+      ],
+      "automerge": true
     }
   ]
 }
