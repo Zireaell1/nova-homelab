@@ -174,7 +174,7 @@ check_b2_repo_identity() {
     fi
     if [ "$remote_cfg" != "$(base64 -w0 < "${REPO_CRITICAL}/config")" ]; then
         err "B2 holds a DIFFERENT restic repository than ${REPO_CRITICAL}; refusing to sync over it."
-        err "Rebuild? Bring the repository back from B2 first: make restore_nova mode=seed"
+        err "Rebuild? Move ${REPO_CRITICAL} aside, then: rclone copy ${RCLONE_TARGET}/homelab ${REPO_CRITICAL} --fast-list --checksum"
         REPO_MISMATCH=1
         return 1
     fi

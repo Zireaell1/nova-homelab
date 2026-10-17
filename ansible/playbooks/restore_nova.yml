@@ -1,0 +1,159 @@
+---
+# Restore on Nova into a fresh folder on the backup disk. Never touches live data:
+# every run gets its own <backup_mount>/restore/<time>.
+# Reads with --no-lock, so it can run next to the nightly backup's repository.
+#
+#   make restore_nova                                  everything, latest snapshot, local repository
+#   make restore_nova targets=vaultwarden,zigbee2mqtt  only these backup_targets
+#   make restore_nova snapshot=<id> repo=b2            a given snapshot, read from the B2 copy
+#   make restore_nova list=1                           list snapshots and free space, restore nothing
+- name: Restore on Nova
+  hosts: nova
+  become: true
+  gather_facts: false
+  pre_tasks:
+    - name: Backup guard
+      ansible.builtin.import_role:
+        name: backup_guard
+      tags: ["always"]
+  vars:
+    restore_repo: local
+    restore_snapshot: latest
+    restore_targets: ""
+    restore_list: false
+    restore_root: "{{ backup_mount }}/restore"
+    restore_all_targets: "{{ backup_targets | map(attribute='name') | list }}"
+    restore_selected: "{{ (restore_targets | split(',') | map('trim') | select | list) or restore_all_targets }}"
+    restore_paths: "{{ backup_targets | selectattr('name', 'in', restore_selected) | map(attribute='paths') | flatten }}"
+    restore_repository: >-
+      {{ local_backup_path if restore_repo == 'local' else 'rclone:' ~ backup_rclone_target ~ '/homelab' }}
+    restore_env:
+      RESTIC_REPOSITORY: "{{ restore_repository }}"
+      RESTIC_PASSWORD_FILE: "{{ restore_tmp.path }}/password"
+      RESTIC_CACHE_DIR: "{{ restore_tmp.path }}/cache"
+      RCLONE_CONFIG: "{{ restore_tmp.path }}/rclone.conf"
+  tasks:
+    - name: Load the backup role's defaults
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../roles/backup/defaults/main.yml"
+
+    - name: Check the arguments
+      ansible.builtin.assert:
+        that:
+          - restore_repo in ['local', 'b2']
+          - restore_selected | difference(restore_all_targets) | length == 0
+        fail_msg: "repo={{ restore_repo }} targets={{ restore_selected }}; repo: local|b2, known targets: {{ restore_all_targets }}"
+        quiet: true
+
+    - name: Pick this run's folder
+      ansible.builtin.set_fact:
+        restore_dest: "{{ restore_root }}/{{ now(fmt='%Y%m%d-%H%M%S') }}"
+
+    - name: Check that the backup disk is mounted
+      ansible.builtin.command:
+        argv: [mountpoint, -q, "{{ backup_mount }}"]
+      changed_when: false
+
+    - name: Restore with temporary credentials
+      block:
+        - name: Create a private temp directory
+          ansible.builtin.tempfile:
+            state: directory
+            prefix: nova-restore.
+          register: restore_tmp
+          become: false
+
+        - name: Write the repository password
+          ansible.builtin.copy:
+            content: "{{ vault_backup_restic_password }}"
+            dest: "{{ restore_tmp.path }}/password"
+            mode: "0600"
+          become: false
+          no_log: true
+
+        - name: Write a temporary rclone config
+          ansible.builtin.template:
+            src: "{{ playbook_dir }}/../roles/backup/templates/rclone.conf.j2"
+            dest: "{{ restore_tmp.path }}/rclone.conf"
+            mode: "0600"
+          become: false
+          no_log: true
+          when: restore_repo == 'b2'
+
+        - name: List the snapshots
+          ansible.builtin.command: restic snapshots --no-lock --compact
+          environment: "{{ restore_env }}"
+          register: restore_snapshots
+          changed_when: false
+
+        - name: Read the free space on the backup disk
+          ansible.builtin.command:
+            argv: [df, -h, --output=avail, "{{ backup_mount }}"]
+          register: restore_df
+          changed_when: false
+
+        - name: Show the snapshots and the free space
+          ansible.builtin.debug:
+            msg: "{{ restore_snapshots.stdout_lines + ['Free on ' ~ backup_mount ~ ': ' ~ (restore_df.stdout_lines[-1] | trim)] }}"
+
+        - name: Restore
+          when: not (restore_list | bool)
+          block:
+            - name: Create the restore root (root only)
+              ansible.builtin.file:
+                path: "{{ restore_root }}"
+                state: directory
+                owner: root
+                group: root
+                mode: "0700"
+
+            - name: Check that this run's folder is new
+              ansible.builtin.stat:
+                path: "{{ restore_dest }}"
+              register: restore_dest_stat
+
+            - name: Refuse to restore into an existing folder
+              ansible.builtin.assert:
+                that: not restore_dest_stat.stat.exists
+                fail_msg: "{{ restore_dest }} already exists; run again in a second."
+                quiet: true
+
+            - name: Restore {{ restore_selected | join(', ') }}
+              ansible.builtin.command:
+                argv: >-
+                  {{ ['restic', 'restore', '--no-lock', restore_snapshot, '--target', restore_dest,
+                      '--exclude-xattr', 'security.selinux']
+                     + (restore_paths | map('regex_replace', '^', '--include=') | list) }}
+              environment: "{{ restore_env }}"
+              changed_when: true
+
+            - name: Note what this folder holds
+              ansible.builtin.copy:
+                dest: "{{ restore_dest }}/RESTORE-INFO.txt"
+                mode: "0600"
+                content: |
+                  restored:  {{ restore_dest | basename }}
+                  snapshot:  {{ restore_snapshot }}
+                  repo:      {{ restore_repo }} ({{ restore_repository }})
+                  targets:   {{ restore_selected | join(', ') }}
+                  paths:     {{ restore_paths | join(' ') }}
+
+            - name: Measure the result
+              ansible.builtin.command:
+                argv: [du, -sh, "{{ restore_dest }}"]
+              register: restore_du
+              changed_when: false
+
+            - name: Where it went
+              ansible.builtin.debug:
+                msg:
+                  - "Restored {{ restore_selected | join(', ') }} from {{ restore_repo }} snapshot {{ restore_snapshot }}"
+                  - "into {{ restore_dest }} ({{ restore_du.stdout.split()[0] }}); paths keep their Nova layout below it."
+                  - "Root only, owners as in the snapshot. Copy back by hand (service stopped, then restorecon -RF)."
+                  - "Remove it when done: sudo rm -rf {{ restore_dest }}"
+      always:
+        - name: Remove the temp directory (password, rclone config, cache)
+          ansible.builtin.file:
+            path: "{{ restore_tmp.path }}"
+            state: absent
+          when: restore_tmp.path is defined

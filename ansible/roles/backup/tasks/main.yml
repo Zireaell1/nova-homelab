@@ -91,8 +91,9 @@
   ansible.builtin.assert:
     that: backup_b2_repo_listing.stdout | trim | length == 0
     fail_msg: >-
-      {{ local_backup_path }} has no repository, but B2 does. Bring it back first:
-      make restore_nova mode=seed (copies the repository from B2), then deploy the backup role again.
+      {{ local_backup_path }} has no repository, but B2 does (a rebuild?). Copy it back first, on Nova as
+      {{ ansible_user }}: rclone copy {{ backup_rclone_target }}/homelab {{ local_backup_path }}
+      --fast-list --transfers 8 --checksum, then deploy the backup role again (it keeps the repository).
     quiet: true
   when: not backup_local_repo_config.stat.exists
 

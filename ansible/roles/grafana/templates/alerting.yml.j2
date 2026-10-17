@@ -1755,7 +1755,7 @@ groups:
           annotations:
             summary: "B2 holds a different restic repository than the local one; the offsite sync was refused."
             impact: "No new offsite copies until resolved. The old B2 history is intact: the guard protected it."
-            action: "Rebuild with a new disk? `make restore_nova mode=seed`, then redeploy `t=backup` · otherwise compare `restic -r <local> cat config` with the B2 copy"
+            action: "Rebuild with a new disk? Move the new local repository aside, `rclone copy <b2>/homelab <local>`, redeploy `t=backup` · otherwise compare `restic -r <local> cat config` with the B2 copy"
           notification_settings:
             receiver: Discord
 

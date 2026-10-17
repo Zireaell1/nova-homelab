@@ -18,6 +18,10 @@ ifdef e
   EXTRA_FLAG := -e "$(e)"
 endif
 
+# --- RESTORE (targets=a,b snapshot=<id> repo=local|b2 list=1) ---
+RESTORE_VARS := $(if $(targets),-e restore_targets=$(targets)) $(if $(snapshot),-e restore_snapshot=$(snapshot)) \
+	$(if $(repo),-e restore_repo=$(repo)) $(if $(list),-e restore_list=true)
+
 # --- BASE COMMAND ---
 CMD = uv run ansible-playbook $(TAG_FLAG) $(CHECK_FLAG) $(BECOME_FLAG) $(EXTRA_FLAG)
 
@@ -25,7 +29,7 @@ CMD = uv run ansible-playbook $(TAG_FLAG) $(CHECK_FLAG) $(BECOME_FLAG) $(EXTRA_F
 ROOT_PLAYBOOKS := site
 DIR_PLAYBOOKS := nova_system nova_services orion_system orion_services nova_update nova_update_check orion_update
 
-.PHONY: help deps lint check $(ROOT_PLAYBOOKS) $(DIR_PLAYBOOKS)
+.PHONY: help deps lint check restore_nova $(ROOT_PLAYBOOKS) $(DIR_PLAYBOOKS)
 
 help:
 	@echo "Usage:"
@@ -54,6 +58,9 @@ help:
 	@echo "  make nova_services k=1                                             (force -K on services)"
 	@echo "  make lint check                                                    (everything CI runs, locally)"
 	@echo "  make nova_services t=grafana e=podman_service_changed_extra=true   (force a restart)"
+	@echo ""
+	@echo "Restore:"
+	@echo "  make restore_nova [targets=..] [snapshot=<id>] [repo=b2] [list=1]  (Auto -K; -> /mnt/backup/restore/<time> on Nova)"
 
 # --- SETUP ---
 deps:
@@ -70,7 +77,7 @@ check:
 	uv run python ../scripts/ci/run.py
 
 # --- TARGET-SPECIFIC VARIABLES ---
-site nova_system orion_system nova_update nova_update_check orion_update: BECOME_FLAG = -K
+site nova_system orion_system nova_update nova_update_check orion_update restore_nova: BECOME_FLAG = -K
 
 # --- RUN RULES ---
 $(ROOT_PLAYBOOKS):
@@ -78,3 +85,6 @@ $(ROOT_PLAYBOOKS):
 
 $(DIR_PLAYBOOKS):
 	$(CMD) playbooks/$@.yml
+
+restore_nova:
+	$(CMD) playbooks/$@.yml $(RESTORE_VARS)
