@@ -9,3 +9,4 @@ brew "shellcheck"
 # --- Backups ---
 brew "restic"
 brew "rclone"
+brew "b2-tools"

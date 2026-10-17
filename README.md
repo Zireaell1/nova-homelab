@@ -91,7 +91,7 @@ Here is a complete list of the services currently managed by Ansible (primarily 
 > Remember that some of these Ansible roles are heavily tailored to my specific hardware and network setup. I do not guarantee they will work out-of-the-box on your machines. I highly suggest using this repo as a reference first, or reading the docs for a detailed explanation. However, if you know what you are doing, here is the quick guide.
 
 **Prerequisites:**
-* A control machine with the toolchain: on macOS `brew bundle` (the [`Brewfile`](Brewfile): git, uv, rsync, shellcheck, and restic/rclone for restores). On Linux the same from your package manager. [uv](https://docs.astral.sh/uv/) then installs the pinned Ansible toolchain from `uv.lock`, so you do not need Ansible installed globally.
+* A control machine with the toolchain: on macOS `brew bundle` (the [`Brewfile`](Brewfile): git, uv, rsync, shellcheck, and restic/rclone/b2 for restores). On Linux the same from your package manager. [uv](https://docs.astral.sh/uv/) then installs the pinned Ansible toolchain from `uv.lock`, so you do not need Ansible installed globally.
 * SSH keys configured and copied to the target server(s).
 
 **1. Clone the repository and install dependencies:**
