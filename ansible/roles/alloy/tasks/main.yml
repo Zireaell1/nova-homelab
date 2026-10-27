@@ -118,6 +118,54 @@
         mode: "0644"
       notify: Restart intel npu metrics service
 
+- name: Modem metrics block
+  when: alloy_enable_modem_metrics
+  block:
+    - name: Deploy the modem collector
+      ansible.builtin.copy:
+        src: modem_metrics.py
+        dest: /usr/local/bin/modem_metrics.py
+        owner: root
+        group: root
+        mode: "0755"
+      notify: Restart modem metrics service
+
+    - name: Deploy modem-pause
+      ansible.builtin.template:
+        src: modem-pause.sh.j2
+        dest: /usr/local/bin/modem-pause
+        owner: root
+        group: root
+        mode: "0755"
+        validate: "bash -n %s"
+
+    - name: Create the credentials directory
+      ansible.builtin.file:
+        path: /etc/homelab
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Deploy the modem password
+      ansible.builtin.copy:
+        content: "{{ vault_modem_admin_password }}"
+        dest: /etc/homelab/modem-password
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      notify: Restart modem metrics service
+
+    - name: Deploy the modem metrics systemd service
+      ansible.builtin.template:
+        src: modem-metrics.service.j2
+        dest: /etc/systemd/system/modem-metrics.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart modem metrics service
+
 - name: Updates collector block
   when: alloy_enable_updates
   block:
@@ -218,6 +266,15 @@
     state: started
     enabled: true
   when: alloy_enable_intel_npu
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Ensure the modem metrics service is enabled and running
+  ansible.builtin.systemd:
+    name: modem-metrics.service
+    state: started
+    enabled: true
+    daemon_reload: true
+  when: alloy_enable_modem_metrics
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Ensure smartd is enabled and running

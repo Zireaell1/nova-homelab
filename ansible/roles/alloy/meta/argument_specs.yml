@@ -35,6 +35,18 @@ argument_specs:
         type: int
         default: 15
         description: Seconds between NPU samples.
+      alloy_enable_modem_metrics:
+        type: bool
+        default: false
+        description: Deploy the ZTE modem collector (login, read, logout every interval) and modem-pause.
+      alloy_modem_interval_seconds:
+        type: int
+        default: 60
+        description: Seconds between modem polls. Each poll logs in, so the web panel is busy for about a second.
+      alloy_modem_pause_file:
+        type: str
+        default: /run/homelab-modem-metrics/pause-until
+        description: Where modem-pause writes the pause end time; its directory is the service's RuntimeDirectory.
       alloy_enable_updates:
         type: bool
         default: true

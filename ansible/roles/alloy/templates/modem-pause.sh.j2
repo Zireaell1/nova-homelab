@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+#
+# Pause the modem collector while you use the modem's web panel (it allows one session,
+# and each poll's login would log you out). Resumes by itself when the time is up.
+#
+#   sudo modem-pause            30 minutes
+#   sudo modem-pause 2h         also: 90s, 45m
+#   sudo modem-pause off        resume now
+#   modem-pause status
+#
+# ==============================================================================
+# Commands used in this script:
+#
+# * date +%s                         : now, as Unix time.
+# * write <until> to {{ alloy_modem_pause_file }}
+#                                    : the collector reads it every second; Grafana sees homelab_modem_paused.
+# ==============================================================================
+
+set -euo pipefail
+
+PAUSE_FILE="{{ alloy_modem_pause_file }}"
+
+status() {
+    local until now
+    until="$(cat "$PAUSE_FILE" 2>/dev/null || echo 0)"
+    now="$(date +%s)"
+    if [ "${until%.*}" -gt "$now" ] 2>/dev/null; then
+        echo "paused until $(date -d "@${until%.*}" '+%H:%M') ($(( (${until%.*} - now) / 60 )) min left)"
+    else
+        echo "not paused"
+    fi
+}
+
+arg="${1:-30m}"
+case "$arg" in
+    status) status; exit 0 ;;
+    off)    rm -f "$PAUSE_FILE"; echo "resumed"; exit 0 ;;
+esac
+
+if [[ ! "$arg" =~ ^([0-9]+)([smh]?)$ ]]; then
+    echo >&2 "usage: modem-pause [<n>s|<n>m|<n>h|off|status]  (default 30m)"
+    exit 2
+fi
+n="${BASH_REMATCH[1]}"
+case "${BASH_REMATCH[2]}" in
+    s) secs=$n ;;
+    h) secs=$(( n * 3600 )) ;;
+    *) secs=$(( n * 60 )) ;;
+esac
+if [ "$secs" -gt 43200 ]; then
+    echo >&2 "at most 12h; use 'modem-pause off' to resume early"
+    exit 2
+fi
+if [ ! -d "$(dirname "$PAUSE_FILE")" ]; then
+    echo >&2 "$(dirname "$PAUSE_FILE") is missing: is modem-metrics.service running?"
+    exit 1
+fi
+
+echo $(( $(date +%s) + secs )) > "$PAUSE_FILE"
+status

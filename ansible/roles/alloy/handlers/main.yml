@@ -49,3 +49,10 @@
     state: restarted
     daemon_reload: true
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Restart modem metrics service
+  ansible.builtin.systemd:
+    name: modem-metrics.service
+    state: restarted
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"

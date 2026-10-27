@@ -1,0 +1,46 @@
+[Unit]
+Description=ZTE modem metrics for Prometheus (web API -> textfile)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -I /usr/local/bin/modem_metrics.py {{ vault_modem_ip }} {{ alloy_modem_interval_seconds }} {{ textfile_metrics_path }}/modem.prom {{ alloy_modem_pause_file }}
+Restart=always
+RestartSec=30
+
+LoadCredential=password:/etc/homelab/modem-password
+RuntimeDirectory={{ alloy_modem_pause_file | dirname | basename }}
+RuntimeDirectoryMode=0755
+
+DynamicUser=true
+SupplementaryGroups=alloy
+CapabilityBoundingSet=
+ProtectSystem=strict
+ReadWritePaths={{ textfile_metrics_path }}
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+ProcSubset=pid
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+RestrictAddressFamilies=AF_INET
+IPAddressDeny=any
+IPAddressAllow={{ vault_modem_ip }}
+MemoryMax=128M
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

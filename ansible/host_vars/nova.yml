@@ -5,6 +5,8 @@ alloy_enable_intel_gpu: true
 
 alloy_enable_intel_npu: true
 
+alloy_enable_modem_metrics: true
+
 alloy_config_template: "config_nova.alloy.j2"
 
 hardware_data_drives:

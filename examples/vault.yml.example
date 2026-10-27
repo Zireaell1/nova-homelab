@@ -39,6 +39,9 @@ vault_gateway_iot: "" # [site]
 
 vault_modem_ip: "" # [site]
 
+# Modem
+vault_modem_admin_password: "" # [ext] the modem web panel's admin password (read-only collector; it never changes settings)
+
 # Immich
 vault_immich_storage_password: "" # [keep] Postgres was initialised with it; letters and digits only (Immich rejects others)
 
