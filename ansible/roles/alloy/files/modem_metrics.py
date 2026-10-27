@@ -31,6 +31,8 @@ HOST, INTERVAL, OUT, PAUSE_FILE = (
 )
 LOGIN_BACKOFF = 900
 TIMEOUT = 10
+# After the first report, field-check changes go to the journal at most this often.
+FIELD_REPORT_INTERVAL = 3600
 
 FIELDS = (
     "network_type,network_provider,signalbar,ppp_status,modem_main_state,wan_lte_ca,"
@@ -42,7 +44,6 @@ FIELDS = (
     "tx_power,wan_connect_status,"
     "lte_rsrp_1,lte_rsrp_2,lte_rsrp_3,lte_rsrp_4,lte_snr_1,lte_snr_2,lte_snr_3,lte_snr_4,"
     "5g_rx0_rsrp,5g_rx1_rsrp,"
-    "pm_sensor_mdm,pm_sensor_ambient,pm_sensor_pa1,pm_sensor_5g,pm_modem_5g,"
     "lte_band_lock,lte_pci_lock,lte_earfcn_lock,nr5g_nsa_band_lock,nr5g_sa_band_lock"
 )
 
@@ -62,20 +63,11 @@ ANTENNA = (
     ),
     ("rsrp_dbm", "nr", {"5g_rx0_rsrp": "0", "5g_rx1_rsrp": "1"}),
 )
-TEMPS = {
-    "pm_sensor_mdm": "modem",
-    "pm_sensor_ambient": "ambient",
-    "pm_sensor_pa1": "power_amp",
-    "pm_sensor_5g": "5g",
-    "pm_modem_5g": "5g_modem",
-}
-LOCKS = (
-    "lte_band_lock",
-    "lte_pci_lock",
-    "lte_earfcn_lock",
-    "nr5g_nsa_band_lock",
-    "nr5g_sa_band_lock",
-)
+# Allowed bands: LTE as a hex bitmask (bit 0 = band 1), 5G as a comma-separated list.
+# With no band lock the modem lists every band it supports.
+BAND_MASKS = {"lte_band_lock": "lte"}
+BAND_LISTS = {"nr5g_nsa_band_lock": "nr_nsa", "nr5g_sa_band_lock": "nr_sa"}
+CELL_LOCK = {"lte_pci_lock": "pci", "lte_earfcn_lock": "earfcn"}
 # (metric, help, lte field, nr field)
 SIGNAL = (
     ("rsrp_dbm", "Reference signal received power", "lte_rsrp", "Z5g_rsrp"),
@@ -94,6 +86,21 @@ CELL = (
     ("nr", "nr5g_action_band", "nr5g_action_channel", "nr5g_pci", "nr5g_cell_id"),
 )
 
+# Fields that must parse as numbers; the rest are labels and only need to be present.
+NUMERIC = {
+    "signalbar",
+    "realtime_time",
+    "ppp_dial_conn_fail_counter",
+    "realtime_tx_thrpt",
+    "realtime_rx_thrpt",
+    "monthly_tx_bytes",
+    "monthly_rx_bytes",
+    "tx_power",
+    *(s[2] for s in SIGNAL),
+    *(f for s in SIGNAL for f in (s[3] if isinstance(s[3], tuple) else (s[3],))),
+    *(f for _, _, fields in ANTENNA for f in fields),
+}
+
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
@@ -110,6 +117,88 @@ def num(v):
         return float(str(v).strip())
     except TypeError, ValueError:
         return None
+
+
+def mask_bands(v) -> str | None:
+    """'0x...' (or bare hex) bitmask -> '1,3,7,20'; None if it isn't hex."""
+    try:
+        m = int(str(v).strip(), 16)
+    except ValueError:
+        return None
+    return ",".join(str(i + 1) for i in range(m.bit_length()) if m >> i & 1)
+
+
+def list_bands(v) -> str | None:
+    """'78,1,3' -> '1,3,78'; None if any item isn't a number."""
+    items = [x.strip() for x in str(v).split(",") if x.strip()]
+    if not all(x.isdigit() for x in items):
+        return None
+    return ",".join(str(b) for b in sorted({int(x) for x in items}))
+
+
+KINDS = {
+    "missing": ("WARN", "not in the reply at all"),
+    "empty": (
+        "INFO",
+        "empty (unknown to this firmware, or no value right now, e.g. 5G on LTE)",
+    ),
+    "malformed": ("WARN", "unexpected values, not exported"),
+}
+
+
+def check_fields(d: dict) -> dict[str, tuple[str, str]]:
+    """Every requested field that didn't come back usable: field -> (kind, shown as)."""
+    found = {}
+    for f in FIELDS.split(","):
+        v = str(d.get(f, "")).strip()
+        if f not in d:
+            found[f] = ("missing", f)
+        elif not v:
+            found[f] = ("empty", f)
+        elif (
+            (f in NUMERIC and num(v) is None)
+            or (f in BAND_MASKS and mask_bands(v) is None)
+            or (f in BAND_LISTS and list_bands(v) is None)
+        ):
+            found[f] = ("malformed", f"{f}={v[:40]!r}")
+    return found
+
+
+def log_grouped(found: dict[str, tuple[str, str]], prefix: str = "") -> None:
+    for kind, (level, title) in KINDS.items():
+        shown = [s for k, s in found.values() if k == kind]
+        if shown:
+            log(level, f"  {prefix}{title}: {', '.join(shown)}")
+
+
+class FieldReport:
+    """The field check: in full on the first read, then only what changed, at most hourly."""
+
+    def __init__(self) -> None:
+        self.logged: dict[str, tuple[str, str]] | None = None
+        self.logged_at = 0.0
+
+    def update(self, d: dict) -> None:
+        found = check_fields(d)
+        now = time.time()
+        if found == self.logged:
+            return
+        total = FIELDS.count(",") + 1
+        usable = f"{total - len(found)} of {total} fields usable"
+        if self.logged is None:
+            log("INFO", f"field check: {usable}")
+            log_grouped(found)
+        elif now - self.logged_at >= FIELD_REPORT_INTERVAL:
+            log("INFO", f"field check changed: {usable}")
+            fixed = sorted(set(self.logged) - set(found))
+            if fixed:
+                log("INFO", f"  now usable: {', '.join(fixed)}")
+            log_grouped(
+                {f: v for f, v in found.items() if self.logged.get(f) != v}, "now "
+            )
+        else:
+            return
+        self.logged, self.logged_at = found, now
 
 
 def sha256u(s: str) -> str:
@@ -200,7 +289,7 @@ def paused_until() -> float:
     return until if until > time.time() else 0.0
 
 
-def poll(password: str, p: Prom) -> bool:
+def poll(password: str, p: Prom, report: FieldReport) -> bool:
     m = Modem(HOST)
     if not m.login(password):
         log("ERROR", "login rejected; backing off before the next attempt")
@@ -220,6 +309,12 @@ def poll(password: str, p: Prom) -> bool:
                 log("WARN", "logout not acknowledged; the session expires on its own")
         except Exception as e:  # noqa: BLE001 - the poll result matters more than the logout
             log("WARN", f"logout failed: {e}")
+    if not isinstance(d, dict):
+        raise TypeError(f"reply is not a JSON object: {str(d)[:80]!r}")
+    report.update(d)
+    # Logged in, but nothing came back: the modem ignored the session. Count it as a failed read.
+    if all(num(d.get(f)) is None for f in NUMERIC):
+        raise ValueError("the reply has no values (session not accepted?)")
 
     p.add(
         "info",
@@ -268,17 +363,24 @@ def poll(password: str, p: Prom) -> bool:
         "Uplink transmit power; near its maximum (23-26 dBm) means the cell barely hears the modem",
         num(d.get("tx_power")),
     )
-    for f, sensor in TEMPS.items():
+    for f, rat in BAND_MASKS.items():
         p.add(
-            "temperature_celsius",
-            "Temperatures reported by the modem",
-            num(d.get(f)),
-            {"sensor": sensor},
+            "allowed_bands_info",
+            "Bands the modem may use; every supported band means no band lock",
+            1 if mask_bands(d.get(f, "")) else None,
+            {"rat": rat, "bands": mask_bands(d.get(f, "")) or ""},
         )
-    locks = {f: d.get(f, "") for f in LOCKS}
-    if any(locks.values()):
+    for f, rat in BAND_LISTS.items():
         p.add(
-            "lock_info", "Band, cell or channel locks as set in the web panel", 1, locks
+            "allowed_bands_info",
+            "Bands the modem may use; every supported band means no band lock",
+            1 if list_bands(d.get(f, "")) else None,
+            {"rat": rat, "bands": list_bands(d.get(f, "")) or ""},
+        )
+    cell_lock = {label: str(d.get(f, "")).strip() for f, label in CELL_LOCK.items()}
+    if any(cell_lock.values()):
+        p.add(
+            "cell_lock_info", "LTE locked to one cell (PCI on a channel)", 1, cell_lock
         )
     p.add(
         "session_uptime_seconds",
@@ -312,6 +414,7 @@ def main() -> None:
     with open(cred) as fh:
         password = fh.read().strip()
     next_login = 0.0
+    report = FieldReport()
     while True:
         started = time.time()
         p = Prom()
@@ -332,7 +435,7 @@ def main() -> None:
         elif not until:
             # One bad poll must not kill the collector.
             try:
-                ok = poll(password, p)
+                ok = poll(password, p, report)
                 if not ok:
                     next_login = started + LOGIN_BACKOFF
             except Exception as e:  # noqa: BLE001
