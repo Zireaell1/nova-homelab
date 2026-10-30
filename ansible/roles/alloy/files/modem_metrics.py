@@ -9,7 +9,7 @@ After a rejected login it waits LOGIN_BACKOFF seconds before trying again (the m
 its login after a few wrong passwords).
 
 Everything it touches:
-  GET  http://<modem>/goform/goform_get_cmd_process   LD, RD, wa_inner_version, the FIELDS below
+  GET  http://<modem>/goform/goform_get_cmd_process   LD, RD, wa_inner_version, the FIELDS below (in chunks)
   POST http://<modem>/goform/goform_set_cmd_process   goformId=LOGIN, goformId=LOGOUT
   reads  $CREDENTIALS_DIRECTORY/password, <pause_file>
   writes <output.prom>.<pid>, renamed to <output.prom>
@@ -35,20 +35,92 @@ TIMEOUT = 10
 FIELD_REPORT_INTERVAL = 3600
 
 FIELDS = (
-    "network_type,network_provider,signalbar,ppp_status,modem_main_state,wan_lte_ca,"
-    "realtime_time,ppp_dial_conn_fail_counter,realtime_tx_thrpt,realtime_rx_thrpt,"
-    "monthly_tx_bytes,monthly_rx_bytes,"
-    "lte_rsrp,lte_rsrq,lte_snr,lte_rssi,wan_active_band,wan_active_channel,lte_pci,cell_id,"
-    "Z5g_rsrp,Z5g_rsrq,Z5g_SINR,Z5g_snr,Z5g_rssi,nr5g_action_band,nr5g_action_channel,"
-    "nr5g_pci,nr5g_cell_id,"
-    "tx_power,wan_connect_status,"
-    "lte_rsrp_1,lte_rsrp_2,lte_rsrp_3,lte_rsrp_4,lte_snr_1,lte_snr_2,lte_snr_3,lte_snr_4,"
-    "5g_rx0_rsrp,5g_rx1_rsrp,"
-    "lte_band_lock,lte_pci_lock,lte_earfcn_lock,nr5g_nsa_band_lock,nr5g_sa_band_lock"
+    "network_type",
+    "network_provider",
+    "signalbar",
+    "ppp_status",
+    "modem_main_state",
+    "wan_lte_ca",
+    "realtime_time",
+    "ppp_dial_conn_fail_counter",
+    "realtime_tx_thrpt",
+    "realtime_rx_thrpt",
+    "realtime_tx_bytes",
+    "realtime_rx_bytes",
+    "monthly_tx_bytes",
+    "monthly_rx_bytes",
+    "lte_rsrp",
+    "lte_rsrq",
+    "lte_snr",
+    "lte_rssi",
+    "wan_active_band",
+    "wan_active_channel",
+    "lte_pci",
+    "cell_id",
+    "Z5g_rsrp",
+    "Z5g_rsrq",
+    "Z5g_SINR",
+    "Z5g_snr",
+    "Z5g_rssi",
+    "nr5g_action_band",
+    "nr5g_action_channel",
+    "nr5g_pci",
+    "nr5g_cell_id",
+    "nr5g_nsa_bandwidth",
+    "tx_power",
+    "wan_connect_status",
+    "lte_rsrp_1",
+    "lte_rsrp_2",
+    "lte_rsrp_3",
+    "lte_rsrp_4",
+    "lte_snr_1",
+    "lte_snr_2",
+    "lte_snr_3",
+    "lte_snr_4",
+    "5g_rx0_rsrp",
+    "5g_rx1_rsrp",
+    "lte_band_lock",
+    "lte_pci_lock",
+    "lte_earfcn_lock",
+    "lte_freq_lock",
+    "nr5g_nsa_band_lock",
+    "nr5g_sa_band_lock",
+    "nr5g_cell_lock",
+    "bandwidth",
+    "lte_ca_pcell_band",
+    "lte_ca_pcell_bandwidth",
+    "lte_ca_pcell_arfcn",
+    "lte_multi_ca_scell_info",
+    "lte_multi_ca_scell_sig_info",
+    "nr_multi_ca_scell_info",
+    "ngbr_cell_info",
+    "net_select",
+    "net_select_mode",
+    "mdm_mcc",
+    "mdm_mnc",
+    "simcard_roam",
+    "wa_inner_version",
+    "new_version_state",
+    "current_upgrade_state",
+    "sms_unread_num",
 )
-
-if FIELDS.count(",") >= 60:
-    raise SystemExit("FIELDS: keep a request below 60 fields")
+# Marks every field of a request the modem refused; the field report names them.
+REFUSED = object()
+# The modem drops long field lists; other tools split at 60, this stays well below.
+CHUNK = 40
+# Identity, location and secrets the web panel also serves. Never read them.
+NEVER = ("imei", "imsi", "msisdn", "iccid", "gps_", "mac", "wan_ipaddr", "ssid")
+NEVER += ("password", "passwd", "ppp_username", "apn_config", "mec_", "pin_")
+if bad := [f for f in FIELDS if any(n in f.lower() for n in NEVER)]:
+    raise SystemExit(f"FIELDS must not contain {bad}")
+if len(set(FIELDS)) != len(FIELDS):
+    raise SystemExit("FIELDS has duplicates")
+# lte_rsrp_1..4 / lte_snr_1..4: on other ZTE models (MC7010) a rolling history of the last
+# four lte_rsrp / lte_snr readings, not four antennas. 5g_rx0/1_rsrp are real receive paths.
+ANTENNA_HELP = {
+    "lte": "lte_rsrp_1..4 / lte_snr_1..4 as reported (on some ZTE models the last four readings, not antennas)",
+    "nr": "Per 5G receive path",
+}
 # (metric, rat, field -> antenna label)
 ANTENNA = (
     (
@@ -68,6 +140,29 @@ ANTENNA = (
 BAND_MASKS = {"lte_band_lock": "lte"}
 BAND_LISTS = {"nr5g_nsa_band_lock": "nr_nsa", "nr5g_sa_band_lock": "nr_sa"}
 CELL_LOCK = {"lte_pci_lock": "pci", "lte_earfcn_lock": "earfcn"}
+# LTE downlink EARFCN ranges -> band (3GPP TS 36.101), for readable neighbour labels.
+EARFCN_BANDS = (
+    (0, 599, 1),
+    (1200, 1949, 3),
+    (2750, 3449, 7),
+    (3450, 3799, 8),
+    (6150, 6449, 20),
+    (9210, 9659, 28),
+    (9920, 10359, 32),
+    (37750, 38249, 38),
+    (38650, 39649, 40),
+    (39650, 41589, 41),
+)
+# Channel widths in MHz; "20", "20.0" and "20MHz" are all accepted.
+WIDTHS = {"bandwidth", "lte_ca_pcell_bandwidth", "nr5g_nsa_bandwidth"}
+# ';'-separated groups of ','-separated values, checked by their parsers below.
+STRUCTURED = {
+    "ngbr_cell_info",
+    "lte_multi_ca_scell_info",
+    "lte_multi_ca_scell_sig_info",
+}
+# Formats not known yet: logged raw with the first field report (when not empty), not exported.
+RAW = ("lte_freq_lock", "nr5g_cell_lock", "nr_multi_ca_scell_info")
 # (metric, help, lte field, nr field)
 SIGNAL = (
     ("rsrp_dbm", "Reference signal received power", "lte_rsrp", "Z5g_rsrp"),
@@ -79,6 +174,12 @@ SIGNAL = (
         ("Z5g_SINR", "Z5g_snr"),
     ),
     ("rssi_dbm", "Received signal strength", "lte_rssi", "Z5g_rssi"),
+)
+SCELL_SIGNAL = (
+    ("scell_rsrp_dbm", "Secondary carrier: reference signal received power"),
+    ("scell_rsrq_db", "Secondary carrier: reference signal received quality"),
+    ("scell_sinr_db", "Secondary carrier: signal to interference plus noise ratio"),
+    ("scell_rssi_dbm", "Secondary carrier: received signal strength"),
 )
 # (rat, band, channel, pci, cell)
 CELL = (
@@ -96,6 +197,10 @@ NUMERIC = {
     "monthly_tx_bytes",
     "monthly_rx_bytes",
     "tx_power",
+    "realtime_tx_bytes",
+    "realtime_rx_bytes",
+    "sms_unread_num",
+    "lte_ca_pcell_arfcn",
     *(s[2] for s in SIGNAL),
     *(f for s in SIGNAL for f in (s[3] if isinstance(s[3], tuple) else (s[3],))),
     *(f for _, _, fields in ANTENNA for f in fields),
@@ -117,6 +222,90 @@ def num(v):
         return float(str(v).strip())
     except TypeError, ValueError:
         return None
+
+
+def mhz(v):
+    """'20', '20.0' or '20MHz' -> 20.0; None otherwise."""
+    return num(str(v).strip().lower().removesuffix("mhz"))
+
+
+def earfcn_band(v) -> str:
+    n = num(v)
+    for lo, hi, band in EARFCN_BANDS:
+        if n is not None and lo <= n <= hi:
+            return str(band)
+    return ""
+
+
+def lte_cell(v) -> dict[str, str]:
+    """LTE cell id (ECI, 28-bit hex) -> base station (eNodeB) and its cell number."""
+    try:
+        eci = int(str(v).strip(), 16)
+    except ValueError:
+        return {}
+    if not 0 < eci < 1 << 28:
+        return {}
+    return {"enb": str(eci >> 8), "sector": str(eci & 0xFF)}
+
+
+def groups(v, width: int) -> list[list[str]] | None:
+    """'a,b,c;d,e,f;' -> [[a,b,c],[d,e,f]]; None if a group has fewer than width values."""
+    out = [[x.strip() for x in g.split(",")] for g in str(v).split(";") if g.strip()]
+    return None if any(len(g) < width for g in out) else out
+
+
+def parse_scells(v) -> list[dict] | None:
+    """lte_multi_ca_scell_info: index,pci,state,band,earfcn,width per secondary cell."""
+    gs = groups(v, 6)
+    if (
+        gs is None
+        or any(num(x) is None for g in gs for x in g[:5])
+        or any(mhz(g[5]) is None for g in gs)
+    ):
+        return None
+    return [
+        {
+            "index": g[0],
+            "pci": g[1],
+            "state": g[2],
+            "band": g[3],
+            "earfcn": g[4],
+            "width": mhz(g[5]),
+        }
+        for g in gs
+    ]
+
+
+def parse_scell_signal(v) -> list[list[float]] | None:
+    """lte_multi_ca_scell_sig_info: rsrp,rsrq,sinr,rssi[,?,?] per secondary cell."""
+    gs = groups(v, 4)
+    if gs is None or any(num(x) is None for g in gs for x in g[:4]):
+        return None
+    return [[float(x) for x in g[:4]] for g in gs]
+
+
+def parse_cells(v) -> list[dict] | None:
+    """ngbr_cell_info: earfcn,pci,rsrq,rsrp[,rssi] per measured cell (serving ones included)."""
+    gs = groups(v, 4)
+    if gs is None or any(num(x) is None for g in gs for x in g[:4]):
+        return None
+    return [
+        {
+            "earfcn": g[0],
+            "pci": g[1],
+            "rsrq": num(g[2]),
+            "rsrp": num(g[3]),
+            "rssi": num(g[4]) if len(g) > 4 else None,
+        }
+        for g in gs
+    ]
+
+
+PARSERS = {
+    "ngbr_cell_info": parse_cells,
+    "lte_multi_ca_scell_info": parse_scells,
+    "lte_multi_ca_scell_sig_info": parse_scell_signal,
+}
 
 
 def mask_bands(v) -> str | None:
@@ -143,15 +332,21 @@ KINDS = {
         "empty (unknown to this firmware, or no value right now, e.g. 5G on LTE)",
     ),
     "malformed": ("WARN", "unexpected values, not exported"),
+    "refused": (
+        "WARN",
+        "refused: the request they were in came back as result=failure",
+    ),
 }
 
 
 def check_fields(d: dict) -> dict[str, tuple[str, str]]:
     """Every requested field that didn't come back usable: field -> (kind, shown as)."""
     found = {}
-    for f in FIELDS.split(","):
+    for f in FIELDS:
         v = str(d.get(f, "")).strip()
-        if f not in d:
+        if d.get(f) is REFUSED:
+            found[f] = ("refused", f)
+        elif f not in d:
             found[f] = ("missing", f)
         elif not v:
             found[f] = ("empty", f)
@@ -159,6 +354,8 @@ def check_fields(d: dict) -> dict[str, tuple[str, str]]:
             (f in NUMERIC and num(v) is None)
             or (f in BAND_MASKS and mask_bands(v) is None)
             or (f in BAND_LISTS and list_bands(v) is None)
+            or (f in WIDTHS and mhz(v) is None)
+            or (f in STRUCTURED and PARSERS[f](v) is None)
         ):
             found[f] = ("malformed", f"{f}={v[:40]!r}")
     return found
@@ -183,11 +380,14 @@ class FieldReport:
         now = time.time()
         if found == self.logged:
             return
-        total = FIELDS.count(",") + 1
+        total = len(FIELDS)
         usable = f"{total - len(found)} of {total} fields usable"
         if self.logged is None:
             log("INFO", f"field check: {usable}")
             log_grouped(found)
+            for f in RAW:
+                if d.get(f) is not REFUSED and str(d.get(f, "")).strip():
+                    log("INFO", f"  raw {f}={str(d[f])[:300]!r}")
         elif now - self.logged_at >= FIELD_REPORT_INTERVAL:
             log("INFO", f"field check changed: {usable}")
             fixed = sorted(set(self.logged) - set(found))
@@ -230,6 +430,28 @@ class Modem:
             f"goform/goform_get_cmd_process?isTest=false&cmd={cmd}{multi}&_={int(time.time() * 1000)}"
         )[0]
 
+    def read(self, fields: tuple[str, ...]) -> dict:
+        """All fields in requests of CHUNK, one retry per request (the modem drops one now and then)."""
+        out: dict = {}
+        for i in range(0, len(fields), CHUNK):
+            cmd = ",".join(fields[i : i + CHUNK])
+            try:
+                part = self.get(cmd)
+            except (OSError, ValueError) as e:
+                log("WARN", f"read failed ({e}); retrying once")
+                time.sleep(2)
+                part = self.get(cmd)
+            if not isinstance(part, dict):
+                raise TypeError(f"reply is not a JSON object: {str(part)[:80]!r}")
+            # A name the firmware declines turns the whole reply into {"result": "failure"}.
+            if part.get("result") == "failure" and not any(
+                f in part for f in fields[i : i + CHUNK]
+            ):
+                out |= dict.fromkeys(fields[i : i + CHUNK], REFUSED)
+                continue
+            out |= part
+        return out
+
     def login(self, password: str) -> bool:
         ld = str(self.get("LD").get("LD", "")).upper()
         if not ld:
@@ -256,26 +478,35 @@ class Modem:
 
 
 class Prom:
-    def __init__(self) -> None:
-        self.lines: list[str] = []
-        self.seen: set[str] = set()
+    """Metric families in first-seen order; the text format wants each family in one block."""
 
-    def add(self, name: str, help_: str, value, labels: dict | None = None) -> None:
+    def __init__(self) -> None:
+        self.families: dict[str, list[str]] = {}
+
+    def add(
+        self,
+        name: str,
+        help_: str,
+        value,
+        labels: dict | None = None,
+        typ: str = "gauge",
+    ) -> None:
         if value is None:
             return
         full = f"homelab_modem_{name}"
-        if full not in self.seen:
-            self.seen.add(full)
-            self.lines += [f"# HELP {full} {help_}", f"# TYPE {full} gauge"]
-        lab = ",".join(f'{k}="{esc(v)}"' for k, v in (labels or {}).items())
-        self.lines.append(
-            f"{full}{{{lab}}} {value:.15g}" if lab else f"{full} {value:.15g}"
+        lines = self.families.setdefault(
+            full, [f"# HELP {full} {help_}", f"# TYPE {full} {typ}"]
         )
+        lab = ",".join(f'{k}="{esc(v)}"' for k, v in (labels or {}).items())
+        lines.append(f"{full}{{{lab}}} {value:.15g}" if lab else f"{full} {value:.15g}")
 
     def write(self) -> None:
         tmp = f"{OUT}.{os.getpid()}"
         with open(tmp, "w") as fh:
-            fh.write("\n".join(self.lines) + "\n")
+            fh.write(
+                "\n".join(line for lines in self.families.values() for line in lines)
+                + "\n"
+            )
         os.chmod(tmp, 0o644)
         os.replace(tmp, OUT)
 
@@ -289,6 +520,86 @@ def paused_until() -> float:
     return until if until > time.time() else 0.0
 
 
+def lte_ids(d: dict) -> dict[str, str]:
+    """eNodeB (the base station) and its cell number, decoded from the ECI (cell_id)."""
+    return lte_cell(d.get("cell_id", ""))
+
+
+def carriers(d: dict, p: Prom) -> None:
+    """Aggregated carriers (uplink = the primary) and every cell the modem measures."""
+    p.add(
+        "bandwidth_mhz",
+        "Channel width of the serving LTE cell",
+        mhz(d.get("bandwidth")),
+    )
+    pcell = {
+        "role": "pcell",
+        "index": "0",
+        "band": str(d.get("lte_ca_pcell_band", "")).strip(),
+        "channel": str(
+            d.get("lte_ca_pcell_arfcn") or d.get("wan_active_channel", "")
+        ).strip(),
+        "pci": str(d.get("lte_pci", "")).strip(),
+        "state": "",
+    }
+    scells = parse_scells(d.get("lte_multi_ca_scell_info", "")) or []
+    cells = [pcell] if pcell["band"] else []
+    cells += [
+        {
+            "role": "scell",
+            "index": s["index"],
+            "band": s["band"],
+            "channel": s["earfcn"],
+            "pci": s["pci"],
+            "state": s["state"],
+        }
+        for s in scells
+    ]
+    widths = [mhz(d.get("lte_ca_pcell_bandwidth"))] + [s["width"] for s in scells]
+    for c, w in zip(cells, widths if pcell["band"] else widths[1:], strict=False):
+        p.add("ca_cell_info", "Aggregated carriers; the pcell carries the uplink", 1, c)
+        p.add(
+            "ca_bandwidth_mhz",
+            "Channel width per aggregated carrier; their sum is the usable width",
+            w,
+            {"role": c["role"], "index": c["index"], "band": c["band"]},
+        )
+    for s, sig in zip(
+        scells,
+        parse_scell_signal(d.get("lte_multi_ca_scell_sig_info", "")) or [],
+        strict=False,
+    ):
+        labels = {"index": s["index"], "band": s["band"]}
+        for (metric, help_), v in zip(SCELL_SIGNAL, sig, strict=True):
+            p.add(metric, help_, v, labels)
+    serving = {(c["channel"], c["pci"]): c["role"] for c in cells}
+    for c in parse_cells(d.get("ngbr_cell_info", "")) or []:
+        labels = {
+            "earfcn": c["earfcn"],
+            "pci": c["pci"],
+            "band": earfcn_band(c["earfcn"]),
+            "role": serving.get((c["earfcn"], c["pci"]), "neighbour"),
+        }
+        p.add(
+            "cell_rsrp_dbm",
+            "Every cell the modem measures: serving, aggregated and neighbours",
+            c["rsrp"],
+            labels,
+        )
+        p.add(
+            "cell_rsrq_db",
+            "Every cell the modem measures: serving, aggregated and neighbours",
+            c["rsrq"],
+            labels,
+        )
+        p.add(
+            "cell_rssi_dbm",
+            "Every cell the modem measures: serving, aggregated and neighbours",
+            c["rssi"],
+            labels,
+        )
+
+
 def poll(password: str, p: Prom, report: FieldReport) -> bool:
     m = Modem(HOST)
     if not m.login(password):
@@ -297,21 +608,15 @@ def poll(password: str, p: Prom, report: FieldReport) -> bool:
         return False
     p.add("login_ok", "Whether the last login was accepted", 1)
     try:
-        try:
-            d = m.get(FIELDS)
-        except (OSError, ValueError) as e:
-            log("WARN", f"read failed ({e}); retrying once")
-            time.sleep(2)
-            d = m.get(FIELDS)
+        d = m.read(FIELDS)
     finally:
         try:
             if not m.logout():
                 log("WARN", "logout not acknowledged; the session expires on its own")
         except Exception as e:  # noqa: BLE001 - the poll result matters more than the logout
             log("WARN", f"logout failed: {e}")
-    if not isinstance(d, dict):
-        raise TypeError(f"reply is not a JSON object: {str(d)[:80]!r}")
     report.update(d)
+    d = {k: v for k, v in d.items() if v is not REFUSED}
     # Logged in, but nothing came back: the modem ignored the session. Count it as a failed read.
     if all(num(d.get(f)) is None for f in NUMERIC):
         raise ValueError("the reply has no values (session not accepted?)")
@@ -327,7 +632,27 @@ def poll(password: str, p: Prom, report: FieldReport) -> bool:
             "state": d.get("modem_main_state", ""),
             "lte_ca": d.get("wan_lte_ca", ""),
             "wan": d.get("wan_connect_status", ""),
+            "network_mode": d.get("net_select", ""),
+            "operator_select": d.get("net_select_mode", ""),
+            "mcc": d.get("mdm_mcc", ""),
+            "mnc": d.get("mdm_mnc", ""),
+            "roaming": d.get("simcard_roam", ""),
+            "firmware": d.get("wa_inner_version", ""),
         },
+    )
+    p.add(
+        "firmware_update_info",
+        "Firmware update state (version_idle / fota_idle = nothing waiting or running)",
+        1 if d.get("new_version_state") or d.get("current_upgrade_state") else None,
+        {
+            "version_state": d.get("new_version_state", ""),
+            "upgrade_state": d.get("current_upgrade_state", ""),
+        },
+    )
+    p.add(
+        "sms_unread",
+        "Unread SMS on the modem (the operator's messages land here)",
+        num(d.get("sms_unread_num")),
     )
     p.add("signal_bars", "Signal bars shown in the web panel", num(d.get("signalbar")))
     for metric, help_, lte, nr in SIGNAL:
@@ -348,13 +673,15 @@ def poll(password: str, p: Prom, report: FieldReport) -> bool:
                     "channel": d.get(chan, ""),
                     "pci": d.get(pci, ""),
                     "cell_id": d.get(cell, ""),
+                    **(lte_ids(d) if rat == "lte" else {}),
                 },
             )
+    carriers(d, p)
     for metric, rat, fields in ANTENNA:
         for f, antenna in fields.items():
             p.add(
                 f"antenna_{metric}",
-                "Per receive antenna; one far below the others points at that antenna or its cable",
+                ANTENNA_HELP[rat],
                 num(d.get(f)),
                 {"rat": rat, "antenna": antenna},
             )
@@ -398,6 +725,14 @@ def poll(password: str, p: Prom, report: FieldReport) -> bool:
             "Current throughput as reported by the modem (bytes per second)",
             num(d.get(f)),
             {"direction": direction},
+        )
+    for direction, f in (("tx", "realtime_tx_bytes"), ("rx", "realtime_rx_bytes")):
+        p.add(
+            "session_bytes_total",
+            "Bytes in the current data session; rate() gives the exact average between polls",
+            num(d.get(f)),
+            {"direction": direction},
+            "counter",
         )
     for direction, f in (("tx", "monthly_tx_bytes"), ("rx", "monthly_rx_bytes")):
         p.add(
