@@ -46,6 +46,56 @@
                         "version": "v0"
                     }
                 }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": true,
+                    "hide": false,
+                    "iconColor": "blue",
+                    "legacyOptions": {
+                        "titleFormat": "Collector paused (modem-pause)"
+                    },
+                    "name": "modem paused",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus-datasource"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "homelab_modem_paused == 1",
+                            "interval": "1m",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
+            },
+            {
+                "kind": "AnnotationQuery",
+                "spec": {
+                    "enable": true,
+                    "hide": false,
+                    "iconColor": "purple",
+                    "legacyOptions": {
+                        "titleFormat": "Allowed bands: {{bands}}"
+                    },
+                    "name": "band setting changed",
+                    "query": {
+                        "datasource": {
+                            "name": "prometheus-datasource"
+                        },
+                        "group": "prometheus",
+                        "kind": "DataQuery",
+                        "spec": {
+                            "expr": "homelab_modem_allowed_bands_info{rat=\"lte\"} unless homelab_modem_allowed_bands_info{rat=\"lte\"} offset 2m",
+                            "interval": "1m",
+                            "refId": "Anno"
+                        },
+                        "version": "v0"
+                    }
+                }
             }
         ],
         "cursorSync": "Off",
@@ -3477,6 +3527,110 @@
                     }
                 }
             },
+            "panel-39": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "exemplar": false,
+                                                "expr": "max(homelab_modem_up) + 2 * max(homelab_modem_paused)",
+                                                "instant": true,
+                                                "legendFormat": "__auto",
+                                                "range": false
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "0 while paused is normal; FAILING = journalctl -u modem-metrics",
+                    "id": 39,
+                    "links": [],
+                    "title": "Collector",
+                    "vizConfig": {
+                        "group": "stat",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "mappings": [
+                                        {
+                                            "options": {
+                                                "0": {
+                                                    "color": "red",
+                                                    "index": 0,
+                                                    "text": "FAILING"
+                                                },
+                                                "1": {
+                                                    "color": "green",
+                                                    "index": 1,
+                                                    "text": "OK"
+                                                },
+                                                "2": {
+                                                    "color": "blue",
+                                                    "index": 2,
+                                                    "text": "PAUSED"
+                                                }
+                                            },
+                                            "type": "value"
+                                        }
+                                    ],
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            }
+                                        ]
+                                    }
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "colorMode": "background_solid",
+                                "graphMode": "none",
+                                "justifyMode": "auto",
+                                "orientation": "auto",
+                                "percentChangeColorMode": "standard",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "showPercentChange": false,
+                                "textMode": "auto",
+                                "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
             "panel-4": {
                 "kind": "Panel",
                 "spec": {
@@ -3570,6 +3724,1017 @@
                                 "showPercentChange": false,
                                 "textMode": "auto",
                                 "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-40": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "exemplar": false,
+                                                "expr": "homelab_modem_ca_cell_info{role=\"pcell\"}",
+                                                "instant": true,
+                                                "legendFormat": "B{{band}}",
+                                                "range": false
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "The primary carrier: the only one that carries upload. B7 = weakest uplink here",
+                    "id": 40,
+                    "links": [],
+                    "title": "Uplink band",
+                    "vizConfig": {
+                        "group": "stat",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            }
+                                        ]
+                                    }
+                                },
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "options": "3",
+                                            "scope": "series"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "color",
+                                                "value": {
+                                                    "fixedColor": "green",
+                                                    "mode": "fixed"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "options": {
+                                "colorMode": "value",
+                                "graphMode": "none",
+                                "justifyMode": "auto",
+                                "orientation": "auto",
+                                "percentChangeColorMode": "standard",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "showPercentChange": false,
+                                "textMode": "name",
+                                "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-41": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_sinr_db{rat=\"lte\"}",
+                                                "legendFormat": "__auto",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 41,
+                    "links": [],
+                    "title": "SINR",
+                    "vizConfig": {
+                        "group": "stat",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "decimals": 1,
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "red",
+                                                "value": 0
+                                            },
+                                            {
+                                                "color": "orange",
+                                                "value": 0
+                                            },
+                                            {
+                                                "color": "yellow",
+                                                "value": 13
+                                            },
+                                            {
+                                                "color": "green",
+                                                "value": 20
+                                            }
+                                        ]
+                                    },
+                                    "unit": "dB"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "colorMode": "value",
+                                "graphMode": "area",
+                                "justifyMode": "auto",
+                                "orientation": "auto",
+                                "percentChangeColorMode": "standard",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "showPercentChange": false,
+                                "textMode": "auto",
+                                "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-42": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_rsrp_dbm{rat=\"lte\"}",
+                                                "legendFormat": "__auto",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 42,
+                    "links": [],
+                    "title": "RSRP",
+                    "vizConfig": {
+                        "group": "stat",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "decimals": 0,
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "red",
+                                                "value": 0
+                                            },
+                                            {
+                                                "color": "orange",
+                                                "value": -100
+                                            },
+                                            {
+                                                "color": "yellow",
+                                                "value": -90
+                                            },
+                                            {
+                                                "color": "green",
+                                                "value": -80
+                                            }
+                                        ]
+                                    },
+                                    "unit": "dBm"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "colorMode": "value",
+                                "graphMode": "area",
+                                "justifyMode": "auto",
+                                "orientation": "auto",
+                                "percentChangeColorMode": "standard",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "showPercentChange": false,
+                                "textMode": "auto",
+                                "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-43": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "max_over_time(homelab_modem_tx_power_dbm[10m])",
+                                                "legendFormat": "__auto",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "Uplink effort. Near 23 dBm the cell barely hears the modem",
+                    "id": 43,
+                    "links": [],
+                    "title": "TX power (10 min max)",
+                    "vizConfig": {
+                        "group": "stat",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "decimals": 0,
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            },
+                                            {
+                                                "color": "yellow",
+                                                "value": 20
+                                            },
+                                            {
+                                                "color": "red",
+                                                "value": 22
+                                            }
+                                        ]
+                                    },
+                                    "unit": "dBm"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "colorMode": "value",
+                                "graphMode": "area",
+                                "justifyMode": "auto",
+                                "orientation": "auto",
+                                "percentChangeColorMode": "standard",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "showPercentChange": false,
+                                "textMode": "auto",
+                                "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-44": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "sum(homelab_modem_ca_bandwidth_mhz) * 1e6",
+                                                "legendFormat": "__auto",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "sum over the aggregated carriers (download)",
+                    "id": 44,
+                    "links": [],
+                    "title": "Usable width",
+                    "vizConfig": {
+                        "group": "stat",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "thresholds"
+                                    },
+                                    "decimals": 0,
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            }
+                                        ]
+                                    },
+                                    "unit": "rothz"
+                                },
+                                "overrides": []
+                            },
+                            "options": {
+                                "colorMode": "value",
+                                "graphMode": "none",
+                                "justifyMode": "auto",
+                                "orientation": "auto",
+                                "percentChangeColorMode": "standard",
+                                "reduceOptions": {
+                                    "calcs": [
+                                        "lastNotNull"
+                                    ],
+                                    "fields": "",
+                                    "values": false
+                                },
+                                "showPercentChange": false,
+                                "textMode": "auto",
+                                "wideLayout": true
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-45": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_ca_cell_info{role=\"pcell\"}",
+                                                "legendFormat": "uplink B{{band}}",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_ca_cell_info{role=\"scell\"}",
+                                                "instant": false,
+                                                "legendFormat": "SCC{{index}} B{{band}} state {{state}}",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "B"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_info",
+                                                "instant": false,
+                                                "legendFormat": "CA {{lte_ca}}",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "C"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_allowed_bands_info{rat=\"lte\"}",
+                                                "instant": false,
+                                                "legendFormat": "allowed {{bands}}",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "D"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_paused",
+                                                "instant": false,
+                                                "legendFormat": "paused",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "E"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 45,
+                    "links": [],
+                    "title": "Modem state",
+                    "vizConfig": {
+                        "group": "state-timeline",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisPlacement": "auto",
+                                        "fillOpacity": 70,
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineWidth": 0,
+                                        "spanNulls": false
+                                    },
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            }
+                                        ]
+                                    }
+                                },
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "options": "uplink B3",
+                                            "scope": "series"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "mappings",
+                                                "value": [
+                                                    {
+                                                        "options": {
+                                                            "1": {
+                                                                "color": "green",
+                                                                "index": 0
+                                                            }
+                                                        },
+                                                        "type": "value"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "options": "paused",
+                                            "scope": "series"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "mappings",
+                                                "value": [
+                                                    {
+                                                        "options": {
+                                                            "0": {
+                                                                "color": "transparent",
+                                                                "index": 1
+                                                            },
+                                                            "1": {
+                                                                "color": "blue",
+                                                                "index": 0
+                                                            }
+                                                        },
+                                                        "type": "value"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "options": {
+                                "alignValue": "left",
+                                "legend": {
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": false
+                                },
+                                "mergeValues": true,
+                                "rowHeight": 0.8,
+                                "showValue": "never",
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "single",
+                                    "sort": "none"
+                                }
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-46": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_sinr_db{rat=\"lte\"}",
+                                                "legendFormat": "SINR",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_rsrq_db{rat=\"lte\"}",
+                                                "instant": false,
+                                                "legendFormat": "RSRQ",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "B"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_rsrp_dbm{rat=\"lte\"}",
+                                                "instant": false,
+                                                "legendFormat": "RSRP",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "C"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "",
+                    "id": 46,
+                    "links": [],
+                    "title": "Signal (primary)",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "auto",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            }
+                                        ]
+                                    },
+                                    "unit": "dB"
+                                },
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "options": "homelab_modem_rsrp_dbm",
+                                            "scope": "series"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "unit",
+                                                "value": "dBm"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "options": {
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "single",
+                                    "sort": "none"
+                                }
+                            }
+                        },
+                        "version": "13.2.2"
+                    }
+                }
+            },
+            "panel-47": {
+                "kind": "Panel",
+                "spec": {
+                    "data": {
+                        "kind": "QueryGroup",
+                        "spec": {
+                            "queries": [
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_sinr_db{rat=\"lte\"}",
+                                                "legendFormat": "aggregate (worst)",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "A"
+                                    }
+                                },
+                                {
+                                    "kind": "PanelQuery",
+                                    "spec": {
+                                        "hidden": false,
+                                        "query": {
+                                            "datasource": {
+                                                "name": "prometheus-datasource"
+                                            },
+                                            "group": "prometheus",
+                                            "kind": "DataQuery",
+                                            "spec": {
+                                                "editorMode": "code",
+                                                "expr": "homelab_modem_scell_sinr_db",
+                                                "instant": false,
+                                                "legendFormat": "SCC{{index}} B{{band}}",
+                                                "range": true
+                                            },
+                                            "version": "v0"
+                                        },
+                                        "refId": "B"
+                                    }
+                                }
+                            ],
+                            "queryOptions": {},
+                            "transformations": []
+                        }
+                    },
+                    "description": "the aggregate SINR is the worst carrier; a secondary far below the others drags it down",
+                    "id": 47,
+                    "links": [],
+                    "title": "SINR per carrier",
+                    "vizConfig": {
+                        "group": "timeseries",
+                        "kind": "VizConfig",
+                        "spec": {
+                            "fieldConfig": {
+                                "defaults": {
+                                    "color": {
+                                        "mode": "palette-classic"
+                                    },
+                                    "custom": {
+                                        "axisBorderShow": false,
+                                        "axisCenteredZero": false,
+                                        "axisColorMode": "text",
+                                        "axisLabel": "",
+                                        "axisPlacement": "auto",
+                                        "barAlignment": 0,
+                                        "barWidthFactor": 0.6,
+                                        "drawStyle": "line",
+                                        "fillOpacity": 0,
+                                        "gradientMode": "none",
+                                        "hideFrom": {
+                                            "legend": false,
+                                            "tooltip": false,
+                                            "viz": false
+                                        },
+                                        "insertNulls": false,
+                                        "lineInterpolation": "linear",
+                                        "lineWidth": 1,
+                                        "pointSize": 5,
+                                        "scaleDistribution": {
+                                            "type": "linear"
+                                        },
+                                        "showPoints": "auto",
+                                        "showValues": false,
+                                        "spanNulls": false,
+                                        "stacking": {
+                                            "group": "A",
+                                            "mode": "none"
+                                        },
+                                        "thresholdsStyle": {
+                                            "mode": "off"
+                                        }
+                                    },
+                                    "thresholds": {
+                                        "mode": "absolute",
+                                        "steps": [
+                                            {
+                                                "color": "green",
+                                                "value": 0
+                                            }
+                                        ]
+                                    },
+                                    "unit": "dB"
+                                },
+                                "overrides": [
+                                    {
+                                        "matcher": {
+                                            "id": "byName",
+                                            "options": "aggregate (worst)",
+                                            "scope": "series"
+                                        },
+                                        "properties": [
+                                            {
+                                                "id": "custom.lineStyle",
+                                                "value": {
+                                                    "dash": [
+                                                        10,
+                                                        10
+                                                    ],
+                                                    "fill": "dash"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "options": {
+                                "legend": {
+                                    "calcs": [],
+                                    "displayMode": "list",
+                                    "placement": "bottom",
+                                    "showLegend": true
+                                },
+                                "tooltip": {
+                                    "hideZeros": false,
+                                    "mode": "single",
+                                    "sort": "none"
+                                }
                             }
                         },
                         "version": "13.2.2"
@@ -4382,6 +5547,136 @@
                                 }
                             },
                             "title": "WAN"
+                        }
+                    },
+                    {
+                        "kind": "TabsLayoutTab",
+                        "spec": {
+                            "layout": {
+                                "kind": "GridLayout",
+                                "spec": {
+                                    "items": [
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-39"
+                                                },
+                                                "height": 7,
+                                                "width": 4,
+                                                "x": 0,
+                                                "y": 0
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-40"
+                                                },
+                                                "height": 7,
+                                                "width": 4,
+                                                "x": 4,
+                                                "y": 0
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-41"
+                                                },
+                                                "height": 7,
+                                                "width": 4,
+                                                "x": 8,
+                                                "y": 0
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-42"
+                                                },
+                                                "height": 7,
+                                                "width": 4,
+                                                "x": 12,
+                                                "y": 0
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-43"
+                                                },
+                                                "height": 7,
+                                                "width": 4,
+                                                "x": 16,
+                                                "y": 0
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-44"
+                                                },
+                                                "height": 7,
+                                                "width": 4,
+                                                "x": 20,
+                                                "y": 0
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-45"
+                                                },
+                                                "height": 10,
+                                                "width": 24,
+                                                "x": 0,
+                                                "y": 7
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-46"
+                                                },
+                                                "height": 8,
+                                                "width": 12,
+                                                "x": 0,
+                                                "y": 17
+                                            }
+                                        },
+                                        {
+                                            "kind": "GridLayoutItem",
+                                            "spec": {
+                                                "element": {
+                                                    "kind": "ElementReference",
+                                                    "name": "panel-47"
+                                                },
+                                                "height": 8,
+                                                "width": 12,
+                                                "x": 12,
+                                                "y": 17
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "title": "Modem"
                         }
                     },
                     {
