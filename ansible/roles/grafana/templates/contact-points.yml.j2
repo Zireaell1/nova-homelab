@@ -25,9 +25,9 @@ muteTimes:
               end_time: '02:50'
           location: '{{ timezone }}'
     - orgId: 1
-      name: weekend-daytime
+      name: renovate-days
       time_intervals:
-        - weekdays: ['saturday', 'sunday']
+        - days_of_month: ['1', '15']
           times:
             - start_time: '10:00'
               end_time: '20:00'

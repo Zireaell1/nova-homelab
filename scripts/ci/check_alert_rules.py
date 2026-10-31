@@ -73,9 +73,10 @@ def check() -> list[str]:
             bad.append(
                 f"{where}: notification_settings.receiver {ns.get('receiver')!r} is not a contact point {sorted(receivers)}"
             )
-        for m in ns.get("mute_time_intervals") or []:
-            if m not in mutes:
-                bad.append(
-                    f"{where}: mute_time_intervals {m!r} is not defined in muteTimes {sorted(mutes)}"
-                )
+        for key in ("mute_time_intervals", "active_time_intervals"):
+            for m in ns.get(key) or []:
+                if m not in mutes:
+                    bad.append(
+                        f"{where}: {key} {m!r} is not defined in muteTimes {sorted(mutes)}"
+                    )
     return bad

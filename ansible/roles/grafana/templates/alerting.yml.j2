@@ -2355,19 +2355,19 @@ groups:
                 refId: A
           noDataState: OK
           execErrState: Error
-          for: 336h
+          for: 24h
           isPaused: false
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has had {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} security update(s) waiting for two weeks."
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} security update(s) waiting."
             impact: "Known vulnerabilities stay unpatched until they are installed."
             action: "`make nova_update` · `make orion_update`"
           notification_settings:
             receiver: Discord
             repeat_interval: 48h
             active_time_intervals:
-              - weekend-daytime
+              - renovate-days
 
         - uid: updates_reboot_required
           title: Reboot Required
@@ -2401,7 +2401,7 @@ groups:
             receiver: Discord
             repeat_interval: 48h
             active_time_intervals:
-              - weekend-daytime
+              - renovate-days
 
         - uid: updates_collector_stale
           title: Update Collector Has Stopped Running
