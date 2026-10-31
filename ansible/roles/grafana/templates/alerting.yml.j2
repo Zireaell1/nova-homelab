@@ -961,7 +961,7 @@ groups:
             severity: warning
           annotations:
             summary: "{{ '{{' }} $labels.instance {{ '}}' }} {{ '{{' }} $labels.device {{ '}}' }} lost its link {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} times in an hour."
-            impact: "Every drop interrupts DNS, cameras or the e-ink display; on wifi it is the N-97 symptom."
+            impact: "Every drop interrupts DNS, cameras or the e-ink display; on Orion's wifi it usually means the Pi did not rejoin after a router outage."
             action: "Cable/port on the switch · `journalctl -u NetworkManager -e` · on Orion: `nmcli dev wifi`"
           notification_settings:
             receiver: Discord
@@ -1251,7 +1251,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: loki_process_custom_kernel_io_errors_total > 0
+                expr: (loki_process_custom_kernel_io_errors_total - (loki_process_custom_kernel_io_errors_total offset 15m or loki_process_custom_kernel_io_errors_total * 0)) > 0
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -1264,7 +1264,7 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "{{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} kernel disk or filesystem error(s) in the journal."
+            summary: "{{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} kernel disk or filesystem error(s) in the journal in the last 15 minutes."
             impact: "A disk is failing or a filesystem is damaged; data corruption is possible."
             action: "Find the device: `sudo journalctl -k -p err -b | tail -50` · `sudo smartctl -a /dev/<dev>` · confirm the last backup"
           notification_settings:
@@ -2163,7 +2163,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: loki_process_custom_selinux_denials_total > 0
+                expr: (loki_process_custom_selinux_denials_total - (loki_process_custom_selinux_denials_total offset 15m or loki_process_custom_selinux_denials_total * 0)) > 0
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -2176,7 +2176,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "SELinux blocked {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} action(s)."
+            summary: "SELinux blocked {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} action(s) in the last 15 minutes."
             impact: "Something, usually a container, was denied access and may be failing."
             action: "`sudo ausearch -m AVC -ts recent` · `sudo sealert -a /var/log/audit/audit.log`"
           notification_settings:
@@ -2193,7 +2193,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: loki_process_custom_zigbee2mqtt_errors_total > 2
+                expr: (loki_process_custom_zigbee2mqtt_errors_total - (loki_process_custom_zigbee2mqtt_errors_total offset 1h or loki_process_custom_zigbee2mqtt_errors_total * 0)) > 2
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto
@@ -2206,7 +2206,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Zigbee2MQTT logged {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} adapter errors."
+            summary: "Zigbee2MQTT logged {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} adapter errors in the last hour."
             impact: "Zigbee devices may not respond."
             action: "`podman logs --tail 50 zigbee2mqtt` · is the dongle still there? `ls /dev/serial/by-id/`"
           notification_settings:
