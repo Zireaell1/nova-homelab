@@ -3,6 +3,7 @@ set -gx EDITOR micro
 if status is-interactive
     abbr -a up "{{ dotfiles_update_cmd }}"
     abbr -a upclean "{{ dotfiles_update_clean_cmd }}"
+    abbr -a clean "{{ dotfiles_clean_cmd }}"
 end
 
 function fish_greeting
@@ -25,5 +26,9 @@ function fish_greeting
     echo -n "  upclean "
     set_color normal
     echo "-> update and clean up ({{ dotfiles_update_clean_label }})"
+    set_color green
+    echo -n "  clean   "
+    set_color normal
+    echo "-> remove unused packages only (asks first)"
     echo ""
 end
