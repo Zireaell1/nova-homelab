@@ -783,6 +783,195 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: modem_metrics_failing
+          title: Modem Metrics Failing
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_modem_up == 0 and on() homelab_modem_paused == 0 and on() homelab_modem_login_ok == 1 and on() max(probe_success{probe="modem"}) == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The modem collector logs in but cannot read the modem."
+            impact: "Modem panels go empty; the WAN probes still work."
+            action: "`journalctl -u modem-metrics -n 30` (the field check lists refused or unexpected fields) · a firmware update may have renamed fields"
+          notification_settings:
+            receiver: Discord
+
+        - uid: modem_login_rejected
+          title: Modem Login Rejected
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_modem_login_ok == 0 and on() homelab_modem_paused == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The modem rejected the collector's login; it retries every 15 minutes."
+            impact: "No modem metrics. Repeated wrong passwords can lock the web panel for a while."
+            action: "Was the admin password changed? Update `vault_modem_admin_password`, then `make nova_system t=alloy`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: modem_metrics_stale
+          title: Modem Collector Has Stopped
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - homelab_modem_last_poll_timestamp_seconds > 300
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 5m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The modem collector has not written metrics for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            impact: "Modem panels freeze on old values; a pause still counts as running."
+            action: "`systemctl status modem-metrics` · `journalctl -u modem-metrics -n 30`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: modem_session_flapping
+          title: Mobile Data Session Keeps Restarting
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: resets(homelab_modem_session_uptime_seconds[1h]) >= 3
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 0m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The modem's data session restarted {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} times in the last hour."
+            impact: "Every restart drops all connections for a few seconds: games disconnect, calls drop, Tailscale reconnects."
+            action: "Modem tab: SINR, uplink band and cell changes at those times · a firmware update or the scheduled reboot explains one restart, not three"
+          notification_settings:
+            receiver: Discord
+            repeat_interval: 12h
+
+        - uid: modem_signal_degraded
+          title: Modem Signal Degraded
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: avg_over_time(homelab_modem_sinr_db{rat="lte"}[1h]) < 5
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 30m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Mobile signal quality (SINR) has averaged {{ '{{' }} printf `%.1f` $values.A.Value {{ '}}' }} dB over the last hour; normal here is 13 dB or more."
+            impact: "Slower and less stable internet: lag spikes and drops become likely."
+            action: "Modem tab: did the uplink band change, or every carrier drop at once (weather, a moved or damaged outdoor unit, cell maintenance)? · Measured cells table for a better cell"
+          notification_settings:
+            receiver: Discord
+            repeat_interval: 24h
+
+        - uid: modem_config_changed
+          title: Modem Firmware Or Network Mode Changed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: (count(count by (firmware) (count_over_time(homelab_modem_info[2h]))) > 1) or (count(count by (network_mode) (count_over_time(homelab_modem_info[2h]))) > 1)
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 0m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The modem's firmware or network mode changed in the last two hours."
+            impact: "A firmware update can reset settings (network mode, band locks) and rename fields the collector reads."
+            action: "Modem tab: Firmware and Network mode stats · web panel (after `sudo modem-pause`): network mode still LTE only, band settings as intended · `journalctl -u modem-metrics -n 30` for the field check"
+          notification_settings:
+            receiver: Discord
+            repeat_interval: 24h
+
         - uid: log_error_burst
           title: Log Error Burst
           condition: A
