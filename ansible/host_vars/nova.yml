@@ -27,7 +27,7 @@ hardware_target_lvs:
     size: 15g
     manage_fs_and_mount: false
   - name: home
-    size: 50g
+    size: 75g
     mount_path: /home
     manage_fs_and_mount: true
   - name: monitoring
