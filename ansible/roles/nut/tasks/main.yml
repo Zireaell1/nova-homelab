@@ -37,6 +37,15 @@
     - Restart NUT server
     - Restart NUT monitor
 
+- name: Restart the driver whenever the UPS reappears on USB
+  ansible.builtin.template:
+    src: 90-nut-ups-reconnect.rules.j2
+    dest: /etc/udev/rules.d/90-nut-ups-reconnect.rules
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload udev rules
+
 - name: Flush handlers to restart NUT stack if configurations changed
   ansible.builtin.meta: flush_handlers
 

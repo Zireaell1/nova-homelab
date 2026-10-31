@@ -1,0 +1,3 @@
+# {{ ansible_managed }}
+# UPS re-enumerated (hub reset, EMI): usbhid-ups keeps its dead handle and goes stale, so restart it.
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="{{ nut_ups_vendorid }}", ATTR{idProduct}=="{{ nut_ups_productid }}", ATTR{power/control}="on", RUN+="/usr/bin/systemctl --no-block restart nut-driver@{{ nut_ups_name }}.service"

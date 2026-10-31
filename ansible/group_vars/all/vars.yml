@@ -1,4 +1,6 @@
 ---
+ansible_managed: "Managed by Ansible (nova-homelab): local changes are overwritten"
+
 timezone: "Europe/Warsaw"
 
 host_svc_address: "10.42.42.1"
