@@ -17,4 +17,4 @@ pihole_session_timeout: 2592000
 pihole_image: "docker.io/pihole/pihole"
 
 # renovate: datasource=docker depName=docker.io/pihole/pihole
-pihole_version: "2026.09.0"
+pihole_version: "2026.10.0"
