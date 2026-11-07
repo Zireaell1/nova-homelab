@@ -1,0 +1,11 @@
+# Managed by Ansible (rpi_base).
+[Unit]
+Description=Recover wifi when the default gateway stops answering
+After=NetworkManager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/wifi-watchdog
+SyslogIdentifier=wifi-watchdog
+RuntimeDirectory=wifi-watchdog
+RuntimeDirectoryPreserve=yes

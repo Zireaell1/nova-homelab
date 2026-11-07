@@ -90,5 +90,32 @@
     - /etc/pam.d/sshd
     - /etc/pam.d/login
 
+- name: Install the wifi watchdog script
+  ansible.builtin.template:
+    src: wifi-watchdog.sh.j2
+    dest: /usr/local/sbin/wifi-watchdog
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install the wifi watchdog units
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - wifi-watchdog.service
+    - wifi-watchdog.timer
+
+- name: Enable the wifi watchdog timer
+  ansible.builtin.systemd:
+    name: wifi-watchdog.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
+
 - name: Flush rpi_base handlers
   ansible.builtin.meta: flush_handlers

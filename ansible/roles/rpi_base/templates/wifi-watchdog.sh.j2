@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+set -uo pipefail
+
+iface={{ rpi_base_wifi_interface }}
+restart_after={{ rpi_base_wifi_watchdog_restart_after }}
+state=/run/wifi-watchdog/failed-minutes
+
+gw=$(ip -4 route show default dev "$iface" 2>/dev/null | awk '{ print $3; exit }')
+if [[ -n $gw ]] && ping -q -c 3 -W 2 -I "$iface" "$gw" >/dev/null 2>&1; then
+  if [[ -s $state ]]; then
+    echo "gateway reachable again after $(<"$state") min"
+    rm -f "$state"
+  fi
+  exit 0
+fi
+
+failed=$(( $(cat "$state" 2>/dev/null || echo 0) + 1 ))
+echo "$failed" >"$state"
+
+if (( failed % restart_after == 0 )); then
+  echo "no gateway for ${failed} min, restarting NetworkManager; $(nmcli -t -f GENERAL.STATE,GENERAL.REASON device show "$iface" 2>/dev/null | tr '\n' ' ')"
+  systemctl restart NetworkManager.service || echo "NetworkManager restart failed"
+fi
+exit 0

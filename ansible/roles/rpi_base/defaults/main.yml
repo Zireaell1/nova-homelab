@@ -1,0 +1,6 @@
+---
+rpi_base_wifi_interface: wlan0
+
+# wifi-watchdog: restart NetworkManager after this many minutes without a reply from the
+# default gateway, and again every as many minutes while it stays down.
+rpi_base_wifi_watchdog_restart_after: 10
