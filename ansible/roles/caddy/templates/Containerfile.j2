@@ -1,7 +1,7 @@
 FROM {{ caddy_image }}:{{ caddy_version }}-builder AS builder
 
 RUN xcaddy build \
-    --with github.com/caddy-dns/cloudflare
+    --with github.com/caddy-dns/cloudflare@{{ caddy_cloudflare_dns_version }}
 
 FROM {{ caddy_image }}:{{ caddy_version }}
 
