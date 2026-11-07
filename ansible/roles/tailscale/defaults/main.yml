@@ -6,3 +6,5 @@ tailscale_advertise_tags:
   - tag:homelab
 
 tailscale_accept_dns: false
+
+tailscale_auto_update: false

@@ -57,9 +57,11 @@
     tailscale set
     --advertise-routes={{ tailscale_advertise_routes | join(',') }}
     --accept-dns={{ tailscale_accept_dns | lower }}
+    --auto-update={{ tailscale_auto_update | lower }}
   vars:
     tailscale_prefs: "{{ tailscale_prefs_raw.stdout | from_json }}"
   when: >-
     (tailscale_prefs.AdvertiseRoutes | default([], true) | sort) != (tailscale_advertise_routes | sort)
     or (tailscale_prefs.CorpDNS | bool) != (tailscale_accept_dns | bool)
+    or ((tailscale_prefs.AutoUpdate | default({})).Apply | default(false, true) | bool) != (tailscale_auto_update | bool)
   changed_when: true
