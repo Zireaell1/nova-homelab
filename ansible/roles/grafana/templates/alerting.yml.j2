@@ -2524,40 +2524,6 @@ groups:
           notification_settings:
             receiver: Discord
 
-        - uid: updates_security_pending
-          title: Security Updates Pending
-          condition: A
-          data:
-            - refId: A
-              relativeTimeRange:
-                from: 600
-                to: 0
-              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
-              model:
-                editorMode: code
-                expr: homelab_updates_pending{severity="security"} > 0
-                instant: true
-                intervalMs: 1000
-                legendFormat: __auto
-                maxDataPoints: 43200
-                range: false
-                refId: A
-          noDataState: OK
-          execErrState: Error
-          for: 24h
-          isPaused: false
-          labels:
-            severity: warning
-          annotations:
-            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} security update(s) waiting."
-            impact: "Known vulnerabilities stay unpatched until they are installed."
-            action: "`make nova_update` · `make orion_update`"
-          notification_settings:
-            receiver: Discord
-            repeat_interval: 48h
-            active_time_intervals:
-              - renovate-days
-
         - uid: updates_reboot_required
           title: Reboot Required
           condition: A
