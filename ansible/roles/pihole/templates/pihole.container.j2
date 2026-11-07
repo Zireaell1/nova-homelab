@@ -8,7 +8,7 @@ RequiresMountsFor={{ stacks_path }}/pihole/etc-pihole
 # --- Image / Exec ---
 Image={{ pihole_image }}:{{ pihole_version }}
 ContainerName=pihole
-HostName={{ inventory_hostname }}
+HostName={{ nova_hostname }}
 StopTimeout=20
 
 # --- Identity / Namespaces ---
