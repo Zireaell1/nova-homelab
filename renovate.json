@@ -106,6 +106,32 @@
         "pinDigest"
       ],
       "automerge": true
+    },
+    {
+      "description": "Front door: patch releases any day, after 3 days. Minor and major stay on the 1st/15th.",
+      "matchDepNames": [
+        "docker.io/library/caddy",
+        "github.com/caddy-dns/cloudflare",
+        "authelia",
+        "ghcr.io/dani-garcia/vaultwarden"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "schedule": [
+        "at any time"
+      ],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Caddy: versions and release dates come from GitHub releases.",
+      "matchDepNames": [
+        "docker.io/library/caddy"
+      ],
+      "extractVersion": "^v(?<version>.+)$",
+      "prBodyNotes": [
+        "**Version from GitHub releases:** check that the `caddy:<version>` and `caddy:<version>-builder` tags exist on Docker Hub before merging."
+      ]
     }
   ]
 }
