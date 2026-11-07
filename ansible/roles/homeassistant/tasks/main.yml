@@ -7,16 +7,7 @@
     group: "{{ ansible_user }}"
     mode: "0755"
   loop:
-    - "{{ stacks_path }}/homeassistant/config/custom_components/hacs"
     - "{{ caddy_srv_path }}/homeassistant"
-
-- name: Download and extract HACS release
-  ansible.builtin.unarchive:
-    src: https://github.com/hacs/integration/releases/download/{{ homeassistant_hacs_version }}/hacs.zip
-    dest: "{{ stacks_path }}/homeassistant/config/custom_components/hacs"
-    remote_src: true
-    creates: "{{ stacks_path }}/homeassistant/config/custom_components/hacs/manifest.json"
-  register: homeassistant_hacs
 
 - name: Seed user-editable Home Assistant files
   ansible.builtin.copy:
@@ -79,5 +70,4 @@
     podman_service_quadlets: ["homeassistant.container"]
     podman_service_images:
       ["{{ homeassistant_image }}:{{ homeassistant_version }}"]
-    podman_service_changed_extra: >-
-      {{ (homeassistant_hacs is changed) or (homeassistant_seed_files is changed) }}
+    podman_service_changed_extra: "{{ homeassistant_seed_files is changed }}"

@@ -7,8 +7,5 @@ homeassistant_image: "ghcr.io/home-assistant/home-assistant"
 # renovate: datasource=docker depName=ghcr.io/home-assistant/home-assistant
 homeassistant_version: "2026.10.4"
 
-# renovate: datasource=github-releases depName=hacs/integration
-homeassistant_hacs_version: "2.0.5"
-
 # renovate: datasource=github-releases depName=home-assistant/android
 homeassistant_android_version: "2026.10.1"
