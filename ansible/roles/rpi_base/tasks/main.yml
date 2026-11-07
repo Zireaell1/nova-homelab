@@ -81,5 +81,14 @@
     mode: "0644"
   notify: Reload NetworkManager
 
+- name: No login banner (Debian's motd text and uname line)
+  ansible.builtin.replace:
+    path: "{{ item }}"
+    regexp: '^(session\s+optional\s+pam_motd\.so.*)$'
+    replace: '# \1'
+  loop:
+    - /etc/pam.d/sshd
+    - /etc/pam.d/login
+
 - name: Flush rpi_base handlers
   ansible.builtin.meta: flush_handlers
