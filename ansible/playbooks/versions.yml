@@ -1,0 +1,67 @@
+---
+- name: Watched package versions
+  hosts: nova:orion
+  gather_facts: true
+  gather_subset:
+    - min
+  vars:
+    versions_watch:
+      - kernel-core
+      - linux-firmware
+      - systemd
+      - selinux-policy-targeted
+      - container-selinux
+      - podman
+      - crun
+      - conmon
+      - passt
+      - netavark
+      - aardvark-dns
+      - firewalld
+      - dnf5
+      - openssh-server
+      - restic
+      - rclone
+      - igt-gpu-tools
+      - nut
+      - smartmontools
+      - alloy
+      - tailscale
+      - python3
+    versions_cache: "{{ playbook_dir }}/../../.cache/versions"
+  tasks:
+    - name: Read installed packages
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Build the version table
+      ansible.builtin.set_fact:
+        versions_table: >-
+          {%- set ns = namespace(lines=['%-24s %s' | format('running kernel', ansible_facts['kernel'])]) -%}
+          {%- for name in versions_watch if name in ansible_facts['packages'] -%}
+          {%- set vs = [] -%}
+          {%- for p in ansible_facts['packages'][name] -%}
+          {%- set _ = vs.append([p['version'], p['release'] | default('')] | select | join('-')) -%}
+          {%- endfor -%}
+          {%- set ns.lines = ns.lines + ['%-24s %s' | format(name, vs | sort | join(', '))] -%}
+          {%- endfor -%}
+          {{ ns.lines }}
+
+    - name: Create the cache directory
+      ansible.builtin.file:
+        path: "{{ versions_cache }}"
+        state: directory
+        mode: "0755"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Save the table
+      ansible.builtin.copy:
+        content: "{{ versions_table | join('\n') }}\n"
+        dest: "{{ versions_cache }}/{{ inventory_hostname }}.txt"
+        mode: "0644"
+      delegate_to: localhost
+
+    - name: Show the table
+      ansible.builtin.debug:
+        msg: "{{ versions_table }}"

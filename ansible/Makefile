@@ -27,7 +27,7 @@ CMD = uv run ansible-playbook $(TAG_FLAG) $(CHECK_FLAG) $(BECOME_FLAG) $(EXTRA_F
 
 # --- PLAYBOOK LISTS ---
 ROOT_PLAYBOOKS := site
-DIR_PLAYBOOKS := nova_system nova_services orion_system orion_services nova_update nova_update_check orion_update
+DIR_PLAYBOOKS := nova_system nova_services orion_system orion_services nova_update nova_update_check orion_update versions
 
 .PHONY: help deps lint check restore_nova $(ROOT_PLAYBOOKS) $(DIR_PLAYBOOKS)
 
@@ -39,6 +39,7 @@ help:
 	@echo "  make deps                (sync .venv from uv.lock, install collections into .collections)"
 	@echo "  make lint                (ansible-lint + yamllint)"
 	@echo "  make check               (structural checks from scripts/ci, same as CI)"
+	@echo "  make versions            (read-only; watched package versions on both hosts, diff vs the last run)"
 	@echo ""
 	@echo "Playbooks (root directory):"
 	@echo "  make site                (Auto -K; all four plays, for a rebuild or a full idempotency check)"

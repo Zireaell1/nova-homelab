@@ -22,3 +22,6 @@ venv/
 
 # eink_display Ansible role assets
 ansible/roles/eink_display/files/images/
+
+# Local caches
+.cache/
