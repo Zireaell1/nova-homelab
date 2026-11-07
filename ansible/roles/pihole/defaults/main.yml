@@ -12,6 +12,9 @@ pihole_dns_rev_servers: >-
   }}
 pihole_session_timeout: 2592000
 
+pihole_api_exclude_domains:
+  - '^connectivitycheck\.gstatic\.com$'
+
 # https://hub.docker.com/r/pihole/pihole
 # https://github.com/pi-hole/docker-pi-hole
 pihole_image: "docker.io/pihole/pihole"
