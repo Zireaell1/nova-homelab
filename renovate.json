@@ -128,10 +128,7 @@
       "matchDepNames": [
         "docker.io/library/caddy"
       ],
-      "extractVersion": "^v(?<version>.+)$",
-      "prBodyNotes": [
-        "**Version from GitHub releases:** check that the `caddy:<version>` and `caddy:<version>-builder` tags exist on Docker Hub before merging."
-      ]
+      "extractVersion": "^v(?<version>.+)$"
     }
   ]
 }
