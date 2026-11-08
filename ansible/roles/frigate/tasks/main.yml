@@ -1,4 +1,51 @@
 ---
+- name: Pull the pinned Frigate image
+  containers.podman.podman_image:
+    name: "{{ frigate_image }}:{{ frigate_version }}"
+    state: present
+  check_mode: false
+
+- name: Read the image's own nginx.conf
+  ansible.builtin.command:
+    argv:
+      - podman
+      - run
+      - --rm
+      - --pull=never
+      - --network=none
+      - --entrypoint=cat
+      - "{{ frigate_image }}:{{ frigate_version }}"
+      - /usr/local/nginx/conf/nginx.conf
+  register: frigate_nginx_stock
+  changed_when: false
+  check_mode: false
+
+- name: Patch it
+  ansible.builtin.set_fact:
+    frigate_nginx_conf: >-
+      {{ frigate_nginx_stock.stdout
+         | regex_replace('(?m)^worker_processes auto;$', 'worker_processes 4;')
+         | regex_replace('(?m)^([ \t]*)access_log /dev/stdout main;$', frigate_nginx_access_log_patch) }}
+  vars:
+    frigate_nginx_access_log_patch: |-
+      \1map $request_uri $frigate_access_log {
+      \1    ~^/api/metrics(\?|$) 0;
+      \1    default 1;
+      \1}
+      \1access_log /dev/stdout main if=$frigate_access_log;
+
+- name: Both patches applied exactly once
+  ansible.builtin.assert:
+    that:
+      - frigate_nginx_conf | regex_findall('(?m)^worker_processes 4;$') | length == 1
+      - frigate_nginx_conf | regex_findall('(?m)^[ \t]*access_log /dev/stdout main if=\$frigate_access_log;$') | length == 1
+      - frigate_nginx_conf | regex_findall('(?m)^[ \t]*access_log /dev/stdout main;$') | length == 0
+    fail_msg: >-
+      Frigate {{ frigate_version }} changed the nginx.conf lines the patch replaces
+      (worker_processes auto; / access_log /dev/stdout main;). Update the patch in
+      roles/frigate/tasks/main.yml. Nothing was deployed.
+    quiet: true
+
 - name: Deploy Frigate
   ansible.builtin.include_role:
     name: podman_service
