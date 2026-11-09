@@ -5,7 +5,7 @@ caddy_local_image: "localhost/custom-caddy"
 caddy_memory_limit: 500m
 
 # renovate: datasource=github-releases depName=docker.io/library/caddy packageName=caddyserver/caddy
-caddy_version: "2.11.7"
+caddy_version: "2.11.9"
 
 # Compiled into the image by xcaddy.
 # renovate: datasource=go depName=github.com/caddy-dns/cloudflare
