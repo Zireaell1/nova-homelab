@@ -2544,17 +2544,17 @@ groups:
                 refId: A
           noDataState: OK
           execErrState: Error
-          for: 12h
+          for: 336h
           isPaused: false
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has needed a reboot for 12 hours."
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has needed a reboot for two weeks."
             impact: "The updated kernel or libraries are not in use until it reboots."
             action: "Reboot when convenient: `sudo systemctl reboot`"
           notification_settings:
             receiver: Discord
-            repeat_interval: 48h
+            repeat_interval: 168h
             active_time_intervals:
               - renovate-days
 
