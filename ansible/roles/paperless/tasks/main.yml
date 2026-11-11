@@ -49,8 +49,6 @@
       - "{{ stacks_path }}/paperless/redis"
       - "{{ stacks_path }}/paperless/secrets"
       - "{{ stacks_path }}/paperless/data"
-      - "{{ stacks_path }}/paperless/media"
-      - "{{ stacks_path }}/paperless/export"
       - "{{ stacks_path }}/paperless/consume"
       - "{{ stacks_path }}/paperless/consume/double-sided"
     podman_service_templates:
