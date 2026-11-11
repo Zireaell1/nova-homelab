@@ -17,6 +17,8 @@ a connection every 15 s and logs the change once. A printer that comes back afte
 SCANNER_POWER_ON_SECONDS of silence was switched on, so a stack found in its feeder then is a
 new one and is scanned (load paper, press power, walk away).
 
+Every stack that does not reach Paperless is logged on a line starting "Scan failed:".
+
 Everything it touches:
   GET    <SCANNER_URL>/ScannerCapabilities, <SCANNER_URL>/ScannerStatus
   POST   <SCANNER_URL>/ScanJobs
@@ -72,6 +74,10 @@ class ScannerError(Exception):
 
 class NotStarted(ScannerError):
     """The scanner refused the job (warming up, busy): no sheet was fed, so it can be retried."""
+
+
+class Busy(ScannerError):
+    """NextDocument kept answering 503."""
 
 
 IO_ERRORS = (OSError, http.client.HTTPException)
@@ -347,11 +353,10 @@ def next_page(job: str) -> bytes | None:
         if status != 503:
             raise ScannerError(f"NextDocument answered HTTP {status}")
         time.sleep(1)
-    raise ScannerError("the scanner stayed busy (HTTP 503)")
+    raise Busy("the scanner stayed busy (HTTP 503)")
 
 
-def scan_feeder(caps: Caps) -> None:
-    settings, resolution = scan_settings(caps)
+def start_job(settings: bytes) -> str:
     try:
         status, headers, _ = request("POST", escl("ScanJobs"), settings)
     except IO_ERRORS as e:
@@ -359,12 +364,28 @@ def scan_feeder(caps: Caps) -> None:
     location = headers.get("Location")
     if status != 201 or not location:
         raise NotStarted(f"ScanJobs answered HTTP {status}")
-    job = urllib.parse.urlsplit(location).path.rstrip("/")
+    return urllib.parse.urlsplit(location).path.rstrip("/")
+
+
+def scan_feeder() -> None:
+    # Read for every scan: a printer that is still booting may answer the first read badly.
+    try:
+        caps = read_capabilities()
+    except IO_ERRORS as e:
+        raise NotStarted(str(e)) from e
+    settings, resolution = scan_settings(caps)
 
     stamp = time.strftime("%Y%m%d-%H%M%S")
     part = os.path.join(CONSUME_DIR, f"._scan-{stamp}.part")
     final = os.path.join(CONSUME_DIR, f"scan-{stamp}.pdf")
+    # The output file first: a consume folder we cannot write to must not leave a job open.
     pdf = PdfWriter(part, resolution)
+    try:
+        job = start_job(settings)
+    except BaseException:
+        pdf.abort()
+        os.unlink(part)
+        raise
     problem = None
     try:
         while len(pdf.pages) < MAX_PAGES:
@@ -391,12 +412,25 @@ def scan_feeder(caps: Caps) -> None:
             os.unlink(part)
     if isinstance(problem, Stop):
         raise problem
+    if isinstance(problem, Busy) and not pdf.pages:
+        # Nothing came out of the feeder, so the whole stack is still in it: safe to retry.
+        raise NotStarted(str(problem))
     if problem is not None:
         raise ScannerError(
             f"scan ended early after {len(pdf.pages)} page(s): {problem}"
         )
     if not pdf.pages:
         log("The feeder gave no pages")
+
+
+def remove_stale_parts() -> None:
+    """A scan killed half-way (container stopped mid-stack) leaves an unfinished file."""
+    with contextlib.suppress(OSError):
+        for name in os.listdir(CONSUME_DIR):
+            if name.startswith("._scan-") and name.endswith(".part"):
+                with contextlib.suppress(OSError):
+                    os.unlink(os.path.join(CONSUME_DIR, name))
+                    log(f"Scan failed: {name} was interrupted; scan that stack again")
 
 
 def watch() -> None:
@@ -410,38 +444,40 @@ def watch() -> None:
         f"Watching {URL.scheme}://{HOST}:{PORT}{URL.path} every {POLL_SECONDS:g} s; "
         f"scanning {SETTLE_SECONDS:g} s after paper appears in the feeder"
     )
-    caps = None
+    remove_stale_parts()
     reachable = None
     armed = False
     loaded_since = None
     adf_reported = None
     first = True
     attempts = 0
-    silent_since = None
+    # When the scanner stopped answering, and whether it answered at all since we started.
+    silent_since: float | None = None
+    answered = False
 
     while True:
         heartbeat()
         try:
-            if caps is None:
-                caps = read_capabilities()
             state, adf = read_status()
         except (*IO_ERRORS, ScannerError) as e:
             if reachable is not False:
                 log(f"Scanner unreachable (off, asleep or blocked?): {e}")
-            if silent_since is None and reachable is not None:
+            if silent_since is None:
                 silent_since = time.monotonic()
             reachable, loaded_since = False, None
             time.sleep(UNREACHABLE_POLL_SECONDS)
             continue
         if reachable is not True:
             log("Scanner reachable")
+            # Off since our start counts as off: there is no earlier stack to protect.
             was_off = reachable is False and (
-                silent_since is None
+                not answered
+                or silent_since is None
                 or time.monotonic() - silent_since >= POWER_ON_SECONDS
             )
             if was_off and POWER_ON_SECONDS > 0:
                 armed, attempts, first = True, 0, False
-            reachable, silent_since = True, None
+            reachable, silent_since, answered = True, None, True
         if (adf is not None) != adf_reported:
             adf_reported = adf is not None
             if not adf_reported:
@@ -461,11 +497,14 @@ def watch() -> None:
         elif time.monotonic() - loaded_since >= SETTLE_SECONDS:
             armed, loaded_since = False, None
             try:
-                scan_feeder(caps)
+                scan_feeder()
             except NotStarted as e:
                 attempts += 1
                 armed = attempts < START_ATTEMPTS
-                log(f"Scan not started: {e}" + ("; trying again" if armed else ""))
+                if armed:
+                    log(f"Scan not started: {e}; trying again")
+                else:
+                    log(f"Scan failed: not started after {attempts} attempts: {e}")
             except (*IO_ERRORS, ScannerError) as e:
                 log(f"Scan failed: {e}")
         first = False
