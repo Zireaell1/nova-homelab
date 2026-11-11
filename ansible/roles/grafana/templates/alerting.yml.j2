@@ -972,6 +972,32 @@ groups:
             receiver: Discord
             repeat_interval: 24h
 
+        - uid: systemd_user_unit_failed
+          title: Systemd User Unit Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 900
+                to: 0
+              datasourceUid: "{{ grafana_loki_datasource_name }}"
+              model:
+                editorMode: code
+                expr: 'sum by (host, failed_unit) (count_over_time({syslog_identifier="systemd", unit=~"user@[0-9]+\\.service"} |= ": Failed with result " | regexp "^(?P<failed_unit>\\S+): Failed with result" [15m])) > 0'
+                queryType: instant
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "User unit {{ '{{' }} $labels.failed_unit {{ '}}' }} on {{ '{{' }} $labels.host {{ '}}' }} failed in the last 15 minutes."
+            impact: "node_systemd only sees system units: rootless containers and user timers (backup, cert checks) fail silently without this."
+            action: "`systemctl --user status {{ '{{' }} $labels.failed_unit {{ '}}' }}` · `journalctl --user -u {{ '{{' }} $labels.failed_unit {{ '}}' }} -n 50` · after fixing: `systemctl --user reset-failed`"
+          notification_settings:
+            receiver: Discord
+
         - uid: log_error_burst
           title: Log Error Burst
           condition: A
@@ -2800,6 +2826,97 @@ groups:
             summary: "GPU metrics on {{ '{{' }} $labels.instance {{ '}}' }} are {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} old."
             impact: "GPU panels show frozen numbers."
             action: "`systemctl status intel-gpu-metrics` · `journalctl -u intel-gpu-metrics -n 30`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: smart_metrics_stale
+          title: SMART Metrics Have Stopped
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - node_textfile_mtime_seconds{file=~".*/smart\\.prom"} > 1800
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "smart.prom on {{ '{{' }} $labels.instance {{ '}}' }} is {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} old."
+            impact: "Every SMART alert (health, sectors, temperature) is evaluating frozen data."
+            action: "`systemctl status smartmon` · `journalctl -u smartmon -n 30` · `sudo /usr/local/bin/smartmon.sh | head`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: intel_npu_collector_stale
+          title: NPU Metrics Collector Has Stopped
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - intel_npu_collector_last_sample_timestamp_seconds > 600
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "NPU metrics on {{ '{{' }} $labels.instance {{ '}}' }} are {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} old."
+            impact: "NPU panels show frozen numbers."
+            action: "`systemctl status intel-npu-metrics` · `journalctl -u intel-npu-metrics -n 30`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: intel_npu_collector_failing
+          title: NPU Counters Unreadable
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: intel_npu_collector_success == 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 30m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The NPU collector on {{ '{{' }} $labels.instance {{ '}}' }} runs but cannot read the NPU counters."
+            impact: "NPU panels show zeros instead of real usage."
+            action: "`ls /sys/class/accel/` · `journalctl -u intel-npu-metrics -n 30` · usually the intel_vpu driver did not load after a kernel update"
           notification_settings:
             receiver: Discord
 

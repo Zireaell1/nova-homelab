@@ -100,6 +100,11 @@ loki.relabel "journal" {
     }
 
     rule {
+        source_labels = ["__journal__systemd_user_unit"]
+        target_label  = "user_unit"
+    }
+
+    rule {
         source_labels = ["__journal_syslog_identifier"]
         target_label  = "syslog_identifier"
     }

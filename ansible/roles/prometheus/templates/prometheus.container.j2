@@ -14,6 +14,7 @@ Exec=--config.file=/etc/prometheus/prometheus.yml \
      --log.level=warn \
      --storage.tsdb.path=/prometheus \
      --storage.tsdb.retention.time=60d \
+     --storage.tsdb.retention.size={{ prometheus_retention_size }} \
      --web.enable-remote-write-receiver
 
 # --- Identity / Namespaces ---
