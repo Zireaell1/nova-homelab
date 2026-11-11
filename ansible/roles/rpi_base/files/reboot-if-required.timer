@@ -1,0 +1,10 @@
+# Managed by Ansible (rpi_base).
+[Unit]
+Description=Nightly reboot check for pending upgrades
+
+[Timer]
+OnCalendar=*-*-* 04:45
+Persistent=false
+
+[Install]
+WantedBy=timers.target

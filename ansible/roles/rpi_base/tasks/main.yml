@@ -98,7 +98,7 @@
     group: root
     mode: "0755"
 
-- name: Install the wifi watchdog units
+- name: Install the wifi watchdog and nightly reboot units
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "/etc/systemd/system/{{ item }}"
@@ -108,13 +108,18 @@
   loop:
     - wifi-watchdog.service
     - wifi-watchdog.timer
+    - reboot-if-required.service
+    - reboot-if-required.timer
 
-- name: Enable the wifi watchdog timer
+- name: Enable the wifi watchdog and nightly reboot timers
   ansible.builtin.systemd:
-    name: wifi-watchdog.timer
+    name: "{{ item }}"
     enabled: true
     state: started
     daemon_reload: true
+  loop:
+    - wifi-watchdog.timer
+    - reboot-if-required.timer
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Flush rpi_base handlers

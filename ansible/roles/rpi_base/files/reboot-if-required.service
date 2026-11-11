@@ -1,0 +1,11 @@
+# Managed by Ansible (rpi_base).
+[Unit]
+Description=Reboot when an upgrade asked for it
+ConditionPathExists=/run/reboot-required
+
+[Service]
+Type=oneshot
+
+ExecCondition=/bin/sh -c 'test "$$(cut -d. -f1 /proc/uptime)" -gt 1800'
+ExecStart=/bin/sh -c 'echo "rebooting for: $$(paste -sd" " /run/reboot-required.pkgs 2>/dev/null)"'
+ExecStart=/usr/bin/systemctl reboot
