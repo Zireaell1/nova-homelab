@@ -90,7 +90,8 @@
 			"**/.jj": true,
 			"**/.DS_Store": true,
 			"**/Thumbs.db": true,
-			"**/.ansible": true
+			"**/.ansible": true,
+			"**/__pycache__": true
 		},
 		"search.exclude": {
 			"**/node_modules": true,
