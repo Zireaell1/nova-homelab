@@ -188,6 +188,12 @@ check_b2_repo_identity() {
 stop_services() {
     local svc
     for svc in "${SERVICES_TO_STOP[@]}"; do
+        # Stopped by hand (or failed) before the backup: snapshot it as it is and leave it stopped.
+        case "$(systemctl --user is-active "$svc" 2>/dev/null)" in
+            inactive|failed)
+                log "${svc} is not running; left alone."
+                continue ;;
+        esac
         log "Stopping ${svc}"
         if systemctl --user stop "$svc"; then
             STOPPED+=("$svc")
