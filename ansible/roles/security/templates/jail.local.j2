@@ -13,4 +13,4 @@ enabled   = true
 port      = 80,443
 banaction = %(banaction_allports)s
 backend   = systemd
-filter    = vaultwarden[journalmatch='_SYSTEMD_UNIT=vaultwarden.service']
+filter    = vaultwarden[journalmatch='CONTAINER_NAME=vaultwarden']
