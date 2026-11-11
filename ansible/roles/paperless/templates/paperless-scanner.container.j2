@@ -37,6 +37,8 @@ Network=paperless-scanner.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 EnvironmentFile={{ stacks_path }}/paperless/paperless-scanner.env
 
 HealthCmd=["python3", "-I", "/app/paperless_scanner.py", "--healthcheck"]

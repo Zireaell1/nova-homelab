@@ -34,6 +34,8 @@ Network=paperless-backend.network
 # --- Configuration / Env ---
 Timezone={{ timezone }}
 
+Environment=TZ={{ timezone }}
+
 HealthCmd=["valkey-cli", "ping"]
 HealthInterval=60s
 HealthTimeout=10s
