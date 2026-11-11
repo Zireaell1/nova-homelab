@@ -23,6 +23,7 @@ podman_networks:
   - { name: prometheus, id: 18, caddy: true, egress: false }
   - { name: loki, id: 19, caddy: true, egress: false }
   - { name: grafana, id: 20, caddy: true }
+  - { name: paperless, id: 21, caddy: true }
   # Backends
   - { name: authelia-backend, id: 30, internal: true, ifname: pn-authelia-be }
   - { name: immich-backend, id: 31, internal: true, ifname: pn-immich-be }
@@ -30,6 +31,8 @@ podman_networks:
   - { name: home, id: 33, internal: true }
   - { name: openrgb, id: 34, internal: true }
   - { name: nut-exporter, id: 35 }
+  - { name: paperless-backend, id: 36, internal: true, ifname: pn-paperless-be }
+  - { name: paperless-scanner, id: 37, ifname: pn-paperless-sc }
 
 # Caddy's address on each front door, e.g. podman_caddy_ips['grafana'] -> 10.89.20.2.
 # The one source for every "trusted proxy" setting.

@@ -45,3 +45,15 @@ backup_targets:
       - "{{ immich_path }}/data/upload"
       - "{{ immich_path }}/data/profile"
       - "{{ immich_path }}/data/backups"
+  - name: paperless
+    stop: true
+    paths:
+      - "{{ stacks_path }}/paperless/media"
+      - "{{ stacks_path }}/paperless/data"
+    excludes:
+      - "{{ stacks_path }}/paperless/data/index"
+      - "{{ stacks_path }}/paperless/data/log"
+  - name: paperless-postgres
+    stop: true
+    paths:
+      - "{{ stacks_path }}/paperless/postgres"

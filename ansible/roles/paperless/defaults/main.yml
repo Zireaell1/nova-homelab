@@ -1,0 +1,65 @@
+---
+paperless_memory_limit: "3g"
+
+# https://github.com/paperless-ngx/paperless-ngx
+paperless_image: "ghcr.io/paperless-ngx/paperless-ngx"
+paperless_local_image: "localhost/custom-paperless"
+
+# renovate: datasource=docker depName=paperless packageName=ghcr.io/paperless-ngx/paperless-ngx
+paperless_version: "3.3.4"
+
+paperless_ocr_extra_languages:
+  - pol
+
+paperless_ocr_language: "pol+eng"
+
+paperless_task_workers: 2
+paperless_threads_per_worker: 2
+
+paperless_oidc_superuser_group: "admin"
+
+paperless_socialaccount_providers:
+  openid_connect:
+    SCOPE: ["openid", "profile", "email", "groups"]
+    OAUTH_PKCE_ENABLED: true
+    APPS:
+      - provider_id: "authelia"
+        name: "Authelia"
+        client_id: "{{ vault_authelia_paperless_client_id }}"
+        secret: "{{ vault_authelia_paperless_client_secret }}"
+        settings:
+          server_url: "https://{{ service_endpoints['authelia']['subdomain'] }}.{{ vault_domain }}"
+          token_auth_method: "client_secret_basic"
+
+paperless_postgres_memory_limit: "500m"
+
+# https://hub.docker.com/_/postgres
+paperless_postgres_image: "docker.io/library/postgres"
+
+# renovate: datasource=docker depName=paperless-postgres packageName=docker.io/library/postgres
+paperless_postgres_version: "18.6"
+
+paperless_redis_memory_limit: "250m"
+
+# https://hub.docker.com/r/valkey/valkey
+paperless_redis_image: "docker.io/valkey/valkey"
+
+# renovate: datasource=docker depName=paperless-redis packageName=docker.io/valkey/valkey
+paperless_redis_version: "9.1.3-alpine"
+
+paperless_scanner_memory_limit: "128m"
+
+# https://hub.docker.com/_/python
+paperless_scanner_image: "docker.io/library/python"
+
+# renovate: datasource=docker depName=paperless-scanner-python packageName=docker.io/library/python
+paperless_scanner_version: "3.15.2-alpine"
+
+paperless_scanner_url: "https://{{ vault_scanner_ip }}:443/eSCL"
+
+paperless_scanner_poll_seconds: 3
+paperless_scanner_settle_seconds: 10
+paperless_scanner_power_on_seconds: 60
+
+paperless_scanner_resolution: 300
+paperless_scanner_color_mode: "RGB24"

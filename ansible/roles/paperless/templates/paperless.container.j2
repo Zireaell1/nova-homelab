@@ -1,0 +1,67 @@
+[Unit]
+Description=Paperless-ngx
+Documentation=https://docs.paperless-ngx.com/
+
+Wants=paperless-postgres.service paperless-redis.service
+After=paperless-postgres.service paperless-redis.service
+
+RequiresMountsFor={{ stacks_path }}/paperless/media
+
+[Container]
+# --- Image / Exec ---
+Image={{ paperless_local_image }}:{{ paperless_version }}
+ContainerName=paperless
+StopTimeout=60
+
+# --- Identity / Namespaces ---
+User=1000:1000
+UserNS=keep-id:uid=1000,gid=1000
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+
+# --- Resource Limits ---
+Memory={{ paperless_memory_limit }}
+
+# --- Storage ---
+Volume={{ stacks_path }}/paperless/data:/usr/src/paperless/data:Z
+Volume={{ stacks_path }}/paperless/media:/usr/src/paperless/media:Z
+Volume={{ stacks_path }}/paperless/export:/usr/src/paperless/export:Z
+# Shared with paperless-scanner
+Volume={{ stacks_path }}/paperless/consume:/usr/src/paperless/consume:z
+Volume={{ stacks_path }}/paperless/secrets:/secrets:ro,Z
+
+# --- Networking ---
+Network=paperless.network
+Network=paperless-backend.network
+
+AddHost={{ service_endpoints['authelia']['subdomain'] }}.{{ vault_domain }}:{{ host_svc_address }}
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+Environment=TZ={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/paperless/paperless.env
+
+Environment=PAPERLESS_SECRET_KEY_FILE=/secrets/SECRET_KEY
+Environment=PAPERLESS_DBPASS_FILE=/secrets/DBPASS
+Environment=PAPERLESS_SOCIALACCOUNT_PROVIDERS_FILE=/secrets/SOCIALACCOUNT_PROVIDERS
+
+HealthCmd=["curl", "-fsS", "-L", "--max-time", "5", "-o", "/dev/null", "http://localhost:8000"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=180s
+
+[Service]
+Restart=always
+RestartSec=10
+TimeoutStartSec=900
+TimeoutStopSec=70
+
+CPUWeight=50
+
+[Install]
+WantedBy=default.target

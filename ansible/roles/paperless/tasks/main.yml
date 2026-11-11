@@ -1,0 +1,83 @@
+---
+- name: Verify Paperless build and scanner directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+  loop:
+    - "{{ stacks_path }}/paperless"
+    - "{{ stacks_path }}/paperless/build"
+    - "{{ stacks_path }}/paperless/scanner"
+
+- name: Upload Containerfile
+  ansible.builtin.template:
+    src: "Containerfile.j2"
+    dest: "{{ stacks_path }}/paperless/build/Containerfile"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  register: paperless_containerfile
+
+- name: Build Paperless image with the extra OCR languages
+  containers.podman.podman_image:
+    name: custom-paperless
+    tag: "{{ paperless_version }}"
+    path: "{{ stacks_path }}/paperless/build"
+    force: "{{ paperless_containerfile is changed }}"
+  register: paperless_image_build
+
+- name: Deploy the scanner bridge
+  ansible.builtin.copy:
+    src: paperless_scanner.py
+    dest: "{{ stacks_path }}/paperless/scanner/paperless_scanner.py"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  register: paperless_scanner_script
+
+- name: Deploy Paperless
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: paperless
+    podman_service_dirs:
+      - "{{ stacks_path }}/paperless"
+      - "{{ stacks_path }}/paperless/postgres"
+      - "{{ stacks_path }}/paperless/pgsecrets"
+      - "{{ stacks_path }}/paperless/redis"
+      - "{{ stacks_path }}/paperless/secrets"
+      - "{{ stacks_path }}/paperless/data"
+      - "{{ stacks_path }}/paperless/media"
+      - "{{ stacks_path }}/paperless/export"
+      - "{{ stacks_path }}/paperless/consume"
+      - "{{ stacks_path }}/paperless/consume/double-sided"
+    podman_service_templates:
+      - src: paperless.env.j2
+        dest: "{{ stacks_path }}/paperless/paperless.env"
+        mode: "0644"
+      - src: paperless-scanner.env.j2
+        dest: "{{ stacks_path }}/paperless/paperless-scanner.env"
+        mode: "0644"
+    podman_service_secrets:
+      - content: "{{ vault_paperless_secret_key }}"
+        dest: "{{ stacks_path }}/paperless/secrets/SECRET_KEY"
+      - content: "{{ vault_paperless_storage_password }}"
+        dest: "{{ stacks_path }}/paperless/secrets/DBPASS"
+      - content: "{{ vault_paperless_storage_password }}"
+        dest: "{{ stacks_path }}/paperless/pgsecrets/DBPASS"
+      - content: "{{ paperless_socialaccount_providers | to_json }}"
+        dest: "{{ stacks_path }}/paperless/secrets/SOCIALACCOUNT_PROVIDERS"
+    podman_service_quadlets:
+      - paperless-postgres.container
+      - paperless-redis.container
+      - paperless.container
+      - paperless-scanner.container
+    podman_service_images:
+      - "{{ paperless_postgres_image }}:{{ paperless_postgres_version }}"
+      - "{{ paperless_redis_image }}:{{ paperless_redis_version }}"
+      - "{{ paperless_scanner_image }}:{{ paperless_scanner_version }}"
+    podman_service_changed_extra: >-
+      {{ (paperless_containerfile is changed) or (paperless_image_build is changed)
+         or (paperless_scanner_script is changed) }}

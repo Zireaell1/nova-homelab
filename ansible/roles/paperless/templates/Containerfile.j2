@@ -1,0 +1,8 @@
+FROM {{ paperless_image }}:{{ paperless_version }}
+
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+{% for lang in paperless_ocr_extra_languages %}
+        tesseract-ocr-{{ lang }} \
+{% endfor %}
+    && rm -rf /var/lib/apt/lists/*

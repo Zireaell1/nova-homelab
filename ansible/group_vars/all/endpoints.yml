@@ -17,6 +17,7 @@ service_endpoints:
   pihole: { subdomain: pihole }
   files: { subdomain: files }
   immich: { subdomain: immich }
+  paperless: { subdomain: paperless }
   camera_doorbell: { subdomain: camera-doorbell }
   camera_front: { subdomain: camera-front }
   camera_back: { subdomain: camera-back }

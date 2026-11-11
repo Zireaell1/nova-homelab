@@ -1,0 +1,55 @@
+[Unit]
+Description=Paperless Valkey (task broker)
+
+RequiresMountsFor={{ stacks_path }}/paperless/redis
+
+[Container]
+# --- Image / Exec ---
+Image={{ paperless_redis_image }}:{{ paperless_redis_version }}
+ContainerName=paperless-redis
+StopTimeout=20
+
+Exec=valkey-server --save 60 1 --loglevel warning
+
+Notify=healthy
+
+# --- Identity / Namespaces ---
+User=999:999
+UserNS=keep-id:uid=999,gid=999
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+DNS=none
+
+# --- Resource Limits ---
+Memory={{ paperless_redis_memory_limit }}
+
+# --- Storage ---
+Volume={{ stacks_path }}/paperless/redis:/data:Z
+
+# --- Networking ---
+Network=paperless-backend.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+HealthCmd=["valkey-cli", "ping"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
+HealthStartupCmd=["valkey-cli", "ping"]
+HealthStartupInterval=2s
+HealthStartupTimeout=5s
+HealthStartupSuccess=1
+
+[Service]
+Restart=always
+RestartSec=10
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

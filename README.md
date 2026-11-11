@@ -57,6 +57,11 @@ Here is a complete list of the services currently managed by Ansible (primarily 
 | :--- | :--- |
 | **[Immich](https://immich.app/)** | Self-hosted photo and video library; machine learning on the iGPU via OpenVINO, Quick Sync transcoding. |
 
+### Documents
+| Service | Description |
+| :--- | :--- |
+| **[Paperless-ngx](https://docs.paperless-ngx.com/)** | Document archive with OCR (Polish + English) and Authelia login; a small eSCL bridge scans whatever lands in the printer's document feeder straight into it. |
+
 ### Observability
 | Service | Description |
 | :--- | :--- |

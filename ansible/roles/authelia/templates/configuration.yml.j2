@@ -163,6 +163,13 @@ access_control:
         - 'internal'
         - 'tailscale'
 
+    # Paperless logs in through OIDC itself
+    - domain: '{{ service_endpoints['paperless']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'bypass'
+      networks:
+        - 'internal'
+        - 'tailscale'
+
     # ===============================================================================
     # User Services
     # ===============================================================================
@@ -274,7 +281,6 @@ notifier:
 ntp:
   disable_startup_check: true
 
-# TODO: future paperless-ngx OIDC config
 identity_providers:
   oidc:
     authorization_policies:
@@ -294,10 +300,11 @@ identity_providers:
         client_secret: {{ '{{ secret "/secrets/PAPERLESS_CLIENT_SECRET" | msquote }}' }}
         public: false
         authorization_policy: 'two_factor'
+        consent_mode: 'implicit'
         require_pkce: true
         pkce_challenge_method: 'S256'
         redirect_uris:
-          - 'https://paperless.{{ vault_domain }}/accounts/oidc/authelia/login/callback/'
+          - 'https://{{ service_endpoints['paperless']['subdomain'] }}.{{ vault_domain }}/accounts/oidc/authelia/login/callback/'
         scopes:
           - 'openid'
           - 'profile'

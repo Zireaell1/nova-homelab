@@ -16,6 +16,7 @@ vault_discord_webhook_url: "" # [ext] Discord channel -> Integrations -> Webhook
 
 # Network
 vault_primary_ip: "" # [site]
+vault_scanner_ip: "" # [site]
 vault_secondary_ip: "" # [site]
 
 vault_dashboard_tablet_ip: "" # [site]
@@ -44,6 +45,10 @@ vault_modem_admin_password: "" # [ext] the modem web panel's admin password (rea
 
 # Immich
 vault_immich_storage_password: "" # [keep] Postgres was initialised with it; letters and digits only (Immich rejects others)
+
+# Paperless
+vault_paperless_secret_key: "" # [gen]
+vault_paperless_storage_password: "" # [keep]
 
 # E-ink display (an Authelia user: its hash lives in vault_authelia_users_database)
 vault_eink_display_username: "" # [pair:authelia-users]
@@ -120,8 +125,11 @@ vault_authelia_redis_password: "" # [gen]
 vault_authelia_storage_encryption_key: "" # [keep] the Authelia DB (TOTP, WebAuthn) is encrypted with it
 vault_authelia_storage_password: "" # [keep] Postgres was initialised with it
 
-vault_authelia_paperless_client_id: "" # [gen] OIDC client for Paperless (not deployed yet)
-vault_authelia_paperless_client_secret: "" # [gen]
+# One command prints the secret pair (Random Password = the secret, Digest = its digest):
+#   podman exec authelia authelia crypto hash generate pbkdf2 --variant sha512 --random --random.length 72 --random.charset rfc3986
+vault_authelia_paperless_client_id: "" # [gen] OIDC client for Paperless
+vault_authelia_paperless_client_secret: "" # [pair:paperless-oidc] the plaintext; read by Paperless
+vault_authelia_paperless_client_secret_digest: "" # [pair:paperless-oidc] the $pbkdf2-sha512$... digest; read by Authelia
 
 vault_authelia_users_database: "" # [keep] every user's argon2 hash, including the [pair:authelia-users] accounts
 

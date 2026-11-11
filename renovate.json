@@ -74,6 +74,28 @@
       "enabled": false
     },
     {
+      "description": "Paperless's Postgres: a major bump needs a dump + restore (the data directory is version-bound). Patch/minor only.",
+      "matchDepNames": [
+        "paperless-postgres"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Paperless majors change settings and migrate the database one way",
+      "matchDepNames": [
+        "paperless"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "prBodyNotes": [
+        "**Before merging:** read the migration guide for this major (https://docs.paperless-ngx.com/). The database migration cannot be rolled back: the nightly backup is the way back."
+      ]
+    },
+    {
       "description": "Immich PRs: the DB/cache pins may have to move with the release",
       "matchDepNames": [
         "immich",

@@ -60,6 +60,8 @@
       tags: ["homepage", "services"]
     - role: immich
       tags: ["immich", "services"]
+    - role: paperless
+      tags: ["paperless", "services"]
 
     # --- Access control ---
     - role: authelia

@@ -1,0 +1,62 @@
+[Unit]
+Description=Paperless PostgreSQL
+
+RequiresMountsFor={{ stacks_path }}/paperless/postgres
+
+[Container]
+# --- Image / Exec ---
+Image={{ paperless_postgres_image }}:{{ paperless_postgres_version }}
+ContainerName=paperless-postgres
+StopTimeout=20
+
+Exec=postgres -c log_min_messages=WARNING -c log_checkpoints=off
+
+Notify=healthy
+
+# --- Identity / Namespaces ---
+User=999:999
+UserNS=keep-id:uid=999,gid=999
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+DNS=none
+
+# --- Resource Limits ---
+Memory={{ paperless_postgres_memory_limit }}
+
+# --- Storage ---
+Volume={{ stacks_path }}/paperless/postgres:/var/lib/postgresql:Z
+Volume={{ stacks_path }}/paperless/pgsecrets/DBPASS:/DBPASS:ro,Z
+
+# --- Networking ---
+Network=paperless-backend.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+Environment=TZ={{ timezone }}
+
+Environment=POSTGRES_USER=paperless
+Environment=POSTGRES_DB=paperless
+Environment=POSTGRES_PASSWORD_FILE=/DBPASS
+
+HealthCmd=["pg_isready", "-q", "-h", "127.0.0.1", "-U", "paperless"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=60s
+
+HealthStartupCmd=["pg_isready", "-q", "-h", "127.0.0.1", "-U", "paperless"]
+HealthStartupInterval=2s
+HealthStartupTimeout=5s
+HealthStartupSuccess=1
+
+[Service]
+Restart=always
+RestartSec=10
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

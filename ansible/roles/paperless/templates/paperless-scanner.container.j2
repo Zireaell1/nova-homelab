@@ -1,0 +1,57 @@
+[Unit]
+Description=Paperless scanner bridge (eSCL document feeder)
+
+RequiresMountsFor={{ stacks_path }}/paperless/consume
+
+[Container]
+# --- Image / Exec ---
+Image={{ paperless_scanner_image }}:{{ paperless_scanner_version }}
+ContainerName=paperless-scanner
+StopTimeout=20
+
+Exec=python3 -I -u /app/paperless_scanner.py
+
+# --- Identity / Namespaces ---
+User=1000:1000
+UserNS=keep-id:uid=1000,gid=1000
+
+# --- Security / Capabilities ---
+DropCapability=all
+NoNewPrivileges=true
+ReadOnly=true
+DNS=none
+
+# --- Resource Limits ---
+Memory={{ paperless_scanner_memory_limit }}
+
+# --- Storage ---
+Tmpfs=/tmp:rw,size=16m,mode=1777
+
+Volume={{ stacks_path }}/paperless/scanner:/app:ro,Z
+# Shared with paperless
+Volume={{ stacks_path }}/paperless/consume:/consume:z
+
+# --- Networking ---
+Network=paperless-scanner.network
+
+# --- Configuration / Env ---
+Timezone={{ timezone }}
+
+EnvironmentFile={{ stacks_path }}/paperless/paperless-scanner.env
+
+HealthCmd=["python3", "-I", "/app/paperless_scanner.py", "--healthcheck"]
+HealthInterval=60s
+HealthTimeout=10s
+HealthRetries=3
+HealthStartPeriod=30s
+
+[Service]
+Restart=always
+RestartSec=10
+TimeoutStartSec=900
+TimeoutStopSec=30
+
+CPUWeight=25
+
+[Install]
+WantedBy=default.target

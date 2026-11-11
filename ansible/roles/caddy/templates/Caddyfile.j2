@@ -258,6 +258,14 @@ http:// {
 	reverse_proxy immich:2283
 }
 
+{{ service_endpoints['paperless']['subdomain'] }}.{{ vault_domain }} {
+	import standard
+	import secure_headers
+
+	import authelia_middleware_basic
+	reverse_proxy paperless:8000
+}
+
 {{ service_endpoints['pihole']['subdomain'] }}.{{ vault_domain }} {
 	import standard
 	import secure_headers
