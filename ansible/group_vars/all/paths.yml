@@ -20,6 +20,7 @@ user_units_path: "{{ user_config_path }}/systemd/user"
 
 monitoring_path: "/srv/monitoring"
 immich_path: "/srv/immich"
+paperless_path: "/srv/paperless"
 
 backup_mount: "/mnt/backup"
 frigate_mount: "/mnt/frigate"

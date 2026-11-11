@@ -40,6 +40,11 @@ hardware_target_lvs:
     mount_path: "{{ immich_path }}"
     manage_fs_and_mount: true
     rootless: true
+  - name: paperless
+    size: 20g
+    mount_path: "{{ paperless_path }}"
+    manage_fs_and_mount: true
+    rootless: true
 
 hardware_vg_name: "fedora_{{ nova_hostname }}"
 

@@ -48,7 +48,7 @@ backup_targets:
   - name: paperless
     stop: true
     paths:
-      - "{{ stacks_path }}/paperless/media"
+      - "{{ paperless_path }}/media"
       - "{{ stacks_path }}/paperless/data"
     excludes:
       - "{{ stacks_path }}/paperless/data/index"

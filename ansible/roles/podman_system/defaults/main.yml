@@ -2,3 +2,5 @@
 podman_system_container_paths:
   - "{{ frigate_storage_path }}"
   - "{{ immich_path }}/data"
+  - "{{ paperless_path }}/media"
+  - "{{ paperless_path }}/export"

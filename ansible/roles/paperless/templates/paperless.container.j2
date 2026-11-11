@@ -5,7 +5,7 @@ Documentation=https://docs.paperless-ngx.com/
 Wants=paperless-postgres.service paperless-redis.service
 After=paperless-postgres.service paperless-redis.service
 
-RequiresMountsFor={{ stacks_path }}/paperless/media
+RequiresMountsFor={{ paperless_path }}
 
 [Container]
 # --- Image / Exec ---
@@ -20,14 +20,15 @@ UserNS=keep-id:uid=1000,gid=1000
 # --- Security / Capabilities ---
 DropCapability=all
 NoNewPrivileges=true
+SecurityLabelLevel=s0:c102,c202
 
 # --- Resource Limits ---
 Memory={{ paperless_memory_limit }}
 
 # --- Storage ---
 Volume={{ stacks_path }}/paperless/data:/usr/src/paperless/data:Z
-Volume={{ stacks_path }}/paperless/media:/usr/src/paperless/media:Z
-Volume={{ stacks_path }}/paperless/export:/usr/src/paperless/export:Z
+Volume={{ paperless_path }}/media:/usr/src/paperless/media
+Volume={{ paperless_path }}/export:/usr/src/paperless/export
 # Shared with paperless-scanner
 Volume={{ stacks_path }}/paperless/consume:/usr/src/paperless/consume:z
 Volume={{ stacks_path }}/paperless/secrets:/secrets:ro,Z
