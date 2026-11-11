@@ -1,0 +1,63 @@
+---
+# Renders every roles/*/templates/*.sh.j2 so CI can shellcheck what actually lands on the hosts.
+#
+# Output: <repo>/.cache/render, emptied on every run.
+#
+#   cd ansible && uv run ansible-playbook ../scripts/ci/render_scripts.yml
+#   shellcheck -S warning ../.cache/render/*.sh
+
+- name: Render templated shell scripts for shellcheck
+  hosts: nova
+  connection: local
+  gather_facts: false
+  vars:
+    ansible_user: ci
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    render_dest: "{{ playbook_dir }}/../../.cache/render"
+    render_roles: "{{ playbook_dir }}/../../ansible/roles"
+  tasks:
+    - name: Find the role defaults
+      ansible.builtin.find:
+        paths: "{{ render_roles }}"
+        patterns: main.yml
+        recurse: true
+        depth: 3
+      register: render_defaults
+
+    - name: Load every role's defaults
+      ansible.builtin.include_vars:
+        file: "{{ item }}"
+      loop: "{{ render_defaults.files | map(attribute='path') | select('search', '/defaults/main\\.yml$') | sort }}"
+
+    - name: Find the templated scripts
+      ansible.builtin.find:
+        paths: "{{ render_roles }}"
+        patterns: "*.sh.j2"
+        recurse: true
+        depth: 3
+      register: render_scripts
+
+    - name: Refuse to pass on nothing
+      ansible.builtin.assert:
+        that: render_scripts.matched > 0
+        quiet: true
+
+    - name: Remove the previous render (a deleted template must not leave its script behind)
+      ansible.builtin.file:
+        path: "{{ render_dest }}"
+        state: absent
+
+    - name: Create the output directory
+      ansible.builtin.file:
+        path: "{{ render_dest }}"
+        state: directory
+        mode: "0755"
+
+    - name: Render
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "{{ render_dest }}/{{ item | dirname | dirname | basename }}__{{ item | basename | regex_replace('\\.j2$', '') }}"
+        mode: "0644"
+      loop: "{{ render_scripts.files | map(attribute='path') | sort }}"
+      loop_control:
+        label: "{{ item | dirname | dirname | basename }}/{{ item | basename }}"

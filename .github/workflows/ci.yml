@@ -73,5 +73,13 @@ jobs:
       - name: shellcheck role scripts
         run: shellcheck ansible/roles/*/files/*.sh
 
+      - name: Render and shellcheck templated scripts
+        working-directory: ansible
+        env:
+          ANSIBLE_DIFF_ALWAYS: "false"
+        run: |
+          ansible-playbook ../scripts/ci/render_scripts.yml
+          shellcheck -S warning ../.cache/render/*.sh
+
       - name: Structural checks
         run: python scripts/ci/run.py

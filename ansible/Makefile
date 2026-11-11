@@ -73,6 +73,8 @@ lint:
 	uv run ansible-lint
 	uv run yamllint -c .yamllint -s . ../.github/
 	shellcheck roles/*/files/*.sh
+	ANSIBLE_DIFF_ALWAYS=false uv run ansible-playbook ../scripts/ci/render_scripts.yml
+	shellcheck -S warning ../.cache/render/*.sh
 
 check:
 	uv run python ../scripts/ci/run.py
