@@ -7,6 +7,8 @@ Image={{ immich_redis_image }}:{{ immich_redis_version }}
 ContainerName=immich-redis
 StopTimeout=20
 
+Notify=healthy
+
 Exec=valkey-server --save "" --appendonly no --loglevel warning
 
 # --- Identity / Namespaces ---
@@ -34,6 +36,11 @@ HealthInterval=60s
 HealthTimeout=10s
 HealthRetries=3
 HealthStartPeriod=60s
+
+HealthStartupCmd=["redis-cli", "ping"]
+HealthStartupInterval=2s
+HealthStartupTimeout=5s
+HealthStartupSuccess=1
 
 [Service]
 Restart=always

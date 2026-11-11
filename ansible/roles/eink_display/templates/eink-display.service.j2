@@ -1,7 +1,6 @@
 [Unit]
 Description=Nova eink display
-StartLimitIntervalSec=300
-StartLimitBurst=5
+StartLimitIntervalSec=0
 
 [Service]
 Type=exec
@@ -20,6 +19,8 @@ StateDirectory=eink-display
 
 Restart=always
 RestartSec=10
+RestartSteps=6
+RestartMaxDelaySec=10min
 
 TimeoutStopSec=30
 

@@ -9,6 +9,8 @@ Image={{ immich_postgres_image }}:{{ immich_postgres_version }}
 ContainerName=immich-postgres
 StopTimeout=20
 
+Notify=healthy
+
 # --- Identity / Namespaces ---
 User=999:999
 UserNS=keep-id:uid=999,gid=999
@@ -44,6 +46,11 @@ HealthInterval=60s
 HealthTimeout=10s
 HealthRetries=3
 HealthStartPeriod=60s
+
+HealthStartupCmd=["pg_isready", "-q", "-h", "127.0.0.1", "-U", "postgres"]
+HealthStartupInterval=2s
+HealthStartupTimeout=5s
+HealthStartupSuccess=1
 
 [Service]
 Restart=always
