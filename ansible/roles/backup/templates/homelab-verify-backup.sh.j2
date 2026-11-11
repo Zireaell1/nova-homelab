@@ -7,7 +7,7 @@
 #
 # * restic dump latest <canary.txt> --no-cache --no-lock   (repository rclone:<b2>/homelab)
 #       : The canary timestamp from the newest snapshot, straight from B2. Fresh = tonight's data arrived and is readable.
-# * restic check --no-lock --read-data-subset=<5%>         (only on backup_verify_b2_check_weekday, Sunday)
+# * restic check --no-lock --read-data-subset=<4G>         (only on backup_verify_b2_check_weekday, Sunday)
 #       : Structure, every index, and a random share of the data packs of the B2 copy itself.
 #
 # Environment: RESTIC_PASSWORD_FILE, RESTIC_REPOSITORY, XDG_CONFIG_HOME (rclone.conf).
@@ -97,6 +97,10 @@ homelab_backup_verify_success $SUCCESS
 # HELP homelab_backup_verify_canary_age_seconds Age of the canary file retrieved directly from cloud B2
 # TYPE homelab_backup_verify_canary_age_seconds gauge
 homelab_backup_verify_canary_age_seconds $CANARY_AGE
+
+# HELP homelab_backup_verify_canary_timestamp_seconds When the canary retrieved from cloud B2 was written (0 = not retrieved)
+# TYPE homelab_backup_verify_canary_timestamp_seconds gauge
+homelab_backup_verify_canary_timestamp_seconds $CANARY_TIMESTAMP
 
 # HELP homelab_backup_verify_duration_seconds Time taken to run the cloud verification script
 # TYPE homelab_backup_verify_duration_seconds gauge

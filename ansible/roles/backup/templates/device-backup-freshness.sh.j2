@@ -68,7 +68,7 @@ emit_repos() {
         REPO_COUNT=$((REPO_COUNT + 1))
 
         newest="$(find "${repo}/snapshots" -type f -printf '%T@\n' 2>/dev/null \
-            | sort -rn | head -n1 | cut -d. -f1)" || newest=""
+            | awk '$1 > m { m = $1 } END { if (NR) printf "%.0f\n", int(m) }')" || newest=""
         [ -n "$newest" ] || newest=0
 
         count="$(find "${repo}/snapshots" -type f 2>/dev/null | wc -l)" || count=0

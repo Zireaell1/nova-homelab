@@ -19,4 +19,4 @@ backup_rclone_retries: 5
 backup_rclone_retries_sleep: "2m"
 
 backup_verify_b2_check_weekday: 7
-backup_verify_b2_read_subset: "5%"
+backup_verify_b2_read_subset: "4G"

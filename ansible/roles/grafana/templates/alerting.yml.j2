@@ -1884,6 +1884,36 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: backup_incomplete
+          title: Backup Snapshot Incomplete
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: homelab_backup_incomplete == 1
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Last night's snapshot was saved and synced, but restic could not read some files."
+            impact: "Those files are missing from the restore point (and from B2)."
+            action: "`journalctl --user -u homelab-backup.service | grep -i 'error\\|denied'` · usually an SELinux label or permission on a newly added path"
+          notification_settings:
+            receiver: Discord
+
         - uid: backup_cloud_sync_failed
           title: Cloud Sync Failed
           condition: A
@@ -2004,6 +2034,36 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: backup_b2_check_stale
+          title: Weekly B2 Check Has Not Run
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: time() - homelab_backup_b2_check_timestamp_seconds > 691200
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "The weekly restic check of the B2 copy last ran {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} ago."
+            impact: "Corruption in the offsite copy would go unnoticed."
+            action: "`systemctl --user list-timers homelab-verify-backup.timer` · `journalctl --user -u homelab-verify-backup.service -n 100`"
+          notification_settings:
+            receiver: Discord
+
         - uid: backup_canary_ageing
           title: Cloud Canary Ageing
           condition: A
@@ -2015,7 +2075,7 @@ groups:
               datasourceUid: "{{ grafana_prometheus_datasource_name }}"
               model:
                 editorMode: code
-                expr: homelab_backup_verify_canary_age_seconds > 86400
+                expr: time() - max_over_time(homelab_backup_verify_canary_timestamp_seconds[3d]) > 129600
                 instant: true
                 intervalMs: 1000
                 legendFormat: __auto

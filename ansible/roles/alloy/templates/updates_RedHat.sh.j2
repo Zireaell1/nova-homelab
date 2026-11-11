@@ -117,7 +117,7 @@ except Exception:
 read_cache_timestamp() {
     local newest
     newest="$(find /var/cache/libdnf5 /var/cache/dnf -maxdepth 4 -name 'repomd.xml' -printf '%T@\n' 2>/dev/null \
-        | sort -rn | head -n1 | cut -d. -f1)" || newest=""
+        | awk '$1 > m { m = $1 } END { if (NR) printf "%.0f\n", int(m) }')" || newest=""
     if [ -n "$newest" ]; then
         CACHE_TIMESTAMP="$newest"
     fi

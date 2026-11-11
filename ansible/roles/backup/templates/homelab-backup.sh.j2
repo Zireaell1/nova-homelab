@@ -62,6 +62,7 @@ GLOBAL_SUCCESS=1
 RCLONE_SUCCESS=1
 PRUNE_SUCCESS=1
 QUOTA_EXCEEDED=0
+BACKUP_INCOMPLETE=0
 REPO_MISMATCH=0
 INTERRUPTED=0
 
@@ -254,6 +255,10 @@ write_metrics() {
 # HELP homelab_backup_success Whether the local Restic backup succeeded (1) or failed (0)
 # TYPE homelab_backup_success gauge
 homelab_backup_success $GLOBAL_SUCCESS
+
+# HELP homelab_backup_incomplete Whether restic exited 3: the snapshot was saved but some source files could not be read
+# TYPE homelab_backup_incomplete gauge
+homelab_backup_incomplete $BACKUP_INCOMPLETE
 
 # HELP homelab_backup_cloud_sync_success Whether the Rclone cloud sync succeeded (1) or failed (0)
 # TYPE homelab_backup_cloud_sync_success gauge
@@ -468,7 +473,13 @@ restic backup \
     --files-from "$INCLUDE_FILE" \
     --exclude-file "$EXCLUDE_FILE" \
     --compression max \
-    --verbose=1 || GLOBAL_SUCCESS=0
+    --verbose=1 || {
+    case $? in
+        3) warn "Snapshot is incomplete: some files could not be read (see above)."
+           BACKUP_INCOMPLETE=1 ;;
+        *) GLOBAL_SUCCESS=0 ;;
+    esac
+}
 
 LOCAL_BACKUP_DURATION=$(( $(date +%s) - LOCAL_BACKUP_START ))
 

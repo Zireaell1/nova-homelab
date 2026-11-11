@@ -77,5 +77,5 @@ argument_specs:
         description: Day of the week (1 = Monday, 7 = Sunday) the verify also runs restic check against B2; 0 disables it.
       backup_verify_b2_read_subset:
         type: str
-        default: "5%"
-        description: restic check --read-data-subset for that weekly B2 check (B2 download is free up to 3x the stored size a month).
+        default: "4G"
+        description: restic check --read-data-subset for the weekly B2 check. A size, not a percentage, so the download stays flat as the library grows.
