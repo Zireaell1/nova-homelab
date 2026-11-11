@@ -19,10 +19,21 @@
     state: present
     update_cache: true
 
+- name: Opt out of Tailscale's client log upload
+  ansible.builtin.lineinfile:
+    path: /etc/default/tailscaled
+    regexp: "^#?\\s*TS_NO_LOGS_NO_SUPPORT="
+    line: "TS_NO_LOGS_NO_SUPPORT=true"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  register: tailscale_env_file
+
 - name: Ensure tailscaled daemon is enabled and running
   ansible.builtin.systemd:
     name: tailscaled
-    state: started
+    state: "{{ 'restarted' if tailscale_env_file is changed else 'started' }}"
     enabled: true
 
 - name: Read Tailscale state
