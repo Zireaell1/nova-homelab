@@ -55,9 +55,6 @@
       - src: paperless.env.j2
         dest: "{{ stacks_path }}/paperless/paperless.env"
         mode: "0644"
-      - src: paperless-scanner.env.j2
-        dest: "{{ stacks_path }}/paperless/paperless-scanner.env"
-        mode: "0644"
     podman_service_secrets:
       - content: "{{ vault_paperless_secret_key }}"
         dest: "{{ stacks_path }}/paperless/secrets/SECRET_KEY"
@@ -71,11 +68,23 @@
       - paperless-postgres.container
       - paperless-redis.container
       - paperless.container
-      - paperless-scanner.container
     podman_service_images:
       - "{{ paperless_postgres_image }}:{{ paperless_postgres_version }}"
       - "{{ paperless_redis_image }}:{{ paperless_redis_version }}"
-      - "{{ paperless_scanner_image }}:{{ paperless_scanner_version }}"
     podman_service_changed_extra: >-
-      {{ (paperless_containerfile is changed) or (paperless_image_build is changed)
-         or (paperless_scanner_script is changed) }}
+      {{ (paperless_containerfile is changed) or (paperless_image_build is changed) }}
+
+- name: Deploy the scanner bridge container
+  ansible.builtin.include_role:
+    name: podman_service
+  vars:
+    podman_service_name: paperless-scanner
+    podman_service_templates:
+      - src: paperless-scanner.env.j2
+        dest: "{{ stacks_path }}/paperless/paperless-scanner.env"
+        mode: "0644"
+    podman_service_quadlets:
+      - paperless-scanner.container
+    podman_service_images:
+      - "{{ paperless_scanner_image }}:{{ paperless_scanner_version }}"
+    podman_service_changed_extra: "{{ paperless_scanner_script is changed }}"
