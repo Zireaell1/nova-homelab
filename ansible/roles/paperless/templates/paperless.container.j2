@@ -50,7 +50,7 @@ Environment=PAPERLESS_SECRET_KEY_FILE=/secrets/SECRET_KEY
 Environment=PAPERLESS_DBPASS_FILE=/secrets/DBPASS
 Environment=PAPERLESS_SOCIALACCOUNT_PROVIDERS_FILE=/secrets/SOCIALACCOUNT_PROVIDERS
 
-HealthCmd=["curl", "-fsS", "-L", "--max-time", "5", "-o", "/dev/null", "http://localhost:8000"]
+HealthCmd=["curl", "-fsS", "--max-time", "5", "-o", "/dev/null", "http://localhost:8000"]
 HealthInterval=60s
 HealthTimeout=10s
 HealthRetries=3
