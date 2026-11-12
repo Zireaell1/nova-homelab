@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Homelab backup: restic to a local repo, rclone to B2. Runs nightly from homelab-backup.timer
-# (01:00); verify and podman-prune follow through OnSuccess=/OnFailure=.
+# (01:00); verify follows through OnSuccess=, podman-prune through ExecStopPost= (success or failure).
 #
 # ==============================================================================
 # Commands used in this script, in the order they run:

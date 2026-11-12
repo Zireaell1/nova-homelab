@@ -7,8 +7,7 @@ ConditionPathIsMountPoint={{ backup_mount }}
 Wants=podman-user-wait-network-online.service
 After=podman-user-wait-network-online.service
 
-OnSuccess=homelab-verify-backup.service podman-prune.service
-OnFailure=podman-prune.service
+OnSuccess=homelab-verify-backup.service
 
 [Service]
 Type=oneshot
@@ -16,6 +15,7 @@ Type=oneshot
 ExecStartPre=-{{ user_bin_path }}/git-sync.sh
 ExecStart={{ user_bin_path }}/homelab-backup.sh
 ExecStopPost={{ user_bin_path }}/homelab-backup-result.sh
+ExecStopPost=-/usr/bin/systemctl --user start --no-block podman-prune.service
 
 StandardOutput=journal
 StandardError=journal

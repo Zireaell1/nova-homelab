@@ -16,11 +16,11 @@ vault_discord_webhook_url: "" # [ext] Discord channel -> Integrations -> Webhook
 
 # Network
 vault_primary_ip: "" # [site]
-vault_scanner_ip: "" # [site]
 vault_secondary_ip: "" # [site]
 
 vault_dashboard_tablet_ip: "" # [site]
 vault_printer_ip: "" # [site]
+vault_scanner_ip: "" # [site]
 vault_switch_ip: "" # [site]
 
 vault_camera_back_ip: "" # [site]
