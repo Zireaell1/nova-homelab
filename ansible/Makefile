@@ -3,6 +3,11 @@ ifdef t
   TAG_FLAG := --tags "$(t)"
 endif
 
+# --- SKIP TAGS (e.g., s=frigate,immich) ---
+ifdef s
+  SKIP_FLAG := --skip-tags "$(s)"
+endif
+
 # --- DRY-RUN (e.g., c=1) ---
 ifdef c
   CHECK_FLAG := --check
@@ -23,7 +28,7 @@ RESTORE_VARS := $(if $(targets),-e restore_targets=$(targets)) $(if $(snapshot),
 	$(if $(repo),-e restore_repo=$(repo)) $(if $(list),-e restore_list=true)
 
 # --- BASE COMMAND ---
-CMD = uv run ansible-playbook $(TAG_FLAG) $(CHECK_FLAG) $(BECOME_FLAG) $(EXTRA_FLAG)
+CMD = uv run ansible-playbook $(TAG_FLAG) $(SKIP_FLAG) $(CHECK_FLAG) $(BECOME_FLAG) $(EXTRA_FLAG)
 
 # --- PLAYBOOK LISTS ---
 ROOT_PLAYBOOKS := site
@@ -33,11 +38,18 @@ DIR_PLAYBOOKS := nova_system nova_services orion_system orion_services nova_upda
 
 help:
 	@echo "Usage:"
-	@echo "  make <playbook> [t=tag] [c=1] [k=1]"
+	@echo "  make <playbook> [t=tags] [s=tags] [c=1] [k=1] [e=var=value]"
+	@echo ""
+	@echo "Options:"
+	@echo "  t=a,b      only these tags (role names)"
+	@echo "  s=a,b      skip these tags"
+	@echo "  c=1        check mode (dry run, with diff)"
+	@echo "  k=1        ask for the become password (-K) on playbooks that don't already"
+	@echo "  e=k=v      extra variable"
 	@echo ""
 	@echo "Setup and checks:"
 	@echo "  make deps                (sync .venv from uv.lock, install collections into .collections)"
-	@echo "  make lint                (ansible-lint + yamllint)"
+	@echo "  make lint                (ansible-lint + yamllint + shellcheck, incl. rendered *.sh.j2)"
 	@echo "  make check               (structural checks from scripts/ci, same as CI)"
 	@echo "  make versions            (read-only; watched package versions on both hosts, diff vs the last run)"
 	@echo ""
@@ -56,6 +68,7 @@ help:
 	@echo "Examples:"
 	@echo "  make nova_services c=1                                             (dry-run all tasks)"
 	@echo "  make nova_system t=dotfiles c=1                                    (dry-run only 'dotfiles' tag)"
+	@echo "  make nova_services s=frigate,immich                                (everything except these roles)"
 	@echo "  make nova_services k=1                                             (force -K on services)"
 	@echo "  make lint check                                                    (everything CI runs, locally)"
 	@echo "  make nova_services t=grafana e=podman_service_changed_extra=true   (force a restart)"
