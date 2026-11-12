@@ -6,7 +6,7 @@ paperless_image: "ghcr.io/paperless-ngx/paperless-ngx"
 paperless_local_image: "localhost/custom-paperless"
 
 # renovate: datasource=docker depName=paperless packageName=ghcr.io/paperless-ngx/paperless-ngx
-paperless_version: "3.3.4"
+paperless_version: "3.4.2"
 
 paperless_ocr_extra_languages:
   - pol
