@@ -144,6 +144,12 @@ def first_text(root: ET.Element, name: str) -> str | None:
     return None
 
 
+FEEDER_EMPTY = "ScannerAdfEmpty"
+FEEDER_LOADED = "ScannerAdfLoaded"
+# After a scan the feeder sensor can take a moment to settle.
+AFTER_SCAN_CHECKS = 5
+
+
 def read_status() -> tuple[str | None, str | None]:
     status, _, body = request("GET", escl("ScannerStatus"))
     if status != 200:
@@ -421,6 +427,23 @@ def scan_feeder() -> None:
         )
     if not pdf.pages:
         log("The feeder gave no pages")
+    check_feeder_after_scan(len(pdf.pages))
+
+
+def check_feeder_after_scan(pages: int) -> None:
+    """A jam can end the job early without an error: only the feeder shows it."""
+    adf = None
+    for _ in range(AFTER_SCAN_CHECKS):
+        time.sleep(POLL_SECONDS)
+        with contextlib.suppress(*IO_ERRORS, ScannerError):
+            _, adf = read_status()
+            if adf == FEEDER_EMPTY:
+                return
+    if adf is not None:
+        log(
+            f"Scan failed: the feeder still reports {adf} after {pages} page(s) "
+            "(jam or misfeed?); what came through went to Paperless, scan the rest"
+        )
 
 
 def remove_stale_parts() -> None:
@@ -483,8 +506,13 @@ def watch() -> None:
             if not adf_reported:
                 log("ScannerStatus carries no AdfState: the feeder cannot be watched")
 
-        if adf != "ScannerAdfLoaded":
+        if adf is None or adf == FEEDER_EMPTY:
             armed, loaded_since, attempts = True, None, 0
+        elif adf != FEEDER_LOADED:
+            # Jam, misfeed, cover open, ...: never a reason to scan. Wait for an empty feeder.
+            if armed or loaded_since is not None:
+                log(f"Feeder reports {adf}: waiting until it is empty")
+            armed, loaded_since = False, None
         elif not armed:
             if first:
                 log("Feeder already loaded at start: left alone until emptied")
