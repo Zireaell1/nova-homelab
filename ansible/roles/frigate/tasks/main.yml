@@ -11,6 +11,7 @@
       - podman
       - run
       - --rm
+      - --name=frigate-nginx-read
       - --pull=never
       - --network=none
       - --entrypoint=cat
@@ -33,13 +34,16 @@
       \1    default 1;
       \1}
       \1access_log /dev/stdout main if=$frigate_access_log;
+      \1# 0.18.2's /auth uses $go2rtc_stream_proxy unset
+      \1uninitialized_variable_warn off;
 
-- name: Both patches applied exactly once
+- name: Every patch applied exactly once
   ansible.builtin.assert:
     that:
       - frigate_nginx_conf | regex_findall('(?m)^worker_processes 4;$') | length == 1
       - frigate_nginx_conf | regex_findall('(?m)^[ \t]*access_log /dev/stdout main if=\$frigate_access_log;$') | length == 1
       - frigate_nginx_conf | regex_findall('(?m)^[ \t]*access_log /dev/stdout main;$') | length == 0
+      - frigate_nginx_conf | regex_findall('(?m)^[ \t]*uninitialized_variable_warn off;$') | length == 1
     fail_msg: >-
       Frigate {{ frigate_version }} changed the nginx.conf lines the patch replaces
       (worker_processes auto; / access_log /dev/stdout main;). Update the patch in
