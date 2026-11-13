@@ -1002,6 +1002,58 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: paperless_scan_failed
+          title: Scan Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_loki_datasource_name }}"
+              model:
+                editorMode: code
+                expr: 'sum by (reason) (count_over_time({container="paperless-scanner"} |= "Scan failed: " | regexp "Scan failed: (?P<reason>.{1,160})" [10m])) > 0'
+                queryType: instant
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Scanner: {{ '{{' }} $labels.reason {{ '}}' }}"
+            impact: "That stack did not reach Paperless, or only part of it did."
+            action: "Check the printer, put the missing pages back in the feeder · `podman logs --since 30m paperless-scanner`"
+          notification_settings:
+            receiver: Discord
+
+        - uid: paperless_consume_failed
+          title: Paperless Import Failed
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_loki_datasource_name }}"
+              model:
+                editorMode: code
+                expr: 'sum by (reason) (count_over_time({container="paperless"} |= "[ERROR] [paperless.consumer]" | regexp "\\[paperless\\.consumer\\] (?:\\[[0-9a-f]{8}\\] )?(?P<reason>.{1,160})" [10m])) > 0'
+                queryType: instant
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Paperless: {{ '{{' }} $labels.reason {{ '}}' }}"
+            impact: "The document was not imported (duplicate, unreadable PDF, OCR error)."
+            action: "Paperless → File Tasks (failed) · `podman logs --since 30m paperless 2>&1 | grep -A5 ERROR`"
+          notification_settings:
+            receiver: Discord
+
         - uid: log_error_burst
           title: Log Error Burst
           condition: A
