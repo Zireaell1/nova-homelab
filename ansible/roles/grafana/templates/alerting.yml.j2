@@ -987,7 +987,7 @@ groups:
               datasourceUid: "{{ grafana_loki_datasource_name }}"
               model:
                 editorMode: code
-                expr: 'sum by (host, failed_unit) (count_over_time({syslog_identifier="systemd", unit=~"user@[0-9]+\\.service"} |= ": Failed with result " | regexp "^(?P<failed_unit>\\S+): Failed with result" [15m])) > 0'
+                expr: 'sum by (host, failed_unit) (count_over_time({syslog_identifier="systemd", unit=~"user@[0-9]+\\.service"} |= ": Failed with result " | regexp "^(?P<failed_unit>\\S+): Failed with result" | failed_unit !~ "[0-9a-f]{64}-[0-9a-f]+\\.service" [15m])) > 0'
                 queryType: instant
                 refId: A
           noDataState: OK
@@ -997,7 +997,7 @@ groups:
             severity: warning
           annotations:
             summary: "User unit {{ '{{' }} $labels.failed_unit {{ '}}' }} on {{ '{{' }} $labels.host {{ '}}' }} failed in the last 15 minutes."
-            impact: "node_systemd only sees system units: rootless containers and user timers (backup, cert checks) fail silently without this."
+            impact: "node_systemd only sees system units: rootless containers and user timers (backup, cert checks) fail silently without this. Podman's per-check transient units (<container-id>-<hex>.service) are left out: one failed check run is not a failure, podman_container_unhealthy covers container health."
             action: "`systemctl --user status {{ '{{' }} $labels.failed_unit {{ '}}' }}` · `journalctl --user -u {{ '{{' }} $labels.failed_unit {{ '}}' }} -n 50` · after fixing: `systemctl --user reset-failed`"
           notification_settings:
             receiver: Discord
