@@ -1,5 +1,9 @@
 apiVersion: 1
 
+deleteMuteTimes:
+  - orgId: 1
+    name: weekend-daytime
+
 contactPoints:
     - orgId: 1
       name: Discord
@@ -13,7 +17,6 @@ contactPoints:
             title: '{% raw %}{{ template "nova.title" . }}{% endraw %}'
             message: '{% raw %}{{ template "nova.message" . }}{% endraw %}'
           disableResolveMessage: false
-
 
 muteTimes:
     - orgId: 1
