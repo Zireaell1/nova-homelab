@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "helpers:pinGitHubActionDigestsToSemver"
   ],
   "timezone": "Europe/Warsaw",
   "schedule": [
@@ -74,14 +75,18 @@
       "enabled": false
     },
     {
-      "description": "Paperless's Postgres: a major bump needs a dump + restore (the data directory is version-bound). Patch/minor only.",
+      "description": "Postgres majors (Authelia, Paperless): listed under Pending Approval on the Dependency Dashboard, no PR until ticked. The data directory is version-bound: a major is a planned dump + restore, not a merge.",
       "matchDepNames": [
+        "authelia-postgres",
         "paperless-postgres"
       ],
       "matchUpdateTypes": [
         "major"
       ],
-      "enabled": false
+      "dependencyDashboardApproval": true,
+      "prBodyNotes": [
+        "**Postgres major:** merging this alone leaves the service unable to start (data directory from the old major). Dump, deploy the new major on an empty directory, restore; see the upstream upgrade notes first."
+      ]
     },
     {
       "description": "Paperless majors change settings and migrate the database one way",
