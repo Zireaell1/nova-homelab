@@ -310,7 +310,7 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "UPS has {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} of battery left."
+            summary: "UPS has {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }} of battery left."
             impact: "Shutdown follows when the battery reaches the UPS's low threshold."
             action: "If mains is not coming back, shut down cleanly now: `sudo systemctl poweroff`"
           notification_settings:
@@ -781,7 +781,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.probe {{ '}}' }}: {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} of pings answered over 10 minutes."
+            summary: "{{ '{{' }} $labels.probe {{ '}}' }}: {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizePercentage . {{ '}}' }}{{ '{{' }} end {{ '}}' }} of pings answered over 10 minutes."
             impact: "The mobile link is up but lossy — calls, streams and remote access stutter."
             action: "Modem signal (RSRP/SINR, band) · WAN dashboard RTT panel · usually weather, cell load or antenna position"
           notification_settings:
@@ -874,7 +874,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The modem collector has not written metrics for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            summary: "The modem collector has not written metrics for {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }}."
             impact: "Modem panels freeze on old values; a pause still counts as running."
             action: "`systemctl status modem-metrics` · `journalctl -u modem-metrics -n 30`"
           notification_settings:
@@ -1108,7 +1108,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has only {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} memory available."
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has only {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizePercentage . {{ '}}' }}{{ '{{' }} end {{ '}}' }} memory available."
             impact: "The next allocation spike ends in swapping or an OOM kill."
             action: "Podman dashboard → memory by container · `systemd-cgtop -m`"
           notification_settings:
@@ -1139,7 +1139,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.name {{ '}}' }} uses {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} of its memory limit."
+            summary: "{{ '{{' }} $labels.name {{ '}}' }} uses {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizePercentage . {{ '}}' }}{{ '{{' }} end {{ '}}' }} of its memory limit."
             impact: "At the limit the kernel OOM-kills it inside its cgroup."
             action: "Raise `<role>_memory_limit` in the role defaults, or look for a leak on the Podman dashboard"
           notification_settings:
@@ -1262,7 +1262,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.instance {{ '}}' }} conntrack table {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} full."
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} conntrack table {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizePercentage . {{ '}}' }}{{ '{{' }} end {{ '}}' }} full."
             impact: "When it is full the kernel drops new connections — DNS and every container network stop accepting."
             action: "`sudo conntrack -S` · find the source with `sudo conntrack -L | awk '{print $5}' | sort | uniq -c | sort -rn | head`"
           notification_settings:
@@ -1354,7 +1354,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.instance {{ '}}' }} booted {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} ago."
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} booted {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }} ago."
             impact: "Every service restarted. If you did not reboot it: power cut (check the UPS alerts), kernel panic or a hang."
             action: "`journalctl -b -1 -p warning -e` · `last -x reboot shutdown | head`"
           notification_settings:
@@ -1566,7 +1566,7 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "The e-ink display has not updated for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            summary: "The e-ink display has not updated for {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }}."
             impact: "The screen is frozen on its last image; the app is running but stuck."
             action: "on Orion: `systemctl --user restart eink-display` · `journalctl --user -t eink-display -n 50`"
           notification_settings:
@@ -1814,7 +1814,7 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "No backup has completed for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            summary: "No backup has completed for {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }}."
             impact: "Anything changed since the last backup exists only on the live disks."
             action: "`systemctl --user list-timers homelab-backup.timer` · `findmnt {{ backup_mount }}` · `journalctl --user -u homelab-backup.service -n 50`"
           notification_settings:
@@ -2114,7 +2114,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The weekly restic check of the B2 copy last ran {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} ago."
+            summary: "The weekly restic check of the B2 copy last ran {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }} ago."
             impact: "Corruption in the offsite copy would go unnoticed."
             action: "`systemctl --user list-timers homelab-verify-backup.timer` · `journalctl --user -u homelab-verify-backup.service -n 100`"
           notification_settings:
@@ -2144,7 +2144,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The offsite copy is {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} behind."
+            summary: "The offsite copy is {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }} behind."
             impact: "A restore from B2 would lose that much data."
             action: "Usually `backup_cloud_sync_failed` or `backup_quota_exceeded` is firing too; fix that one"
           notification_settings:
@@ -2204,7 +2204,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The B2 bucket is at {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} of its quota."
+            summary: "The B2 bucket is at {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizePercentage . {{ '}}' }}{{ '{{' }} end {{ '}}' }} of its quota."
             impact: "Offsite sync stops once it reaches 100%."
             action: "Prune older snapshots or raise `backup_b2_quota_bytes` before it fills"
           notification_settings:
@@ -2294,7 +2294,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The last backup took {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}, close to its 1h limit."
+            summary: "The last backup took {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }}, close to its 1h limit."
             impact: "A little more data and the backup will be killed mid-run."
             action: "Stage timings: `journalctl --user -u homelab-backup.service` · trim `backup_targets` or raise TimeoutStartSec"
           notification_settings:
@@ -2356,7 +2356,7 @@ groups:
           labels:
             severity: critical
           annotations:
-            summary: "{{ '{{' }} $labels.mountpoint {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} has only {{ '{{' }} humanizePercentage $values.A.Value {{ '}}' }} free."
+            summary: "{{ '{{' }} $labels.mountpoint {{ '}}' }} on {{ '{{' }} $labels.instance {{ '}}' }} has only {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizePercentage . {{ '}}' }}{{ '{{' }} end {{ '}}' }} free."
             impact: "Writes will start failing, and services on that disk with them."
             action: "`sudo du -xh --max-depth=2 <mountpoint> 2>/dev/null | sort -h | tail`"
           notification_settings:
@@ -2386,7 +2386,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "{{ '{{' }} $labels.device {{ '}}' }} ({{ '{{' }} $labels.user {{ '}}' }}, {{ '{{' }} $labels.tier {{ '}}' }}) has not backed up for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            summary: "{{ '{{' }} $labels.device {{ '}}' }} ({{ '{{' }} $labels.user {{ '}}' }}, {{ '{{' }} $labels.tier {{ '}}' }}) has not backed up for {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }}."
             impact: "That device has no recent restore point."
             action: "Check the device is switched on and its scheduled backup ran (log on the device)"
           notification_settings:
@@ -2724,7 +2724,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The update check on {{ '{{' }} $labels.instance {{ '}}' }} has not run for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            summary: "The update check on {{ '{{' }} $labels.instance {{ '}}' }} has not run for {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }}."
             impact: "Update alerts are showing stale numbers."
             action: "`systemctl status homelab-updates.timer` · `journalctl -u homelab-updates.service -n 20`"
           notification_settings:
@@ -2754,7 +2754,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Package metadata on {{ '{{' }} $labels.instance {{ '}}' }} is {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} old."
+            summary: "Package metadata on {{ '{{' }} $labels.instance {{ '}}' }} is {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }} old."
             impact: "Pending-update counts are out of date and may wrongly show 0."
             action: "Fedora: `systemctl status dnf-makecache.timer` · Debian: `systemctl status apt-daily.timer`"
           notification_settings:
@@ -2909,7 +2909,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "The GPU's video engines have been over 85 % busy for 15 minutes ({{ '{{' }} humanize $values.A.Value {{ '}}' }} %)."
+            summary: "The GPU's video engines have been over 85 % busy for 15 minutes ({{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanize . {{ '}}' }}{{ '{{' }} end {{ '}}' }} %)."
             impact: "Frigate's decoding competes with Immich transcodes; camera frames can drop."
             action: "Grafana → Host Status → GPU → *Who uses the GPU* · lower Immich's video transcode concurrency"
           notification_settings:
@@ -2939,7 +2939,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "GPU metrics on {{ '{{' }} $labels.instance {{ '}}' }} are {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} old."
+            summary: "GPU metrics on {{ '{{' }} $labels.instance {{ '}}' }} are {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }} old."
             impact: "GPU panels show frozen numbers."
             action: "`systemctl status intel-gpu-metrics` · `journalctl -u intel-gpu-metrics -n 30`"
           notification_settings:
@@ -2969,7 +2969,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "smart.prom on {{ '{{' }} $labels.instance {{ '}}' }} is {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} old."
+            summary: "smart.prom on {{ '{{' }} $labels.instance {{ '}}' }} is {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }} old."
             impact: "Every SMART alert (health, sectors, temperature) is evaluating frozen data."
             action: "`systemctl status smartmon` · `journalctl -u smartmon -n 30` · `sudo /usr/local/bin/smartmon.sh | head`"
           notification_settings:
@@ -2999,7 +2999,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "NPU metrics on {{ '{{' }} $labels.instance {{ '}}' }} are {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }} old."
+            summary: "NPU metrics on {{ '{{' }} $labels.instance {{ '}}' }} are {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }} old."
             impact: "NPU panels show frozen numbers."
             action: "`systemctl status intel-npu-metrics` · `journalctl -u intel-npu-metrics -n 30`"
           notification_settings:
@@ -3243,7 +3243,7 @@ groups:
           labels:
             severity: warning
           annotations:
-            summary: "Git mirror {{ '{{' }} $labels.repo {{ '}}' }} has not updated for {{ '{{' }} humanizeDuration $values.A.Value {{ '}}' }}."
+            summary: "Git mirror {{ '{{' }} $labels.repo {{ '}}' }} has not updated for {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }}."
             impact: "The backup holds an old copy of this repository."
             action: "`journalctl --user -u homelab-backup.service -n 100 | grep -i git`"
           notification_settings:

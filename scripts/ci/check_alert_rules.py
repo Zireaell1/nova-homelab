@@ -7,12 +7,13 @@ import yaml
 
 from _common import GROUP_VARS, ROLES, load, read
 
-TITLE = "Alert rules: unique uids, NoData is healthy, every expr compares, every rule routes to a contact point"
+TITLE = "Alert rules: unique uids, NoData is healthy, every expr compares, humanize* is nil-safe, every rule routes to a contact point"
 
 TEMPLATE = ROLES / "grafana/templates/alerting.yml.j2"
 CONTACT_POINTS = ROLES / "grafana/templates/contact-points.yml.j2"
 SEVERITIES = {"critical", "warning"}
 ANNOTATIONS = ("summary", "impact", "action")
+UNGUARDED = re.compile(r"\{\{-?\s*humanize\w*\s+\$values\.")
 COMPARES = re.compile(r"(==|!=|>=|<=|(?<![-=])>|<(?!-))|\babsent(_over_time)?\(")
 
 
@@ -68,6 +69,12 @@ def check() -> list[str]:
         missing = [a for a in ANNOTATIONS if not (r.get("annotations") or {}).get(a)]
         if missing:
             bad.append(f"{where}: missing annotation(s) {', '.join(missing)}")
+        for key, text in (r.get("annotations") or {}).items():
+            if UNGUARDED.search(str(text)):
+                bad.append(
+                    f"{where}: annotation {key} calls humanize* on $values directly; "
+                    "use {{ with $values.A.Value }}{{ humanize… . }}{{ end }}"
+                )
         ns = r.get("notification_settings") or {}
         if ns.get("receiver") not in receivers:
             bad.append(
