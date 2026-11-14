@@ -30,6 +30,8 @@ Volume={{ stacks_path }}/pihole/etc-pihole:/etc/pihole:Z
 # --- Networking ---
 Network=pasta
 
+DNS=127.0.0.1
+
 PublishPort=127.0.0.1:53:53/tcp
 PublishPort=127.0.0.1:53:53/udp
 PublishPort={{ vault_primary_ip }}:53:53/tcp
