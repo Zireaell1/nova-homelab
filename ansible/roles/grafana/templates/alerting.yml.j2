@@ -987,7 +987,7 @@ groups:
               datasourceUid: "{{ grafana_loki_datasource_name }}"
               model:
                 editorMode: code
-                expr: 'sum by (host, failed_unit) (count_over_time({syslog_identifier="systemd", unit=~"user@[0-9]+\\.service"} |= ": Failed with result " | regexp "^(?P<failed_unit>\\S+): Failed with result" | failed_unit !~ "[0-9a-f]{64}-[0-9a-f]+\\.service" [15m])) > 0'
+                expr: 'sum by (host, failed_unit) (count_over_time({syslog_identifier="systemd", unit=~"user@[0-9]+\\.service"} |= ": Failed with result " | regexp "^(?P<failed_unit>\\S+): Failed with result" | failed_unit !~ "[0-9a-f]{64}-(startup-)?[0-9a-f]+\\.service" [15m])) > 0'
                 queryType: instant
                 refId: A
           noDataState: OK
