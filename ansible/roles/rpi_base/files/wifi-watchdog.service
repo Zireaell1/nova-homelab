@@ -4,8 +4,11 @@ Description=Recover wifi when the default gateway stops answering
 After=NetworkManager.service
 
 [Service]
-Type=oneshot
+Type=simple
 ExecStart=/usr/local/sbin/wifi-watchdog
 SyslogIdentifier=wifi-watchdog
-RuntimeDirectory=wifi-watchdog
-RuntimeDirectoryPreserve=yes
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -99,8 +99,34 @@
     owner: root
     group: root
     mode: "0755"
+  register: rpi_base_watchdog_script
 
-- name: Install the wifi watchdog and nightly reboot units
+# The watchdog used to run from a per-minute timer; it's a loop service now.
+- name: Stop and disable the old wifi watchdog timer
+  ansible.builtin.systemd:
+    name: wifi-watchdog.timer
+    state: stopped
+    enabled: false
+  register: rpi_base_old_watchdog_timer
+  failed_when:
+    - rpi_base_old_watchdog_timer is failed
+    - "'Could not find the requested service' not in (rpi_base_old_watchdog_timer.msg | default(''))"
+
+- name: Remove the old wifi watchdog timer
+  ansible.builtin.file:
+    path: /etc/systemd/system/wifi-watchdog.timer
+    state: absent
+
+- name: Install the wifi watchdog unit
+  ansible.builtin.copy:
+    src: wifi-watchdog.service
+    dest: /etc/systemd/system/wifi-watchdog.service
+    owner: root
+    group: root
+    mode: "0644"
+  register: rpi_base_watchdog_unit
+
+- name: Install the nightly reboot units
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "/etc/systemd/system/{{ item }}"
@@ -108,21 +134,21 @@
     group: root
     mode: "0644"
   loop:
-    - wifi-watchdog.service
-    - wifi-watchdog.timer
     - reboot-if-required.service
     - reboot-if-required.timer
 
-- name: Enable the wifi watchdog and nightly reboot timers
+- name: Run the wifi watchdog
   ansible.builtin.systemd:
-    name: "{{ item }}"
+    name: wifi-watchdog.service
+    enabled: true
+    state: "{{ 'restarted' if (rpi_base_watchdog_script is changed or rpi_base_watchdog_unit is changed) else 'started' }}"
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Enable the nightly reboot timer
+  ansible.builtin.systemd:
+    name: reboot-if-required.timer
     enabled: true
     state: started
     daemon_reload: true
-  loop:
-    - wifi-watchdog.timer
-    - reboot-if-required.timer
   ignore_errors: "{{ ansible_check_mode }}"
-
-- name: Flush rpi_base handlers
-  ansible.builtin.meta: flush_handlers
