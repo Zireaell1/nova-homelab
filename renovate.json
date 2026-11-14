@@ -156,6 +156,14 @@
         "docker.io/library/caddy"
       ],
       "extractVersion": "^v(?<version>.+)$"
+    },
+    {
+      "description": "Python for the toolchain (.python-version): a new Python waits under Pending Approval on the Dependency Dashboard. Tick it once an ansible-core release lists that Python for the control node.",
+      "matchManagers": [
+        "pyenv"
+      ],
+      "dependencyDashboardApproval": true,
+      "minimumReleaseAge": "0 days"
     }
   ]
 }
