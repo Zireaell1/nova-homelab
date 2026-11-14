@@ -90,33 +90,35 @@
     - dialout
     - rgb
 
-- name: Check if Ghostty terminfo is already installed system-wide
-  ansible.builtin.stat:
-    path: /usr/share/terminfo/x/xterm-ghostty
-  register: system_base_ghostty_terminfo_stat
+- name: Read Ghostty terminfo from the rootless user's database
+  become: false
+  ansible.builtin.command: "infocmp -x xterm-ghostty"
+  register: system_base_ghostty_terminfo_src
+  changed_when: false
+  failed_when: false
 
-- name: Ghostty terminfo system-wide install block
-  when: not system_base_ghostty_terminfo_stat.stat.exists
-  block:
-    - name: Dump Ghostty terminfo definition from the rootless user's database
-      become: false
-      ansible.builtin.command: "infocmp -x xterm-ghostty"
-      register: system_base_ghostty_terminfo_src
-      changed_when: false
-      failed_when: false
+- name: Warn if the rootless user has no Ghostty terminfo
+  ansible.builtin.debug:
+    msg: >
+      [WARNING] xterm-ghostty terminfo not found for {{ ansible_user }}.
+      SSH into the host at least once with Ghostty as {{ ansible_user }} so its
+      shell integration installs the entry, then re-run this role.
+  when: system_base_ghostty_terminfo_src.rc != 0
 
-    - name: Warn if source terminfo entry isn't found for the rootless user either
-      ansible.builtin.debug:
-        msg: >
-          [WARNING] xterm-ghostty terminfo not found for {{ ansible_user }} either.
-          SSH into the host at least once with Ghostty as {{ ansible_user }} so its
-          shell integration installs the entry, then re-run this role.
-      when: system_base_ghostty_terminfo_src.rc != 0
+- name: Read the system-wide Ghostty terminfo
+  ansible.builtin.command: "infocmp -x -A /usr/share/terminfo xterm-ghostty"
+  register: system_base_ghostty_terminfo_sys
+  changed_when: false
+  failed_when: false
+  when: system_base_ghostty_terminfo_src.rc == 0
 
-    - name: Compile and install Ghostty terminfo into /usr/share/terminfo (all users)
-      ansible.builtin.command: "tic -x -o /usr/share/terminfo -"
-      args:
-        stdin: "{{ system_base_ghostty_terminfo_src.stdout }}"
-        creates: /usr/share/terminfo/x/xterm-ghostty
-      when: system_base_ghostty_terminfo_src.rc == 0
-      changed_when: true
+- name: Install or refresh Ghostty terminfo in /usr/share/terminfo (all users)
+  ansible.builtin.command: "tic -x -o /usr/share/terminfo -"
+  args:
+    stdin: "{{ system_base_ghostty_terminfo_src.stdout }}"
+  when:
+    - system_base_ghostty_terminfo_src.rc == 0
+    - system_base_ghostty_terminfo_sys.rc != 0 or
+      (system_base_ghostty_terminfo_src.stdout_lines | reject('match', '#') | list) !=
+      (system_base_ghostty_terminfo_sys.stdout_lines | reject('match', '#') | list)
+  changed_when: true
