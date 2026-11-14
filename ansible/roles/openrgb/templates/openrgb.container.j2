@@ -44,7 +44,7 @@ HealthRetries=3
 HealthStartPeriod=60s
 
 HealthStartupCmd=["grep", "-qE", ":1A56 [0-9A-F]+:0000 0A", "/proc/net/tcp", "/proc/net/tcp6"]
-HealthStartupInterval=2s
+HealthStartupInterval=5s
 HealthStartupTimeout=5s
 HealthStartupSuccess=1
 
