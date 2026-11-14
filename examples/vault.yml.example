@@ -76,7 +76,7 @@ vault_backup_rclone_b2_app_key: "" # [ext]
 vault_vaultwarden_admin_token: "" # [gen] podman run --rm -it ghcr.io/dani-garcia/vaultwarden:<ver> /vaultwarden hash
 
 # Zigbee2MQTT
-vault_zigbee2mqtt_network_key: [] # [keep] 16 integers; a new key means re-pairing every device
+vault_zigbee2mqtt_network_key: "[]" # [keep] 16 integers; a new key means re-pairing every device
 
 # Grafana
 vault_grafana_admin_password: "" # [gen] re-applied on every deploy
