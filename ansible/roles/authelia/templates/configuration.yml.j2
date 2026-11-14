@@ -163,6 +163,21 @@ access_control:
         - 'internal'
         - 'tailscale'
 
+    - domain: '{{ service_endpoints['paperless']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'two_factor'
+      networks:
+        - 'internal'
+        - 'tailscale'
+      subject:
+        - ['group:admin']
+      resources:
+        - '^/admin([/?].*)?$'
+
+    - domain: '{{ service_endpoints['paperless']['subdomain'] }}.{{ vault_domain }}'
+      policy: 'deny'
+      resources:
+        - '^/admin([/?].*)?$'
+
     # Paperless logs in through OIDC itself
     - domain: '{{ service_endpoints['paperless']['subdomain'] }}.{{ vault_domain }}'
       policy: 'bypass'
