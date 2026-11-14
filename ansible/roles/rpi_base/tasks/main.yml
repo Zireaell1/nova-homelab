@@ -152,3 +152,6 @@
     state: started
     daemon_reload: true
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Flush rpi_base handlers
+  ansible.builtin.meta: flush_handlers
