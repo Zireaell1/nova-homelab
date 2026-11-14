@@ -1,6 +1,8 @@
 ---
 grafana_memory_limit: "2g"
 
+grafana_admin_username: "{{ homelab_user }}"
+
 # https://hub.docker.com/r/grafana/grafana/
 grafana_image: "docker.io/grafana/grafana"
 

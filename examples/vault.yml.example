@@ -10,7 +10,6 @@
 #
 
 vault_domain: "" # [site]
-vault_admin_username: "" # [site]
 
 vault_discord_webhook_url: "" # [ext] Discord channel -> Integrations -> Webhooks
 
