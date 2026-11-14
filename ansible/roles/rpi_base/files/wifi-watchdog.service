@@ -9,6 +9,8 @@ ExecStart=/usr/local/sbin/wifi-watchdog
 SyslogIdentifier=wifi-watchdog
 Restart=always
 RestartSec=30
+RestartSteps=5
+RestartMaxDelaySec=5min
 
 [Install]
 WantedBy=multi-user.target

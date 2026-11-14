@@ -7,6 +7,8 @@ Type=simple
 ExecStart=/usr/local/bin/intel_npu_metrics.sh {{ alloy_intel_npu_interval_seconds }} {{ textfile_metrics_path }}/intel_npu.prom
 Restart=always
 RestartSec=30
+RestartSteps=5
+RestartMaxDelaySec=5min
 
 DynamicUser=true
 SupplementaryGroups=alloy

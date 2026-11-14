@@ -7,6 +7,8 @@ Type=simple
 ExecStart=/usr/bin/python3 -I /usr/local/bin/intel_gpu_metrics.py {{ alloy_intel_gpu_interval_seconds }} {{ textfile_metrics_path }}/intel_gpu.prom
 Restart=always
 RestartSec=30
+RestartSteps=5
+RestartMaxDelaySec=5min
 
 CapabilityBoundingSet=CAP_PERFMON CAP_SYS_PTRACE CAP_DAC_READ_SEARCH
 SupplementaryGroups=alloy

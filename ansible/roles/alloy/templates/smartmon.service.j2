@@ -8,6 +8,8 @@ ExecStart=/usr/local/bin/smartmon_daemon.sh
 
 Restart=always
 RestartSec=10
+RestartSteps=5
+RestartMaxDelaySec=5min
 
 ProtectSystem=strict
 ReadWritePaths={{ textfile_metrics_path }}

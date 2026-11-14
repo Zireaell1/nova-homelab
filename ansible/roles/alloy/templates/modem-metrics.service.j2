@@ -8,6 +8,8 @@ Type=simple
 ExecStart=/usr/bin/python3 -I /usr/local/bin/modem_metrics.py {{ vault_modem_ip }} {{ alloy_modem_interval_seconds }} {{ textfile_metrics_path }}/modem.prom {{ alloy_modem_pause_file }}
 Restart=always
 RestartSec=30
+RestartSteps=5
+RestartMaxDelaySec=5min
 
 LoadCredential=password:/etc/homelab/modem-password
 RuntimeDirectory={{ alloy_modem_pause_file | dirname | basename }}

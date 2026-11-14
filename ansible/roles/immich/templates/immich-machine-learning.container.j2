@@ -46,6 +46,8 @@ HealthStartPeriod=120s
 [Service]
 Restart=always
 RestartSec=10
+RestartSteps=5
+RestartMaxDelaySec=5min
 TimeoutStartSec=900
 TimeoutStopSec=30
 

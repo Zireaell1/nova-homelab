@@ -2,7 +2,9 @@ import re
 
 from _common import ROLES, read
 
-TITLE = "Quadlet [Service] restart/stop policy"
+TITLE = "Quadlet [Service] restart/stop policy; every self-restarting unit backs off"
+
+BACKOFF = ("RestartSteps", "RestartMaxDelaySec")
 
 
 def check() -> list[str]:
@@ -26,7 +28,22 @@ def check() -> list[str]:
             )
         if stop and not tstop:
             bad.append(f"{name}: StopTimeout= without TimeoutStopSec=")
+        bad += _backoff(name, svc)
         for key in ("StartLimitBurst", "StartLimitIntervalSec"):
             if re.search(rf"^{key}=", svc, re.MULTILINE):
                 bad.append(f"{name}: {key} belongs in [Unit], not [Service]")
+    units = [*ROLES.glob("*/templates/*.service.j2"), *ROLES.glob("*/files/*.service")]
+    for f in sorted(units):
+        bad += _backoff(f.name, read(f))
     return bad
+
+
+def _backoff(name: str, svc: str) -> list[str]:
+    """Restart= other than no needs RestartSteps= and RestartMaxDelaySec= (crash loops back off)."""
+    if not re.search(r"^Restart=(?!no$)", svc, re.MULTILINE):
+        return []
+    return [
+        f"{name}: Restart= without {key}= (backoff)"
+        for key in BACKOFF
+        if not re.search(rf"^{key}=", svc, re.MULTILINE)
+    ]
