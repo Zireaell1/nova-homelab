@@ -5,6 +5,6 @@ prometheus_memory_limit: "2g"
 prometheus_image: "docker.io/prom/prometheus"
 
 # renovate: datasource=docker depName=docker.io/prom/prometheus
-prometheus_version: "v3.15.1-distroless"
+prometheus_version: "v3.16.0-distroless"
 
 prometheus_retention_size: "20GB"
