@@ -9,14 +9,14 @@ immich_machine_learning_model_revision: "v2"
 immich_image: "ghcr.io/immich-app/immich-server"
 
 # renovate: datasource=docker depName=immich packageName=ghcr.io/immich-app/immich-server
-immich_version: "v3.3.5"
+immich_version: "v3.4.1"
 
 immich_machine_learning_memory_limit: "6g"
 
 immich_machine_learning_image: "ghcr.io/immich-app/immich-machine-learning"
 
 # renovate: datasource=docker depName=immich-machine-learning packageName=ghcr.io/immich-app/immich-machine-learning
-immich_machine_learning_version: "v3.3.5"
+immich_machine_learning_version: "v3.4.1"
 
 immich_postgres_memory_limit: "4g"
 
@@ -30,4 +30,4 @@ immich_redis_memory_limit: "500m"
 immich_redis_image: "docker.io/valkey/valkey"
 
 # renovate: datasource=docker depName=immich-redis packageName=docker.io/valkey/valkey
-immich_redis_version: "9@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d"
+immich_redis_version: "9@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd"
