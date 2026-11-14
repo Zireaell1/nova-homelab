@@ -20,4 +20,4 @@ pihole_api_exclude_domains:
 pihole_image: "docker.io/pihole/pihole"
 
 # renovate: datasource=docker depName=docker.io/pihole/pihole
-pihole_version: "2026.10.1"
+pihole_version: "2026.11.0"
