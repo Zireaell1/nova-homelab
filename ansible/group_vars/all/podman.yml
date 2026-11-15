@@ -8,6 +8,7 @@ podman_unprivileged_port_start: 53
 #   .1 gateway | .2 caddy (front doors only) | .128-.254 dynamic (IPRange)
 # caddy: true   -> caddy joins it at .2 (rendered in caddy.container.j2)
 # egress: false -> no default route: reachable through published ports, no internet
+# routes: [cidr] -> with egress: false, the only destinations outside the network (via its gateway)
 # ifname: x     -> bridge name when pn-<name> would pass 15 chars (kernel limit)
 podman_network_prefix: "10.89"
 podman_networks:
@@ -23,7 +24,7 @@ podman_networks:
   - { name: prometheus, id: 18, caddy: true, egress: false }
   - { name: loki, id: 19, caddy: true, egress: false }
   - { name: grafana, id: 20, caddy: true }
-  - { name: paperless, id: 21, caddy: true }
+  - { name: paperless, id: 21, caddy: true, egress: false, routes: ["{{ host_svc_address }}/32"] }
   # Backends
   - { name: authelia-backend, id: 30, internal: true, ifname: pn-authelia-be }
   - { name: immich-backend, id: 31, internal: true, ifname: pn-immich-be }
@@ -32,7 +33,8 @@ podman_networks:
   - { name: openrgb, id: 34, internal: true }
   - { name: nut-exporter, id: 35 }
   - { name: paperless-backend, id: 36, internal: true, ifname: pn-paperless-be }
-  - { name: paperless-scanner, id: 37, ifname: pn-paperless-sc }
+  # The bridge talks to the printer and nothing else
+  - { name: paperless-scanner, id: 37, ifname: pn-paperless-sc, egress: false, routes: ["{{ vault_scanner_ip }}/32"] }
 
 # Caddy's address on each front door, e.g. podman_caddy_ips['grafana'] -> 10.89.20.2.
 # The one source for every "trusted proxy" setting.
