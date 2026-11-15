@@ -15,7 +15,15 @@ podman_networks:
   # Front doors: caddy is the hub
   - { name: authelia, id: 10, internal: true, caddy: true }
   - { name: homepage, id: 11, internal: true, caddy: true }
-  - { name: frigate, id: 12, caddy: true }
+  - name: frigate
+    id: 12
+    caddy: true
+    egress: false
+    routes:
+      - "{{ vault_camera_doorbell_ip }}/32"
+      - "{{ vault_camera_front_ip }}/32"
+      - "{{ vault_camera_back_ip }}/32"
+      - "{{ vault_camera_entry_ip }}/32"
   - { name: vaultwarden, id: 13, caddy: true }
   - { name: zigbee2mqtt, id: 14, caddy: true }
   - { name: restic, id: 15, internal: true, caddy: true }
@@ -24,17 +32,28 @@ podman_networks:
   - { name: prometheus, id: 18, caddy: true, egress: false }
   - { name: loki, id: 19, caddy: true, egress: false }
   - { name: grafana, id: 20, caddy: true }
-  - { name: paperless, id: 21, caddy: true, egress: false, routes: ["{{ host_svc_address }}/32"] }
+  - name: paperless
+    id: 21
+    caddy: true
+    egress: false
+    routes: ["{{ host_svc_address }}/32"]
   # Backends
   - { name: authelia-backend, id: 30, internal: true, ifname: pn-authelia-be }
   - { name: immich-backend, id: 31, internal: true, ifname: pn-immich-be }
   - { name: monitoring-backend, id: 32, internal: true, ifname: pn-monitor-be }
   - { name: home, id: 33, internal: true }
   - { name: openrgb, id: 34, internal: true }
-  - { name: nut-exporter, id: 35 }
+  - name: nut-exporter
+    id: 35
+    egress: false
+    routes: ["{{ host_svc_address }}/32"]
   - { name: paperless-backend, id: 36, internal: true, ifname: pn-paperless-be }
   # The bridge talks to the printer and nothing else
-  - { name: paperless-scanner, id: 37, ifname: pn-paperless-sc, egress: false, routes: ["{{ vault_scanner_ip }}/32"] }
+  - name: paperless-scanner
+    id: 37
+    ifname: pn-paperless-sc
+    egress: false
+    routes: ["{{ vault_scanner_ip }}/32"]
 
 # Caddy's address on each front door, e.g. podman_caddy_ips['grafana'] -> 10.89.20.2.
 # The one source for every "trusted proxy" setting.
