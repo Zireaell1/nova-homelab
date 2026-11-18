@@ -35,7 +35,7 @@
 - name: Read Ghostty terminfo from the rootless user's database
   become: false
   ansible.builtin.command: "infocmp -x xterm-ghostty"
-  register: shell_hostty_terminfo_src
+  register: shell_ghostty_terminfo_src
   changed_when: false
   failed_when: false
 

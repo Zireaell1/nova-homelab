@@ -7,9 +7,9 @@ alloy_enable_smartmon: false # [hw]
 
 alloy_config_template: "config_orion.alloy.j2" # [site]
 
-rpi_base_static_hosts:
-  - "{{ service_endpoints['prometheus']['subdomain'] }}" # [site]
-  - "{{ service_endpoints['loki']['subdomain'] }}" # [site]
-  - "{{ service_endpoints['authelia']['subdomain'] }}" # [site]
+rpi_base_static_hosts: # [site]
+  - "{{ service_endpoints['prometheus']['subdomain'] }}"
+  - "{{ service_endpoints['loki']['subdomain'] }}"
+  - "{{ service_endpoints['authelia']['subdomain'] }}"
 
 sshd_allow_tcp_forwarding: "local" # [site]
