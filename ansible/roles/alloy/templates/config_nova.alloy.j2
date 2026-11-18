@@ -39,6 +39,22 @@ loki.process "journal" {
     }
 
     stage.match {
+        selector = `{job="os", syslog_identifier="kernel"}`
+        stage.regex {
+            expression = `(?P<hardware_error>\[Hardware Error\])`
+        }
+        stage.metrics {
+            metric.counter {
+                name              = "hardware_errors_total"
+                description       = "Machine-check (MCE) lines in the kernel log: CPU, cache or memory errors"
+                source            = "hardware_error"
+                action            = "inc"
+                max_idle_duration = "24h"
+            }
+        }
+    }
+
+    stage.match {
         selector = `{syslog_identifier="setroubleshoot"} != "upsmon from using the dac_override"`
         stage.regex {
             expression = `(?P<selinux_denial>SELinux is preventing)`

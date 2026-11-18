@@ -1299,6 +1299,69 @@ groups:
           notification_settings:
             receiver: Discord
 
+        - uid: hardware_errors
+          title: Hardware Errors (Machine Check)
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: (loki_process_custom_hardware_errors_total - (loki_process_custom_hardware_errors_total offset 15m or loki_process_custom_hardware_errors_total * 0)) > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} machine-check (hardware error) line(s) in the kernel log in the last 15 minutes."
+            impact: "The CPU, its cache or the memory reported an error. A single corrected error is harmless; repeats point at failing RAM or an unstable CPU."
+            action: "`sudo journalctl -k -b | grep -A3 'Hardware Error'` (bank, address, corrected or not) · repeats: `memtest86+` from the boot menu, check BIOS/XMP settings"
+          notification_settings:
+            receiver: Discord
+            repeat_interval: 24h
+
+        - uid: frigate_detector_slow
+          title: Frigate Detector Slow
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: avg_over_time(frigate_detector_inference_speed_seconds[10m]) > {{ grafana_frigate_detector_slow_seconds }}
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 15m
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "Frigate's detector {{ '{{' }} $labels.name {{ '}}' }} takes {{ '{{' }} with $values.A.Value {{ '}}' }}{{ '{{' }} humanizeDuration . {{ '}}' }}{{ '{{' }} end {{ '}}' }} per inference."
+            impact: "Detection is far slower than the NPU normally is (fallback to CPU, driver or OpenVINO trouble after an update): objects get missed, though every stream still looks fine."
+            action: "Frigate → System → detectors · `podman logs frigate 2>&1 | grep -i -E 'openvino|npu|detector'` · NPU tab: is the NPU busy at all?"
+          notification_settings:
+            receiver: Discord
+            repeat_interval: 12h
+
         - uid: systemd_unit_failed
           title: Systemd Unit Failed
           condition: A

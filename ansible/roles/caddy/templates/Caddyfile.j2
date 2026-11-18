@@ -87,7 +87,7 @@ http:// {
 	bind fd/3 {
 		protocols h1
 	}
-	redir https://{host}{uri}
+	redir https://{host}{uri} 308
 	log
 }
 
