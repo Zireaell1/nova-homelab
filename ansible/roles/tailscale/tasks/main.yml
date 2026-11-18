@@ -44,13 +44,16 @@
   failed_when: false
 
 - name: Log in to the tailnet (first run, or after a logout)
-  ansible.builtin.command: >-
-    tailscale up
-    --auth-key={{ vault_tailscale_auth_key }}
-    --advertise-tags={{ tailscale_advertise_tags | join(',') }}
-    --advertise-routes={{ tailscale_advertise_routes | join(',') }}
-    --accept-dns={{ tailscale_accept_dns | lower }}
-    --reset
+  ansible.builtin.command:
+    cmd: >-
+      tailscale up
+      --auth-key=file:/dev/stdin
+      --advertise-tags={{ tailscale_advertise_tags | join(',') }}
+      --advertise-routes={{ tailscale_advertise_routes | join(',') }}
+      --accept-dns={{ tailscale_accept_dns | lower }}
+      --reset
+    stdin: "{{ vault_tailscale_auth_key }}"
+    stdin_add_newline: false
   when: >-
     tailscale_status_raw.rc != 0
     or (tailscale_status_raw.stdout | from_json).BackendState == 'NeedsLogin'
