@@ -22,8 +22,19 @@ export E2E_WORK="$WORK"
 PASS=0
 FAIL=0
 AS_ROOT=()
+MOUNTED=0
 
 cleanup() {
+    local log
+    if [ "$FAIL" -gt 0 ] && [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+        for log in "$WORK"/*.log "$WORK"/diff.txt; do
+            [ -f "$log" ] || continue
+            echo "::group::$(basename "$log")"
+            tail -n 120 "$log"
+            echo "::endgroup::"
+        done
+    fi
+    [ "$MOUNTED" -eq 1 ] && "${AS_ROOT[@]}" umount "$WORK/mnt"
     if [ "${E2E_KEEP:-0}" = "1" ] || [ "$FAIL" -gt 0 ]; then
         echo "# work directory kept: $WORK"
     else
@@ -136,6 +147,10 @@ cp "$HERE"/shims/* "$WORK/bin/"
 chmod +x "$WORK"/bin/*
 export PATH="$WORK/bin:$PATH"
 export XDG_RUNTIME_DIR="$WORK/run"
+
+if [ "${#AS_ROOT[@]}" -gt 0 ] && "${AS_ROOT[@]}" mount --bind "$WORK/mnt" "$WORK/mnt" 2>/dev/null; then
+    MOUNTED=1
+fi
 printf 'localhost ansible_connection=local ansible_python_interpreter=%s\nnova ansible_connection=local ansible_python_interpreter=%s\n' \
     "$(command -v python3)" "$(command -v python3)" > "$WORK/inventory"
 
