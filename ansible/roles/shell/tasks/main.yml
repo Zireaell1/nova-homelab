@@ -31,3 +31,36 @@
   ansible.builtin.user:
     name: "{{ ansible_user }}"
     shell: "{{ shell_login_shell }}"
+
+- name: Read Ghostty terminfo from the rootless user's database
+  become: false
+  ansible.builtin.command: "infocmp -x xterm-ghostty"
+  register: shell_hostty_terminfo_src
+  changed_when: false
+  failed_when: false
+
+- name: Warn if the rootless user has no Ghostty terminfo
+  ansible.builtin.debug:
+    msg: >
+      [WARNING] xterm-ghostty terminfo not found for {{ ansible_user }}.
+      SSH into the host at least once with Ghostty as {{ ansible_user }} so its
+      shell integration installs the entry, then re-run this role.
+  when: shell_ghostty_terminfo_src.rc != 0
+
+- name: Read the system-wide Ghostty terminfo
+  ansible.builtin.command: "infocmp -x -A /usr/share/terminfo xterm-ghostty"
+  register: shell_ghostty_terminfo_sys
+  changed_when: false
+  failed_when: false
+  when: shell_ghostty_terminfo_src.rc == 0
+
+- name: Install or refresh Ghostty terminfo in /usr/share/terminfo (all users)
+  ansible.builtin.command: "tic -x -o /usr/share/terminfo -"
+  args:
+    stdin: "{{ shell_ghostty_terminfo_src.stdout }}"
+  when:
+    - shell_ghostty_terminfo_src.rc == 0
+    - shell_ghostty_terminfo_sys.rc != 0 or
+      (shell_ghostty_terminfo_src.stdout_lines | reject('match', '#') | list) !=
+      (shell_ghostty_terminfo_sys.stdout_lines | reject('match', '#') | list)
+  changed_when: true
