@@ -38,6 +38,17 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)(?: packageName=(?<packageName>.*?))?(?: versioning=(?<versioning>.*?))?\\n\\s*.*?:\\s*[\"']?(?<currentValue>[^\"'\\s@]+)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?[\"']?"
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Commit pins that follow a branch head (git-refs): `# renovate-git: depName=… packageName=<repo URL> branch=…` above a 40-hex commit",
+      "managerFilePatterns": [
+        "ansible/roles/*/defaults/*.yml"
+      ],
+      "matchStrings": [
+        "# renovate-git: depName=(?<depName>\\S+) packageName=(?<packageName>\\S+) branch=(?<currentValue>\\S+)\\n\\s*\\S+:\\s*[\"'](?<currentDigest>[a-f0-9]{40})[\"']"
+      ],
+      "datasourceTemplate": "git-refs"
     }
   ],
   "packageRules": [
@@ -156,6 +167,19 @@
         "docker.io/library/caddy"
       ],
       "extractVersion": "^v(?<version>.+)$"
+    },
+    {
+      "description": "Commit pins (git-refs) carry no release dates: no age gate, once a month. CI checks the pinned file's sha256 and prints the new one.",
+      "matchDatasources": [
+        "git-refs"
+      ],
+      "minimumReleaseAge": "0 days",
+      "schedule": [
+        "* * 1 * *"
+      ],
+      "prBodyNotes": [
+        "**Before merging:** CI's *Pinned downloads match their sha256* fails on this PR until the `_sha256` next to the commit is updated: copy the value it prints."
+      ]
     },
     {
       "description": "Python for the toolchain (.python-version): a new Python waits under Pending Approval on the Dependency Dashboard. Tick it once an ansible-core release lists that Python for the control node.",
