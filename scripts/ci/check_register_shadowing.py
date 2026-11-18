@@ -5,7 +5,11 @@ TITLE = "No register: name shadows a defined variable"
 
 def check() -> list[str]:
     defined: dict[str, list[str]] = {}
-    for f in [*sorted(ROLES.glob("*/defaults/*.yml")), *inventory_vars_files()]:
+    for f in [
+        *sorted(ROLES.glob("*/defaults/*.yml")),
+        *sorted(ROLES.glob("*/vars/*.yml")),
+        *inventory_vars_files(),
+    ]:
         d = load(f)
         if isinstance(d, dict):
             for k in d:

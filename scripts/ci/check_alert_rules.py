@@ -5,7 +5,7 @@ from pathlib import Path
 import jinja2
 import yaml
 
-from _common import GROUP_VARS, ROLES, load, read
+from _common import GROUP_VARS, ROLES, load, read, role_vars
 
 TITLE = "Alert rules: unique uids, NoData is healthy, every expr compares, humanize* is nil-safe, every rule routes to a contact point"
 
@@ -19,9 +19,9 @@ COMPARES = re.compile(r"(==|!=|>=|<=|(?<![-=])>|<(?!-))|\babsent(_over_time)?\("
 
 def render(template: Path = TEMPLATE) -> dict:
     ctx: dict = {}
-    for f in sorted(ROLES.glob("*/defaults/main.yml")) + sorted(
-        GROUP_VARS.rglob("*.yml")
-    ):
+    for role in sorted(p for p in ROLES.iterdir() if p.is_dir()):
+        ctx |= role_vars(role)
+    for f in sorted(GROUP_VARS.rglob("*.yml")):
         data = load(f)
         if isinstance(data, dict):
             ctx |= data

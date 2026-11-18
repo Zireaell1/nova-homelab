@@ -18,6 +18,15 @@ def read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def role_vars(role: Path) -> dict:
+    out: dict = {}
+    for f in [*sorted(role.glob("defaults/*.yml")), role / "vars" / "main.yml"]:
+        data = load(f) if f.exists() else None
+        if isinstance(data, dict):
+            out |= data
+    return out
+
+
 def inventory_vars_files() -> list[Path]:
     return sorted(GROUP_VARS.rglob("*.yml")) + sorted(HOST_VARS.glob("*.yml"))
 

@@ -1,7 +1,7 @@
 import posixpath
 import re
 
-from _common import ROLES, load, walk
+from _common import ROLES, load, role_vars, walk
 
 TITLE = "Every deployed file has a parent directory created by its own role"
 
@@ -66,9 +66,7 @@ def check() -> list[str]:
     bad = []
     for role in sorted(p for p in ROLES.iterdir() if p.is_dir()):
         tasks = [t for f in sorted(role.glob("tasks/*.yml")) for t in walk(load(f))]
-        defaults = {}
-        for f in role.glob("defaults/*.yml"):
-            defaults |= load(f) or {}
+        defaults = role_vars(role)
         dirs = created_dirs(tasks)
         for name, dest in destinations(tasks):
             m = SINGLE_VAR.match(dest)

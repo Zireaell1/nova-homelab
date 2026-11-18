@@ -1,9 +1,6 @@
 ---
 openrgb_memory_limit: "500m"
 
-openrgb_local_image: "localhost/custom-openrgb"
-
-openrgb_repo: "https://github.com/CalcProgrammer1/OpenRGB.git"
 openrgb_upstream_commit: "b03cd94"
 
 # renovate: datasource=docker depName=docker.io/library/debian

@@ -1,15 +1,19 @@
 ---
-alloy_enable_smartmon: true
+# [install]  changes on a reinstall or when a disk is reformatted/replaced
+# [hw]       describes the attached hardware: changes only when that hardware does
+# [site]     a choice for this host: change it whenever you like
 
-alloy_enable_intel_gpu: true
+alloy_enable_smartmon: true # [hw]
 
-alloy_enable_intel_npu: true
+alloy_enable_intel_gpu: true # [hw]
 
-alloy_enable_modem_metrics: true
+alloy_enable_intel_npu: true # [hw]
 
-alloy_config_template: "config_nova.alloy.j2"
+alloy_enable_modem_metrics: true # [hw]
 
-hardware_data_drives:
+alloy_config_template: "config_nova.alloy.j2" # [site]
+
+hardware_data_drives: # [install]
   - uuid: "3ddf5ac7-b3a8-4ac2-8573-f38c02297c04"
     fstype: "xfs"
     mountpoint: "{{ backup_mount }}"
@@ -22,7 +26,7 @@ hardware_data_drives:
     passno: "0"
     fstrim_notrim: true
 
-hardware_target_lvs:
+hardware_target_lvs: # [site]
   - name: root
     size: 15g
     manage_fs_and_mount: false
@@ -46,16 +50,16 @@ hardware_target_lvs:
     manage_fs_and_mount: true
     rootless: true
 
-hardware_vg_name: "fedora_{{ nova_hostname }}"
+hardware_vg_name: "fedora_{{ nova_hostname }}" # [install]
 
-zigbee2mqtt_adapter_path: "/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_348e0dcf501fef11abc857d0639e525b-if00-port0"
+zigbee2mqtt_adapter_path: "/dev/serial/by-id/usb-Itead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_V2_348e0dcf501fef11abc857d0639e525b-if00-port0" # [hw]
 
-primary_network_interface_name: "enp129s0"
-secondary_network_interface_name: "enp2s0"
+primary_network_interface_name: "enp129s0" # [hw]
+secondary_network_interface_name: "enp2s0" # [hw]
 
-nut_ups_vendorid: "0463"
-nut_ups_productid: "ffff"
+nut_ups_vendorid: "0463" # [hw]
+nut_ups_productid: "ffff" # [hw]
 
-alloy_smartd_device_overrides:
+alloy_smartd_device_overrides: # [hw]
   - device: /dev/disk/by-id/ata-WDC_WD43PURZ-74BWPY0_WD-WX32DB4NA9AL
     directives: "-H -f -l error -l selftest -s S/../.././02"

@@ -1,6 +1,5 @@
 ---
 caddy_image: "docker.io/library/caddy"
-caddy_local_image: "localhost/custom-caddy"
 
 caddy_memory_limit: 500m
 

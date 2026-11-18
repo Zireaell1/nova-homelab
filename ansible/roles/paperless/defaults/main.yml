@@ -3,7 +3,6 @@ paperless_memory_limit: "3g"
 
 # https://github.com/paperless-ngx/paperless-ngx
 paperless_image: "ghcr.io/paperless-ngx/paperless-ngx"
-paperless_local_image: "localhost/custom-paperless"
 
 # renovate: datasource=docker depName=paperless packageName=ghcr.io/paperless-ngx/paperless-ngx
 paperless_version: "3.4.2"

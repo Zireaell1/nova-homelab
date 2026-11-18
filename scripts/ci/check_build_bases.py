@@ -7,7 +7,7 @@ import urllib.request
 
 import jinja2
 
-from _common import ROLES, load, read
+from _common import ROLES, read, role_vars
 
 TITLE = "Every image a Containerfile builds FROM exists in its registry"
 
@@ -65,7 +65,7 @@ def check() -> list[str]:
     env = jinja2.Environment(undefined=jinja2.StrictUndefined)
     bad = []
     for path in sorted(ROLES.glob("*/templates/Containerfile*.j2")):
-        defaults = load(path.parents[1] / "defaults" / "main.yml") or {}
+        defaults = role_vars(path.parents[1])
         try:
             text = env.from_string(read(path)).render(**defaults)
         except jinja2.UndefinedError as e:

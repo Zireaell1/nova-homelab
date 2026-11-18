@@ -24,10 +24,10 @@
         depth: 3
       register: render_defaults
 
-    - name: Load every role's defaults
+    - name: Load every role's defaults and constants
       ansible.builtin.include_vars:
         file: "{{ item }}"
-      loop: "{{ render_defaults.files | map(attribute='path') | select('search', '/defaults/main\\.yml$') | sort }}"
+      loop: "{{ render_defaults.files | map(attribute='path') | select('search', '/(defaults|vars)/main\\.yml$') | sort }}"
 
     - name: Find the templated scripts
       ansible.builtin.find:

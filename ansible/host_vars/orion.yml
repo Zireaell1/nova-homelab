@@ -1,11 +1,15 @@
 ---
-alloy_enable_smartmon: false
+# [install] changes on a reinstall
+# [hw] describes the attached hardware
+# [site] a choice for this host
 
-alloy_config_template: "config_orion.alloy.j2"
+alloy_enable_smartmon: false # [hw]
+
+alloy_config_template: "config_orion.alloy.j2" # [site]
 
 rpi_base_static_hosts:
-  - "{{ service_endpoints['prometheus']['subdomain'] }}"
-  - "{{ service_endpoints['loki']['subdomain'] }}"
-  - "{{ service_endpoints['authelia']['subdomain'] }}"
+  - "{{ service_endpoints['prometheus']['subdomain'] }}" # [site]
+  - "{{ service_endpoints['loki']['subdomain'] }}" # [site]
+  - "{{ service_endpoints['authelia']['subdomain'] }}" # [site]
 
-sshd_allow_tcp_forwarding: "local"
+sshd_allow_tcp_forwarding: "local" # [site]

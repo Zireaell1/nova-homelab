@@ -1,0 +1,4 @@
+---
+openrgb_local_image: "localhost/custom-openrgb"
+
+openrgb_repo: "https://github.com/CalcProgrammer1/OpenRGB.git"
