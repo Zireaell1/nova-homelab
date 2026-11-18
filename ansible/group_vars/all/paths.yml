@@ -1,5 +1,6 @@
 ---
 homelab_user: "{{ ansible_user }}"
+homelab_uid: 1000
 
 user_home: "/home/{{ homelab_user }}"
 

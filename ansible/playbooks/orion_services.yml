@@ -3,6 +3,21 @@
   hosts: orion
   become: false
   environment: "{{ podman_user_env }}"
+  pre_tasks:
+    - name: Read the service user's account
+      ansible.builtin.getent:
+        database: passwd
+        key: "{{ homelab_user }}"
+      tags: ["always"]
+
+    - name: Check homelab_uid against the service user
+      ansible.builtin.assert:
+        that: (getent_passwd[homelab_user][1] | int) == (homelab_uid | int)
+        fail_msg: >-
+          {{ homelab_user }} has uid {{ getent_passwd[homelab_user][1] }}, homelab_uid is {{ homelab_uid }}.
+          Set homelab_uid in host_vars/{{ inventory_hostname }}.yml.
+        quiet: true
+      tags: ["always"]
   roles:
     # =====================================================
     # Runtime environment
