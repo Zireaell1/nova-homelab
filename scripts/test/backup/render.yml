@@ -1,0 +1,18 @@
+---
+# Renders the backup role's real scripts into the test's work directory (see e2e.sh).
+- name: Render the backup scripts for the end-to-end test
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ../../../ansible/roles/backup/defaults/main.yml
+  tasks:
+    - name: Render the nightly backup and the cloud verify
+      ansible.builtin.template:
+        src: "../../../ansible/roles/backup/templates/{{ item }}.j2"
+        dest: "{{ work }}/bin/{{ item }}"
+        mode: "0755"
+        validate: "bash -n %s"
+      loop:
+        - homelab-backup.sh
+        - homelab-verify-backup.sh

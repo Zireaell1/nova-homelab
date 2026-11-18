@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Test stand-in for `systemctl --user`: logs every call with a timestamp, never touches real units.
+#   E2E_FAIL_STOP=<unit>   `stop <unit>` fails
+#   E2E_INACTIVE=<unit>    `is-active <unit>` answers inactive
+set -u
+printf '%s %s\n' "$(date +%s.%N)" "$*" >> "${E2E_WORK:?}/systemctl.log"
+args=("$@")
+[ "${args[0]:-}" = "--user" ] && args=("${args[@]:1}")
+case "${args[0]:-}" in
+    is-active)
+        if [ "${args[1]:-}" = "${E2E_INACTIVE:-}" ]; then echo inactive; exit 3; fi
+        echo active ;;
+    stop)
+        [ "${args[1]:-}" = "${E2E_FAIL_STOP:-}" ] && exit 1 ;;
+    show)
+        echo "ActiveState=inactive"
+        echo "SubState=dead"
+        echo "LoadState=loaded" ;;
+esac
+exit 0

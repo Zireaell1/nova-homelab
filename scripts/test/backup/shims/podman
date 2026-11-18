@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Test stand-in for podman: just enough output for versions.txt.
+case "${1:-}" in
+    --version) echo "podman version 0.0.0-e2e" ;;
+    ps) printf 'e2e-container\te2e-image:1\tabc123\tUp 1 hour\n' ;;
+    images) printf 'e2e-image:1\tsha256:0000\tabc123\n' ;;
+esac

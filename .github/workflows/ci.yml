@@ -84,3 +84,45 @@ jobs:
 
       - name: Structural checks
         run: python scripts/ci/run.py
+
+  backup-e2e:
+    name: Backup end-to-end
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    env:
+      # renovate: datasource=github-releases depName=restic/restic
+      E2E_RESTIC_VERSION: "0.19.1"
+      # renovate: datasource=github-releases depName=rclone/rclone
+      E2E_RCLONE_VERSION: "1.76.0"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+      - name: Sync locked environment
+        run: |
+          uv sync --locked
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+
+      - name: Install restic and rclone (pinned; checked against the release's SHA256SUMS)
+        working-directory: ${{ runner.temp }}
+        run: |
+          set -euo pipefail
+          base="https://github.com/restic/restic/releases/download/v${E2E_RESTIC_VERSION}"
+          curl -fsSL -O "$base/restic_${E2E_RESTIC_VERSION}_linux_amd64.bz2" -o restic.sums "$base/SHA256SUMS"
+          grep " restic_${E2E_RESTIC_VERSION}_linux_amd64.bz2$" restic.sums | sha256sum -c -
+          bunzip2 -c "restic_${E2E_RESTIC_VERSION}_linux_amd64.bz2" > restic
+          sudo install -m 0755 restic /usr/local/bin/restic
+
+          base="https://github.com/rclone/rclone/releases/download/v${E2E_RCLONE_VERSION}"
+          curl -fsSL -O "$base/rclone-v${E2E_RCLONE_VERSION}-linux-amd64.zip" -o rclone.sums "$base/SHA256SUMS"
+          grep " rclone-v${E2E_RCLONE_VERSION}-linux-amd64.zip$" rclone.sums | sha256sum -c -
+          unzip -q -o -j "rclone-v${E2E_RCLONE_VERSION}-linux-amd64.zip" "rclone-v${E2E_RCLONE_VERSION}-linux-amd64/rclone"
+          sudo install -m 0755 rclone /usr/local/bin/rclone
+
+      - name: Back up, verify and restore for real
+        run: scripts/test/backup/e2e.sh

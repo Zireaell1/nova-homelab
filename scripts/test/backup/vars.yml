@@ -1,0 +1,44 @@
+---
+# Variables for the backup end-to-end test, passed as extra vars (they beat the role defaults that
+# restore_nova.yml loads itself). Everything lives under `work`, a temp directory e2e.sh creates.
+# B2 is a plain local folder: rclone and restic's rclone backend take a path as a remote.
+user_config_path: "{{ work }}/config"
+user_backups_path: "{{ work }}/backups"
+local_backup_path: "{{ work }}/repo"
+restic_server_path: "{{ work }}/devices"
+textfile_metrics_path: "{{ work }}/metrics"
+backup_mount: "{{ work }}/mnt"
+backup_restic_password_file: "{{ work }}/restic.pass"
+backup_canary_file: "{{ work }}/backups/canary.txt"
+backup_rclone_target: "{{ work }}/b2"
+backup_b2_quota_bytes: 9000000000
+
+vault_backup_restic_password: "e2e-not-a-secret"
+vault_backup_rclone_b2_key_id: "e2e"
+vault_backup_rclone_b2_app_key: "e2e"
+vault_backup_rclone_bucket_name: "e2e"
+
+podman_user_env:
+  XDG_RUNTIME_DIR: "{{ work }}/run"
+
+backup_targets:
+  - name: homeassistant
+    stop: true
+    paths:
+      - "{{ work }}/data/homeassistant"
+    excludes:
+      - "{{ work }}/data/homeassistant/home-assistant.log*"
+      - "{{ work }}/data/homeassistant/.cache"
+  - name: vaultwarden
+    stop: true
+    paths:
+      - "{{ work }}/data/vaultwarden"
+    excludes:
+      - "{{ work }}/data/vaultwarden/icon_cache"
+  - name: immich
+    paths:
+      - "{{ work }}/data/immich/library"
+      - "{{ work }}/data/immich/backups"
+  - name: restic
+    paths:
+      - "{{ work }}/data/git"

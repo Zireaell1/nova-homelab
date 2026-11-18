@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Test stand-in: the test's backup "disk" is a plain directory.
+exit 0
