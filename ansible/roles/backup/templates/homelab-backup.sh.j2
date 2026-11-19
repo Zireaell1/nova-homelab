@@ -80,6 +80,9 @@ EXCLUDE_FILE=""
 
 # Services we stopped and have not yet successfully restarted.
 STOPPED=()
+# When the first one went down, and how long they were down in total (first stop to last start).
+DOWN_SINCE=0
+SERVICES_DOWNTIME=0
 
 # ==========================================
 # 2. HELPERS
@@ -197,6 +200,7 @@ stop_services() {
         log "Stopping ${svc}"
         if systemctl --user stop "$svc"; then
             STOPPED+=("$svc")
+            [ "$DOWN_SINCE" -gt 0 ] || DOWN_SINCE=$(date +%s)
         else
             err "Could not stop ${svc} -- refusing to snapshot it live."
             GLOBAL_SUCCESS=0
@@ -219,6 +223,10 @@ start_services() {
         fi
     done
     STOPPED=("${remaining[@]+"${remaining[@]}"}")
+    if [ "$DOWN_SINCE" -gt 0 ]; then
+        SERVICES_DOWNTIME=$(( $(date +%s) - DOWN_SINCE ))
+        DOWN_SINCE=0
+    fi
 }
 
 # ==========================================
@@ -281,6 +289,10 @@ homelab_backup_quota_exceeded $QUOTA_EXCEEDED
 # HELP homelab_backup_services_down Services stopped for the snapshot that did not come back
 # TYPE homelab_backup_services_down gauge
 homelab_backup_services_down {% raw %}${#STOPPED[@]}{% endraw %}
+
+# HELP homelab_backup_services_downtime_seconds How long the stop: true services were down, from the first stop to the last start
+# TYPE homelab_backup_services_downtime_seconds gauge
+homelab_backup_services_downtime_seconds $SERVICES_DOWNTIME
 
 # HELP homelab_backup_exit_code Exit status of the backup script
 # TYPE homelab_backup_exit_code gauge

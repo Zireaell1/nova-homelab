@@ -26,6 +26,9 @@
     restore_all_targets: "{{ backup_targets | map(attribute='name') | list }}"
     restore_selected: "{{ (restore_targets | split(',') | map('trim') | select | list) or restore_all_targets }}"
     restore_paths: "{{ backup_targets | selectattr('name', 'in', restore_selected) | map(attribute='paths') | flatten }}"
+    restore_markers:
+      - "{{ backup_canary_file }}"
+      - "{{ backup_canary_file | dirname }}/versions.txt"
     restore_repository: >-
       {{ local_backup_path if restore_repo == 'local' else 'rclone:' ~ backup_rclone_target ~ '/homelab' }}
     restore_env:
@@ -124,9 +127,23 @@
                 argv: >-
                   {{ ['restic', 'restore', '--no-lock', restore_snapshot, '--target', restore_dest,
                       '--exclude-xattr', 'security.selinux']
-                     + (restore_paths | map('regex_replace', '^', '--include=') | list) }}
+                     + ((restore_paths + restore_markers) | map('regex_replace', '^', '--include=') | list) }}
               environment: "{{ restore_env }}"
               changed_when: true
+
+            - name: Read which snapshot was restored
+              ansible.builtin.command:
+                argv:
+                  [
+                    restic,
+                    snapshots,
+                    --no-lock,
+                    --json,
+                    "{{ restore_snapshot }}",
+                  ]
+              environment: "{{ restore_env }}"
+              register: restore_used
+              changed_when: false
 
             - name: Note what this folder holds
               ansible.builtin.copy:
@@ -138,6 +155,9 @@
                   repo:      {{ restore_repo }} ({{ restore_repository }})
                   targets:   {{ restore_selected | join(', ') }}
                   paths:     {{ restore_paths | join(' ') }}
+                  {% set s = (restore_used.stdout | from_json)[0] %}
+                  from:      {{ s.short_id }} {{ s.time[:19] | replace('T', ' ') }}
+                  markers:   canary.txt = the backup run's start (epoch), versions.txt = containers and images at that time
 
             - name: Measure the result
               ansible.builtin.command:
