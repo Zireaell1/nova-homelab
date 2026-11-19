@@ -6,6 +6,7 @@
 # directory ("B2" is a plain local folder), then restores with the real restore_nova.yml and
 # compares every restored file with its source (content, mode, size). systemctl, podman and
 # mountpoint are stand-ins from shims/: nothing on the machine running the test is touched.
+# restic is the real one, behind a shim that can kill a run halfway (scenario 10).
 #
 #   scripts/test/backup/e2e.sh            # needs restic, rclone, jq, flock, ansible-playbook
 #   E2E_KEEP=1 scripts/test/backup/e2e.sh # keep the work directory for a look afterwards
@@ -68,10 +69,11 @@ render() {
         || { cat "$WORK/render.log"; echo "render failed"; exit 1; }
 }
 
-# backup LOG: one nightly run; its exit code is left in RC.
+# backup LOG: one nightly run; its exit code is left in RC. In its own process group, so a test
+# can SIGTERM the run (and its restic) the way systemd stops a unit, without hitting this script.
 backup() {
     RC=0
-    "$WORK/bin/homelab-backup.sh" > "$WORK/$1" 2>&1 || RC=$?
+    setsid -w "$WORK/bin/homelab-backup.sh" > "$WORK/$1" 2>&1 || RC=$?
 }
 
 verify() {
@@ -80,6 +82,18 @@ verify() {
 }
 
 snapshots() { restic -r "$WORK/repo" snapshots --json 2>/dev/null | jq length; }
+# The newest snapshot's ID. "No new snapshot" is checked with this, not with a count: retention keeps
+# one snapshot per day, so a same-day snapshot can replace another and leave the count unchanged.
+latest() { restic -r "$WORK/repo" snapshots --json latest 2>/dev/null | jq -r '.[0].short_id // "none"'; }
+
+# A file listing of a directory tree (names + sizes + content hashes), to prove it was not touched.
+fingerprint() { (cd "$1" && find . -type f -print0 | sort -z | xargs -0 sha256sum); }
+
+# downtime_from_log: first stop to last start in systemctl.log, whole seconds (what the script reports).
+downtime_from_log() {
+    awk '/ stop /{ if (!s) s=$1 } / start /{ e=$1 } END { if (s && e) printf "%d\n", int(e) - int(s); else print -1 }' \
+        "$WORK/systemctl.log"
+}
 
 # restore_and_compare REPO TARGETS PATH...: make restore_nova (TARGETS empty = all), then compare
 # what came back with the source PATHs; every other target path must not have come back.
@@ -118,6 +132,16 @@ restore_and_compare() {
         check "$label: excluded ${p#"$D"/} is absent" "${AS_ROOT[@]}" test ! -e "$dest$p"
     done
     check "$label: RESTORE-INFO.txt written" "${AS_ROOT[@]}" test -s "$dest/RESTORE-INFO.txt"
+
+    # The markers come back with every restore, from the same snapshot as the data.
+    local repo_url="$WORK/repo" snap
+    [ "$repo" = "b2" ] && repo_url="rclone:$WORK/b2/homelab"
+    snap=$(restic -r "$repo_url" snapshots --json latest 2>/dev/null | jq -r '.[0].short_id')
+    check "$label: canary.txt restored, the snapshot's own" \
+        test "$("${AS_ROOT[@]}" cat "$dest$WORK/backups/canary.txt" 2>/dev/null)" \
+             = "$(restic -r "$repo_url" dump latest "$WORK/backups/canary.txt" 2>/dev/null)"
+    check "$label: versions.txt restored" "${AS_ROOT[@]}" grep -q "e2e-container" "$dest$WORK/backups/versions.txt"
+    check "$label: RESTORE-INFO.txt names snapshot $snap" "${AS_ROOT[@]}" grep -q "^from: *$snap " "$dest/RESTORE-INFO.txt"
 }
 
 # ------------------------------------------------------------------------------
@@ -220,6 +244,9 @@ check "both were started again" \
     bash -c "grep -q 'start homeassistant.service' '$WORK/systemctl.log' && grep -q 'start vaultwarden.service' '$WORK/systemctl.log'"
 check "the snapshot was taken after the last stop and before the first start" \
     python3 -c "import sys; s,a,b=map(float,sys.argv[1:]); sys.exit(0 if a < s < b else 1)" "$SNAP_TIME" "$LAST_STOP" "$FIRST_START"
+DOWNTIME=$(metric homelab_backup_services_downtime_seconds)
+check "metric homelab_backup_services_downtime_seconds ($DOWNTIME s) = first stop to last start ($(downtime_from_log) s)" \
+    test "$DOWNTIME" = "$(downtime_from_log)"
 
 verify verify1.log
 check "verify exits 0 (canary read back from B2, fresh)" test "$RC" -eq 0
@@ -249,13 +276,15 @@ restore_and_compare b2 "immich,restic" "$D/immich/library" "$D/immich/backups" "
 section "3. A service refuses to stop"
 # ------------------------------------------------------------------------------
 : > "$WORK/systemctl.log"
-COUNT=$(snapshots)
+BEFORE=$(latest)
 E2E_FAIL_STOP=vaultwarden.service backup run3.log
 check "backup exits non-zero" test "$RC" -ne 0
 check "metric homelab_backup_success = 0" test "$(metric homelab_backup_success)" = 0
-check "no snapshot was taken with a service still running" test "$(snapshots)" -eq "$COUNT"
+check "no snapshot was taken with a service still running" test "$(latest)" = "$BEFORE"
 check "homeassistant (already stopped) was started again" grep -q 'start homeassistant.service' "$WORK/systemctl.log"
 check "metric homelab_backup_services_down = 0" test "$(metric homelab_backup_services_down)" = 0
+check "metric homelab_backup_services_downtime_seconds counts that stop too" \
+    test "$(metric homelab_backup_services_downtime_seconds)" = "$(downtime_from_log)"
 
 # ------------------------------------------------------------------------------
 section "4. A service that was already stopped stays stopped"
@@ -322,6 +351,67 @@ flock -n 8
 backup run9.log
 check "exits 0 without doing anything" bash -c "[ $RC -eq 0 ] && grep -q 'holds the lock' '$WORK/run9.log'"
 exec 8>&-
+
+# ------------------------------------------------------------------------------
+section "10. The run is killed halfway through the snapshot (systemctl stop, shutdown, timeout)"
+# ------------------------------------------------------------------------------
+: > "$WORK/systemctl.log"
+BEFORE=$(latest)
+head -c 40000000 /dev/urandom > "$D/vaultwarden/big.bin"
+E2E_KILL_SNAPSHOT=1 backup run10.log
+check "the kill landed during the snapshot" test -s "$WORK/kill.log"
+check "backup exits non-zero" test "$RC" -ne 0
+check "metric homelab_backup_success = 0" test "$(metric homelab_backup_success)" = 0
+check "no half snapshot was saved" test "$(latest)" = "$BEFORE"
+check "both stopped services were started again" \
+    bash -c "grep -q 'start homeassistant.service' '$WORK/systemctl.log' && grep -q 'start vaultwarden.service' '$WORK/systemctl.log'"
+check "metric homelab_backup_services_down = 0" test "$(metric homelab_backup_services_down)" = 0
+check "the repository is still sound (restic check)" restic -r "$WORK/repo" check -q
+backup run10b.log
+check "the next night runs normally" test "$RC" -eq 0
+check "...and its snapshot has the file that was cut off" \
+    bash -c "restic -r '$WORK/repo' ls latest | grep -qx '$D/vaultwarden/big.bin'"
+rm -f "$D/vaultwarden/big.bin"
+backup run10c.log
+
+# ------------------------------------------------------------------------------
+section "11. B2 cannot be reached"
+# ------------------------------------------------------------------------------
+fingerprint "$WORK/b2" > "$WORK/b2.before"
+render -e "backup_rclone_target=e2e-missing-remote:bucket"
+backup run11.log
+check "backup exits non-zero" test "$RC" -ne 0
+SAVED=$(sed -n 's/^snapshot \([0-9a-f]*\) saved$/\1/p' "$WORK/run11.log")
+check "the local snapshot was still taken" \
+    test -n "$SAVED" -a "$(latest)" = "$SAVED"
+check "metric homelab_backup_success = 1 (the local backup is fine)" test "$(metric homelab_backup_success)" = 1
+check "metric homelab_backup_cloud_sync_success = 0" test "$(metric homelab_backup_cloud_sync_success)" = 0
+check "the sync refused to run blind" grep -q "not syncing blind" "$WORK/run11.log"
+render
+fingerprint "$WORK/b2" > "$WORK/b2.after"
+check "nothing on B2 changed" cmp -s "$WORK/b2.before" "$WORK/b2.after"
+backup run11b.log
+check "B2 back: the next night syncs again" test "$RC" -eq 0
+
+# ------------------------------------------------------------------------------
+section "12. The local repository is damaged (a data pack lost)"
+# ------------------------------------------------------------------------------
+PACK=$(find "$WORK/repo/data" -type f | sort | head -n 1)
+PACK_REL=${PACK#"$WORK/repo/"}
+mv "$PACK" "$WORK/lost-pack"
+fingerprint "$WORK/b2/homelab" > "$WORK/b2.before"
+backup run12.log
+check "backup exits non-zero" test "$RC" -ne 0
+check "metric homelab_backup_success = 0" test "$(metric homelab_backup_success)" = 0
+check "restic check caught it" grep -q "Repository check failed" "$WORK/run12.log"
+check "the damaged repository was not synced over B2" grep -q "Skipping the homelab repo sync" "$WORK/run12.log"
+check "B2 still holds the lost pack" test -f "$WORK/b2/homelab/$PACK_REL"
+fingerprint "$WORK/b2/homelab" > "$WORK/b2.after"
+check "nothing in B2's homelab copy changed" cmp -s "$WORK/b2.before" "$WORK/b2.after"
+restore_and_compare b2 "" "${PATHS[@]}"
+rclone copy "$WORK/b2/homelab/$PACK_REL" "$(dirname "$PACK")" 2>/dev/null
+backup run12b.log
+check "pack copied back from B2 with rclone: the next night is clean" test "$RC" -eq 0
 
 # ------------------------------------------------------------------------------
 echo

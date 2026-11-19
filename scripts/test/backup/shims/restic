@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Runs the real restic (the next one on PATH). One test hook:
+#   E2E_KILL_SNAPSHOT=1   during `restic backup`, once restic holds its repository lock, send
+#                         SIGTERM to the whole process group, like `systemctl stop homelab-backup`
+#                         or a shutdown would (e2e.sh runs the backup under setsid for this).
+set -u
+self=$(dirname "$(readlink -f "$0")")
+real=""
+IFS=: read -ra dirs <<< "$PATH"
+for d in "${dirs[@]}"; do
+    [ -n "$d" ] && [ "$(readlink -f "$d")" = "$self" ] && continue
+    if [ -x "$d/restic" ]; then real="$d/restic"; break; fi
+done
+[ -n "$real" ] || { echo "restic shim: no real restic on PATH" >&2; exit 127; }
+
+if [ "${E2E_KILL_SNAPSHOT:-0}" = "1" ] && [ "${1:-}" = "backup" ]; then
+    locks="${RESTIC_REPOSITORY:?}/locks"
+    "$real" "$@" &
+    pid=$!
+    trap '' TERM
+    for _ in $(seq 1 200); do
+        [ -n "$(ls -A "$locks" 2>/dev/null)" ] && break
+        sleep 0.05
+    done
+    echo "$(date +%s.%N) SIGTERM to the backup's process group" >> "${E2E_WORK:?}/kill.log"
+    kill -TERM 0
+    wait "$pid"
+    exit $?
+fi
+exec "$real" "$@"
