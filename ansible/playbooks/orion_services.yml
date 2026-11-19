@@ -12,9 +12,9 @@
 
     - name: Check homelab_uid against the service user
       ansible.builtin.assert:
-        that: (getent_passwd[homelab_user][1] | int) == (homelab_uid | int)
+        that: (ansible_facts['getent_passwd'][homelab_user][1] | int) == (homelab_uid | int)
         fail_msg: >-
-          {{ homelab_user }} has uid {{ getent_passwd[homelab_user][1] }}, homelab_uid is {{ homelab_uid }}.
+          {{ homelab_user }} has uid {{ ansible_facts['getent_passwd'][homelab_user][1] }}, homelab_uid is {{ homelab_uid }}.
           Set homelab_uid in host_vars/{{ inventory_hostname }}.yml.
         quiet: true
       tags: ["always"]
