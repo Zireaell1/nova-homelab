@@ -66,9 +66,18 @@
     mode: "0644"
   when: dotfiles_zellij_check.rc == 0
 
-- name: Upload Fastfetch config
+- name: Upload Fastfetch logo
   ansible.builtin.copy:
-    src: "fastfetch/config.jsonc"
+    src: "{{ dotfiles_fastfetch_logo }}"
+    dest: "{{ user_config_path }}/fastfetch/logo.txt"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  when: dotfiles_fastfetch_logo is file
+
+- name: Upload Fastfetch config
+  ansible.builtin.template:
+    src: fastfetch-config.jsonc.j2
     dest: "{{ user_config_path }}/fastfetch/config.jsonc"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"

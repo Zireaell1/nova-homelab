@@ -1,5 +1,13 @@
 {
     "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
+{% if dotfiles_fastfetch_logo is file %}
+    "logo": {
+        "type": "file",
+        "source": "{{ user_config_path }}/fastfetch/logo.txt",
+        "color": { "1": "97", "2": "94" },
+        "padding": { "top": 1, "right": 3, "left": 3 }
+    },
+{% endif %}
     "modules": [
         "title",
         "separator",

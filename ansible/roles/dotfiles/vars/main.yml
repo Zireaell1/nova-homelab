@@ -1,0 +1,2 @@
+---
+dotfiles_fastfetch_logo: "{{ role_path }}/files/fastfetch/logo-{{ inventory_hostname }}.txt"
