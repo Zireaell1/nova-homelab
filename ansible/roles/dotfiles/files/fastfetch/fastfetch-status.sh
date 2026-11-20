@@ -44,11 +44,14 @@ ago() {
 
 storage() {
     df -x tmpfs -x devtmpfs -x efivarfs -x overlay -x squashfs --output=target,pcent 2>/dev/null |
-        awk 'NR > 1 && $1 !~ "^/boot" {
-                 name = $1; sub(".*/", "", name); if (name == "") name = "/"
-                 printf "%s%s %s", (n++ ? " · " : ""), name, $2
-             }
-             END { print "" }'
+        awk -v red="$RED" -v yellow="$YELLOW" -v reset="$RESET" '
+            NR > 1 && $1 !~ "^/boot" {
+                name = $1; sub(".*/", "", name); if (name == "") name = "/"
+                pct = $2 + 0
+                col = pct >= 95 ? red : (pct >= 80 ? yellow : "")
+                printf "%s%s %s%s%s", (n++ ? " · " : ""), name, col, $2, (col ? reset : "")
+            }
+            END { print "" }'
 }
 
 backup() {

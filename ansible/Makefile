@@ -86,7 +86,7 @@ deps:
 lint:
 	uv run ansible-lint
 	uv run yamllint -c .yamllint -s . ../.github/
-	shellcheck roles/*/files/*.sh
+	shellcheck roles/*/files/*.sh roles/*/files/*/*.sh
 	ANSIBLE_DIFF_ALWAYS=false uv run ansible-playbook ../scripts/ci/render_scripts.yml
 	shellcheck -S warning ../.cache/render/*.sh
 	cd .. && uv run ruff check . && uv run ruff format --check .

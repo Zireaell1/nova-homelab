@@ -15,22 +15,21 @@ function fish_greeting
         fastfetch
     end
 
-    echo ""
-    set_color -o blue
-    echo "Quick commands:"
-    set_color green
-    echo -n "  up      "
+    echo
+    set_color --bold {{ dotfiles_prompt_accent }}
+    echo "✦ Quick commands"
     set_color normal
-    echo "-> update packages ({{ dotfiles_update_label }})"
-    set_color green
-    echo -n "  upclean "
+    for row in "up|update packages ({{ dotfiles_update_label }})" \
+            "upclean|update and clean up ({{ dotfiles_update_clean_label }})" \
+            "clean|remove unused packages only (asks first)"
+        set -l parts (string split -m 1 "|" -- $row)
+        set_color {{ dotfiles_prompt_accent_light }}
+        printf "  %-9s" $parts[1]
+        set_color brblack
+        echo $parts[2]
+    end
     set_color normal
-    echo "-> update and clean up ({{ dotfiles_update_clean_label }})"
-    set_color green
-    echo -n "  clean   "
-    set_color normal
-    echo "-> remove unused packages only (asks first)"
-    echo ""
+    echo
 end
 
 function fish_prompt
