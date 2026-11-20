@@ -42,7 +42,7 @@ URL = urllib.parse.urlsplit(os.environ.get("SCANNER_URL", "http://127.0.0.1:80/e
 HOST = URL.hostname or "127.0.0.1"
 PORT = URL.port or (443 if URL.scheme == "https" else 80)
 CONSUME_DIR = os.environ.get("CONSUME_DIR", "/consume")
-HEARTBEAT_FILE = os.environ.get("HEARTBEAT_FILE", "/tmp/paperless-scanner.alive")
+HEARTBEAT_FILE = os.environ.get("HEARTBEAT_FILE", "/tmp/paperless-scanner.alive")  # noqa: S108 the container's own tmpfs
 POLL_SECONDS = float(os.environ.get("SCANNER_POLL_SECONDS", "3"))
 SETTLE_SECONDS = float(os.environ.get("SCANNER_SETTLE_SECONDS", "4"))
 RESOLUTION = int(os.environ.get("SCANNER_RESOLUTION", "300"))
@@ -155,7 +155,7 @@ def read_status() -> tuple[str | None, str | None]:
     if status != 200:
         raise ScannerError(f"ScannerStatus answered HTTP {status}")
     try:
-        root = ET.fromstring(body)
+        root = ET.fromstring(body)  # noqa: S314 the printer's eSCL XML; stdlib expat resolves no external entities
     except ET.ParseError as e:
         raise ScannerError(f"ScannerStatus is not XML: {e}") from e
     return first_text(root, "State"), first_text(root, "AdfState")
@@ -179,7 +179,7 @@ def read_capabilities() -> Caps:
     try:
         if status != 200:
             raise ScannerError(f"HTTP {status}")
-        root = ET.fromstring(body)
+        root = ET.fromstring(body)  # noqa: S314 the printer's eSCL XML; stdlib expat resolves no external entities
     except (ScannerError, ET.ParseError) as e:
         log(
             f"ScannerCapabilities unreadable ({e}): scanning with the configured settings"

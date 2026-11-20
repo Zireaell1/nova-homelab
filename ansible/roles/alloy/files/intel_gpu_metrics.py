@@ -68,8 +68,8 @@ class Prom:
         self.out.append(f"# TYPE {name} {typ}")
         for labels, v in rows:
             lbl = ",".join(f'{k}="{esc(val)}"' for k, val in labels.items())
-            v = round(v, 3) if isinstance(v, float) else v
-            self.out.append(f"{name}{{{lbl}}} {v}" if lbl else f"{name} {v}")
+            out = round(v, 3) if isinstance(v, float) else v
+            self.out.append(f"{name}{{{lbl}}} {out}" if lbl else f"{name} {out}")
 
     def footer(self, success: int) -> str:
         self.metric(

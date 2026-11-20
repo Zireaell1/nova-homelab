@@ -74,6 +74,11 @@ jobs:
       - name: shellcheck role scripts
         run: shellcheck ansible/roles/*/files/*.sh
 
+      - name: Lint Python
+        run: |
+          ruff check --output-format=github .
+          ruff format --check --diff .
+
       - name: Render and shellcheck templated scripts
         working-directory: ansible
         env:

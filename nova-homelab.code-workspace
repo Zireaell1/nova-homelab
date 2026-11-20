@@ -74,6 +74,17 @@
 			"editor.tabSize": 2,
 			"editor.defaultFormatter": "redhat.vscode-yaml"
 		},
+		"ruff.importStrategy": "fromEnvironment",
+		"[python]": {
+			"diffEditor.ignoreTrimWhitespace": false,
+			"editor.defaultColorDecorators": "never",
+			"editor.formatOnType": true,
+			"editor.wordBasedSuggestions": "off",
+			"editor.defaultFormatter": "charliermarsh.ruff",
+			"editor.codeActionsOnSave": {
+				"source.organizeImports.ruff": "explicit"
+			}
+		},
 		"[makefile]": {
 			"editor.insertSpaces": false,
 			"editor.tabSize": 4,

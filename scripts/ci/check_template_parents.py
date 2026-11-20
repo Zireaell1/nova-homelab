@@ -68,10 +68,13 @@ def check() -> list[str]:
         tasks = [t for f in sorted(role.glob("tasks/*.yml")) for t in walk(load(f))]
         defaults = role_vars(role)
         dirs = created_dirs(tasks)
-        for name, dest in destinations(tasks):
-            m = SINGLE_VAR.match(dest)
-            if m and isinstance(defaults.get(m.group(1)), str):
-                dest = defaults[m.group(1)]
+        for name, raw_dest in destinations(tasks):
+            m = SINGLE_VAR.match(raw_dest)
+            dest = (
+                defaults[m.group(1)]
+                if m and isinstance(defaults.get(m.group(1)), str)
+                else raw_dest
+            )
             if not dest.startswith("{{") or "item" in dest:
                 continue
             parent = posixpath.dirname(dest)

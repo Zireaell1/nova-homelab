@@ -34,7 +34,7 @@ CMD = uv run ansible-playbook $(TAG_FLAG) $(SKIP_FLAG) $(CHECK_FLAG) $(BECOME_FL
 ROOT_PLAYBOOKS := site
 DIR_PLAYBOOKS := nova_system nova_services orion_system orion_services nova_update nova_update_check orion_update versions
 
-.PHONY: help deps lint check restore_nova $(ROOT_PLAYBOOKS) $(DIR_PLAYBOOKS)
+.PHONY: help deps lint fmt check restore_nova $(ROOT_PLAYBOOKS) $(DIR_PLAYBOOKS)
 
 help:
 	@echo "Usage:"
@@ -49,7 +49,8 @@ help:
 	@echo ""
 	@echo "Setup and checks:"
 	@echo "  make deps                (sync .venv from uv.lock, install collections into .collections)"
-	@echo "  make lint                (ansible-lint + yamllint + shellcheck, incl. rendered *.sh.j2)"
+	@echo "  make lint                (ansible-lint + yamllint + shellcheck, incl. rendered *.sh.j2, + ruff)"
+	@echo "  make fmt                 (ruff: fix what it can, then format the Python scripts)"
 	@echo "  make check               (structural checks from scripts/ci, same as CI)"
 	@echo "  make versions            (read-only; watched package versions on both hosts, diff vs the last run)"
 	@echo ""
@@ -88,6 +89,10 @@ lint:
 	shellcheck roles/*/files/*.sh
 	ANSIBLE_DIFF_ALWAYS=false uv run ansible-playbook ../scripts/ci/render_scripts.yml
 	shellcheck -S warning ../.cache/render/*.sh
+	cd .. && uv run ruff check . && uv run ruff format --check .
+
+fmt:
+	cd .. && uv run ruff check --fix . && uv run ruff format .
 
 check:
 	uv run python ../scripts/ci/run.py
