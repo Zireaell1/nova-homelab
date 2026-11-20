@@ -2725,15 +2725,50 @@
                                                 "value": [
                                                     {
                                                         "options": {
+                                                            "-1": {
+                                                                "color": "text",
+                                                                "index": 0,
+                                                                "text": "Unknown"
+                                                            },
+                                                            "0": {
+                                                                "color": "blue",
+                                                                "index": 1,
+                                                                "text": "Created"
+                                                            },
+                                                            "1": {
+                                                                "color": "blue",
+                                                                "index": 2,
+                                                                "text": "Initialized"
+                                                            },
                                                             "2": {
                                                                 "color": "green",
-                                                                "index": 0,
+                                                                "index": 3,
                                                                 "text": "Running"
+                                                            },
+                                                            "3": {
+                                                                "color": "red",
+                                                                "index": 4,
+                                                                "text": "Stopped"
+                                                            },
+                                                            "4": {
+                                                                "color": "yellow",
+                                                                "index": 5,
+                                                                "text": "Paused"
                                                             },
                                                             "5": {
                                                                 "color": "red",
-                                                                "index": 1,
+                                                                "index": 6,
                                                                 "text": "Exited"
+                                                            },
+                                                            "6": {
+                                                                "color": "orange",
+                                                                "index": 7,
+                                                                "text": "Removing"
+                                                            },
+                                                            "7": {
+                                                                "color": "orange",
+                                                                "index": 8,
+                                                                "text": "Stopping"
                                                             }
                                                         },
                                                         "type": "value"
