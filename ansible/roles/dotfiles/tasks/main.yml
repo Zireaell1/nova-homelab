@@ -78,6 +78,14 @@
     mode: "0644"
   when: dotfiles_fastfetch_logo is file
 
+- name: Upload the Fastfetch status helper
+  ansible.builtin.copy:
+    src: fastfetch/fastfetch-status.sh
+    dest: "{{ user_config_path }}/fastfetch/status.sh"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+
 - name: Upload Fastfetch config
   ansible.builtin.template:
     src: fastfetch-config.jsonc.j2

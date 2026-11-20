@@ -13,6 +13,10 @@ alloy_enable_modem_metrics: true # [hw]
 
 alloy_config_template: "config_nova.alloy.j2" # [site]
 
+dotfiles_fastfetch_status: true # [site]
+
+dotfiles_fastfetch_ups: "eaton@localhost" # [hw]
+
 hardware_data_drives: # [install]
   - uuid: "3ddf5ac7-b3a8-4ac2-8573-f38c02297c04"
     fstype: "xfs"

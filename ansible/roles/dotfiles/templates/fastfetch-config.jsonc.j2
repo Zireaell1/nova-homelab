@@ -29,8 +29,32 @@
         "gpu",
         "memory",
         "swap",
-        "disk",
+        {
+            "type": "command",
+            "key": "Disks",
+            "text": "{{ user_config_path }}/fastfetch/status.sh storage"
+        },
         "localip",
+{% if dotfiles_fastfetch_status %}
+        "separator",
+        {
+            "type": "command",
+            "key": "Backup",
+            "text": "{{ user_config_path }}/fastfetch/status.sh backup {{ textfile_metrics_path }}"
+        },
+{% if dotfiles_fastfetch_ups %}
+        {
+            "type": "command",
+            "key": "UPS",
+            "text": "{{ user_config_path }}/fastfetch/status.sh ups {{ dotfiles_fastfetch_ups }}"
+        },
+{% endif %}
+        {
+            "type": "command",
+            "key": "Updates",
+            "text": "{{ user_config_path }}/fastfetch/status.sh updates {{ textfile_metrics_path }}"
+        },
+{% endif %}
         "break",
         "colors"
     ]
