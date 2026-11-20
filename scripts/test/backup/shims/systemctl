@@ -2,6 +2,7 @@
 # Test stand-in for `systemctl --user`: logs every call with a timestamp, never touches real units.
 #   E2E_FAIL_STOP=<unit>   `stop <unit>` fails
 #   E2E_INACTIVE=<unit>    `is-active <unit>` answers inactive
+#   E2E_SLOW_START=<secs>  every `start` takes that long (a service that needs time to come back)
 set -u
 printf '%s %s\n' "$(date +%s.%N)" "$*" >> "${E2E_WORK:?}/systemctl.log"
 args=("$@")
@@ -12,6 +13,9 @@ case "${args[0]:-}" in
         echo active ;;
     stop)
         [ "${args[1]:-}" = "${E2E_FAIL_STOP:-}" ] && exit 1 ;;
+    start)
+        sleep "${E2E_SLOW_START:-0}"
+        printf '%s done-start %s\n' "$(date +%s.%N)" "${args[1]:-}" >> "$E2E_WORK/systemctl.log" ;;
     show)
         echo "ActiveState=inactive"
         echo "SubState=dead"

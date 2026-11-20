@@ -89,10 +89,14 @@ latest() { restic -r "$WORK/repo" snapshots --json latest 2>/dev/null | jq -r '.
 # A file listing of a directory tree (names + sizes + content hashes), to prove it was not touched.
 fingerprint() { (cd "$1" && find . -type f -print0 | sort -z | xargs -0 sha256sum); }
 
-# downtime_from_log: first stop to last start in systemctl.log, whole seconds (what the script reports).
+# downtime_from_log: first stop to the last service being up again (`start` returned).
 downtime_from_log() {
-    awk '/ stop /{ if (!s) s=$1 } / start /{ e=$1 } END { if (s && e) printf "%d\n", int(e) - int(s); else print -1 }' \
+    awk '/ stop /{ if (!s) s=$1 } / done-start /{ e=$1 } END { if (s && e) printf "%d\n", int(e) - int(s); else print -1 }' \
         "$WORK/systemctl.log"
+}
+
+downtime_close() {
+    [ "$2" -ge 0 ] && [ "$1" -ge $(($2 - 1)) ] && [ "$1" -le $(($2 + 1)) ]
 }
 
 # restore_and_compare REPO TARGETS PATH...: make restore_nova (TARGETS empty = all), then compare
@@ -219,7 +223,7 @@ render
 # ------------------------------------------------------------------------------
 section "1. A normal night"
 # ------------------------------------------------------------------------------
-backup run1.log
+E2E_SLOW_START=3 backup run1.log
 check "backup exits 0" test "$RC" -eq 0
 check "metric homelab_backup_success = 1" test "$(metric homelab_backup_success)" = 1
 check "metric homelab_backup_cloud_sync_success = 1" test "$(metric homelab_backup_cloud_sync_success)" = 1
@@ -245,8 +249,9 @@ check "both were started again" \
 check "the snapshot was taken after the last stop and before the first start" \
     python3 -c "import sys; s,a,b=map(float,sys.argv[1:]); sys.exit(0 if a < s < b else 1)" "$SNAP_TIME" "$LAST_STOP" "$FIRST_START"
 DOWNTIME=$(metric homelab_backup_services_downtime_seconds)
-check "metric homelab_backup_services_downtime_seconds ($DOWNTIME s) = first stop to last start ($(downtime_from_log) s)" \
-    test "$DOWNTIME" = "$(downtime_from_log)"
+check "metric homelab_backup_services_downtime_seconds ($DOWNTIME s) = first stop to last start ($(downtime_from_log) s, ±1)" \
+    downtime_close "$DOWNTIME" "$(downtime_from_log)"
+check "...and covers both slow starts (at least 6 s)" test "$DOWNTIME" -ge 6
 
 verify verify1.log
 check "verify exits 0 (canary read back from B2, fresh)" test "$RC" -eq 0
@@ -284,7 +289,7 @@ check "no snapshot was taken with a service still running" test "$(latest)" = "$
 check "homeassistant (already stopped) was started again" grep -q 'start homeassistant.service' "$WORK/systemctl.log"
 check "metric homelab_backup_services_down = 0" test "$(metric homelab_backup_services_down)" = 0
 check "metric homelab_backup_services_downtime_seconds counts that stop too" \
-    test "$(metric homelab_backup_services_downtime_seconds)" = "$(downtime_from_log)"
+    downtime_close "$(metric homelab_backup_services_downtime_seconds)" "$(downtime_from_log)"
 
 # ------------------------------------------------------------------------------
 section "4. A service that was already stopped stays stopped"
