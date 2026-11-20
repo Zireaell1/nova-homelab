@@ -29,6 +29,9 @@
     - path: "{{ user_config_path }}/zellij/layouts"
       mode: "0755"
 
+    - path: "{{ user_config_path }}/zellij/themes"
+      mode: "0755"
+
     - path: "{{ user_config_path }}/micro"
       mode: "0755"
 
@@ -95,6 +98,14 @@
   ansible.builtin.copy:
     src: "zellij/default_strider.kdl"
     dest: "{{ user_config_path }}/zellij/layouts/default_strider.kdl"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Upload Zellij theme
+  ansible.builtin.copy:
+    src: "zellij/themes/nova.kdl"
+    dest: "{{ user_config_path }}/zellij/themes/nova.kdl"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
