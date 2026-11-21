@@ -112,7 +112,20 @@
 			"**/.venv": true,
 			"**/.cache": true,
 			"**/uv.lock": true
-		}
+		},
+		"json.schemaDownload.trustedDomains": {
+			"https://schemastore.azurewebsites.net/": true,
+			"https://raw.githubusercontent.com/microsoft/vscode/": true,
+			"https://raw.githubusercontent.com/devcontainers/spec/": true,
+			"https://www.schemastore.org/": true,
+			"https://json.schemastore.org/": true,
+			"https://spec.openapis.org/": true,
+			"https://json-schema.org/": true,
+			"https://developer.microsoft.com/json-schemas/": true,
+			"https://docs.renovatebot.com/renovate-schema.json": true,
+			"https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json": true
+		},
+		"python.analysis.typeCheckingMode": "basic"
 	},
 	"extensions": {
 		"recommendations": [
