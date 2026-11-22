@@ -17,6 +17,8 @@ dotfiles_fastfetch_status: true # [site]
 
 dotfiles_fastfetch_ups: "eaton@localhost" # [hw]
 
+backup_b2_hard_delete: false # [site]
+
 hardware_data_drives: # [install]
   - uuid: "3ddf5ac7-b3a8-4ac2-8573-f38c02297c04"
     fstype: "xfs"
