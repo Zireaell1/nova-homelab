@@ -8,6 +8,11 @@
     mode: "0640"
   notify: Restart fwupd
 
+- name: Remove packages this server doesn't use
+  ansible.builtin.dnf:
+    name: "{{ system_base_removed_packages }}"
+    state: absent
+
 - name: Stop, disable and mask unnecessary system services
   ansible.builtin.systemd:
     name: "{{ item }}"
@@ -24,19 +29,6 @@
 - name: Flush handlers to restart fwupd immediately
   ansible.builtin.meta: flush_handlers
 
-# - name: Remove unnecessary packages to debloat the system
-#   ansible.builtin.dnf:
-#     name:
-#       - plymouth
-#       - wpa_supplicant
-#       - ModemManager
-#       - avahi
-#       - sssd
-#       - abrt
-#       - iscsi-initiator-utils
-#     state: absent
-#     autoremove: true
-
 # TODO
 # cockpit-sosreport
 # cockpit-files
@@ -44,6 +36,7 @@
   ansible.builtin.dnf:
     name:
       - restic
+      - bluez
       - cockpit
       - cockpit-storaged
       - cockpit-networkmanager

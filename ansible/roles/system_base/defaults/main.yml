@@ -1,24 +1,6 @@
 ---
 system_base_masked_units:
   - bluetooth.service
-  - passim.service
-  - pcscd.socket
-  - pcscd.service
-  - abrtd.service
-  - abrt-journal-core.service
-  - abrt-oops.service
-  - abrt-vmcore.service
-  - abrt-xorg.service
-  - sssd.service
-  - sssd-kcm.service
-  - sssd-kcm.socket
-  - iscsid.socket
-  - iscsid.service
-  - iscsi.service
-  - iscsiuio.socket
-  - iscsi-onboot.service
-  - multipathd.service
-  - multipathd.socket
   # - plymouth-start.service
   # - plymouth-quit-wait.service
   - ModemManager.service
@@ -26,3 +8,28 @@ system_base_masked_units:
   - avahi-daemon.socket
   - avahi-daemon.service
   - fwupd-refresh.timer
+
+# Removed outright (a dry run on 2026-10-31 showed nothing kept depends on them).
+system_base_removed_packages:
+  - at
+  - gssproxy
+  - nfs-utils
+  - rpcbind
+  - mcelog
+  - rsyslog
+  - upower
+  - plocate
+  - passim
+  - pcsc-lite
+  - iscsi-initiator-utils
+  - iscsi-initiator-utils-iscsiuio
+  - device-mapper-multipath
+  - abrt
+  - abrt-addon-ccpp
+  - abrt-addon-kerneloops
+  - abrt-addon-pstoreoops
+  - abrt-addon-vmcore
+  - abrt-addon-xorg
+  - abrt-dbus
+  - sssd-kcm
+  - kexec-tools
