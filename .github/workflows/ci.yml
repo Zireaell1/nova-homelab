@@ -72,7 +72,7 @@ jobs:
           done
 
       - name: shellcheck role scripts
-        run: shellcheck ansible/roles/*/files/*.sh ansible/roles/*/files/*/*.sh
+        run: shellcheck ansible/roles/*/files/*.sh ansible/roles/*/files/*/*.sh ansible/vault-pass.sh
 
       - name: Lint Python
         run: |

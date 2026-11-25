@@ -114,7 +114,7 @@ Before running anything, you need to configure your environment.
   ```bash
   uv run ansible-vault encrypt group_vars/all/vault.yml
   ```
-* **Vault password:** Write your vault password into `ansible/.vault_pass` (it is gitignored). `ansible.cfg` points at this file, so Ansible will not start without it.
+* **Vault password:** on macOS, store it once in the login Keychain: `security add-generic-password -a "$USER" -s nova-ansible-vault -w` (it prompts). `ansible.cfg` runs `ansible/vault-pass.sh`, which reads it from there. Elsewhere, write it into `ansible/.vault_pass` (gitignored); the script falls back to that file.
 
 **3. The Playbooks:**
 The deployment is explicitly split to safely separate root-level host configurations from rootless container deployments across both of my physical machines (Nova and Orion).
