@@ -1,18 +1,13 @@
 ---
-- name: Software install
+- name: Remove lm_sensors
   ansible.builtin.dnf:
-    name:
-      - lm_sensors
-    state: present
+    name: lm_sensors
+    state: absent
 
-- name: Upload lm_sensors config
-  ansible.builtin.copy:
-    src: "lm_sensors/lm_sensors"
-    dest: "/etc/sysconfig/lm_sensors"
-    owner: root
-    group: root
-    mode: "0644"
-  notify: Restart lm_sensors
+- name: Remove the old sensors-detect config
+  ansible.builtin.file:
+    path: /etc/sysconfig/lm_sensors
+    state: absent
 
 # https://docs.kernel.org/hwmon/nct6683.html
 - name: Load nct6683 module and make it persistent
@@ -127,6 +122,5 @@
     enabled: true
     daemon_reload: true
   loop:
-    - lm_sensors.service
     - fstrim.timer
   ignore_errors: "{{ ansible_check_mode }}"
