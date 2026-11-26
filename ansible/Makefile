@@ -49,7 +49,7 @@ help:
 	@echo ""
 	@echo "Setup and checks:"
 	@echo "  make deps                (sync .venv from uv.lock, install collections into .collections)"
-	@echo "  make lint                (ansible-lint + yamllint + shellcheck, incl. rendered *.sh.j2, + ruff)"
+	@echo "  make lint                (ansible-lint + yamllint + ruff; shellcheck runs in CI only)"
 	@echo "  make fmt                 (ruff: fix what it can, then format the Python scripts)"
 	@echo "  make check               (structural checks from scripts/ci, same as CI)"
 	@echo "  make versions            (read-only; watched package versions on both hosts, diff vs the last run)"
@@ -86,9 +86,6 @@ deps:
 lint:
 	uv run ansible-lint
 	uv run yamllint -c .yamllint -s . ../.github/
-	shellcheck roles/*/files/*.sh roles/*/files/*/*.sh vault-pass.sh
-	ANSIBLE_DIFF_ALWAYS=false uv run ansible-playbook ../scripts/ci/render_scripts.yml
-	shellcheck -S warning ../.cache/render/*.sh
 	cd .. && uv run ruff check . && uv run ruff format --check .
 
 fmt:
