@@ -2763,6 +2763,40 @@ groups:
             active_time_intervals:
               - renovate-days
 
+        - uid: updates_config_leftovers
+          title: Config Files Left Over After An Upgrade
+          condition: A
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 600
+                to: 0
+              datasourceUid: "{{ grafana_prometheus_datasource_name }}"
+              model:
+                editorMode: code
+                expr: sum by (instance) (homelab_updates_config_leftovers) > 0
+                instant: true
+                intervalMs: 1000
+                legendFormat: __auto
+                maxDataPoints: 43200
+                range: false
+                refId: A
+          noDataState: OK
+          execErrState: Error
+          for: 24h
+          isPaused: false
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ '{{' }} $labels.instance {{ '}}' }} has {{ '{{' }} printf `%.0f` $values.A.Value {{ '}}' }} config file(s) an upgrade left beside the live one."
+            impact: "A package shipped a new default config that is not in use (.rpmnew / .dpkg-dist), or replaced yours and kept the old one aside (.rpmsave / .dpkg-old). New options or security fixes in the default may be missing."
+            action: "List them: `homelab_updates_config_leftover_info` in Explore · Fedora: `sudo rpmconf -a` (dnf install rpmconf) or `sudo diff -u <file> <file>.rpmnew`, merge, delete the leftover · Debian: `sudo diff -u <file> <file>.dpkg-dist` · If a role templates that file, fix the template instead"
+          notification_settings:
+            receiver: Discord
+            repeat_interval: 168h
+            active_time_intervals:
+              - renovate-days
+
         - uid: updates_collector_stale
           title: Update Collector Has Stopped Running
           condition: A

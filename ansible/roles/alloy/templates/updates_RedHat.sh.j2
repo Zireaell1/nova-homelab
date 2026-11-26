@@ -9,6 +9,8 @@
 # * dnf -q -C check-update --security    : Checks local cache for security updates.
 # * dnf -q -C updateinfo list --security : Fallback to check security update notices.
 # * dnf -q -C needs-restarting --json    : Reboot hint as JSON; its exit code alone cannot tell "reboot needed" (1) from "error" (also 1).
+# * find /etc -xdev -name '*.rpmnew' ... : Config files an upgrade left beside the live one. .rpmnew = the package's new default
+#                                          .rpmsave / .rpmorig = old file (the package's replaced it).
 # ==============================================================================
 
 set -Eeuo pipefail
@@ -23,6 +25,9 @@ PENDING_ALL=0
 PENDING_SECURITY=0
 REBOOT_REQUIRED=0
 CACHE_TIMESTAMP=0
+CONFIG_NEW=0
+CONFIG_SAVED=0
+CONFIG_FILES=""
 
 DNF_OUT=""
 DNF_ERR=""
@@ -123,6 +128,25 @@ read_cache_timestamp() {
     fi
 }
 
+find_config_leftovers() {
+    if ! CONFIG_FILES="$(find /etc -xdev -type f \( -name '*.rpmnew' -o -name '*.rpmsave' -o -name '*.rpmorig' \) 2>/dev/null | sort)"; then
+        CONFIG_FILES=""
+        fail "Could not scan /etc for .rpmnew/.rpmsave files."
+        return
+    fi
+    CONFIG_NEW="$(grep -c '\.rpmnew$' <<<"$CONFIG_FILES" || true)"
+    CONFIG_SAVED="$(grep -cE '\.(rpmsave|rpmorig)$' <<<"$CONFIG_FILES" || true)"
+}
+
+emit_config_files() {
+    local f
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        f="${f//\\/\\\\}"
+        printf 'homelab_updates_config_leftover_info{path="%s"} 1\n' "${f//\"/\\\"}"
+    done <<<"$CONFIG_FILES"
+}
+
 emit() {
     cat <<PROM
 # HELP homelab_updates_pending Packages with a pending upgrade, by severity
@@ -135,6 +159,13 @@ homelab_updates_reboot_required ${REBOOT_REQUIRED}
 # HELP homelab_updates_cache_timestamp_seconds Unix time the package metadata was last refreshed
 # TYPE homelab_updates_cache_timestamp_seconds gauge
 homelab_updates_cache_timestamp_seconds ${CACHE_TIMESTAMP}
+# HELP homelab_updates_config_leftovers Config files an upgrade left beside the live one (new = .rpmnew, saved = .rpmsave/.rpmorig)
+# TYPE homelab_updates_config_leftovers gauge
+homelab_updates_config_leftovers{kind="new"} ${CONFIG_NEW}
+homelab_updates_config_leftovers{kind="saved"} ${CONFIG_SAVED}
+# HELP homelab_updates_config_leftover_info One series per leftover config file
+# TYPE homelab_updates_config_leftover_info gauge
+$(emit_config_files)
 # HELP homelab_updates_last_check_timestamp_seconds Unix time this collector last ran
 # TYPE homelab_updates_last_check_timestamp_seconds gauge
 homelab_updates_last_check_timestamp_seconds $(date +%s)
@@ -150,10 +181,11 @@ main() {
     count_pending_security
     check_reboot
     read_cache_timestamp
+    find_config_leftovers
     emit > "$PROM_TMP"
     mv -f "$PROM_TMP" "$PROM_FILE"
     chmod 0644 "$PROM_FILE"
-    echo "[INFO] ${PENDING_ALL} pending (${PENDING_SECURITY} security), reboot_required=${REBOOT_REQUIRED}, success=${SUCCESS}."
+    echo "[INFO] ${PENDING_ALL} pending (${PENDING_SECURITY} security), reboot_required=${REBOOT_REQUIRED}, config leftovers: ${CONFIG_NEW} new / ${CONFIG_SAVED} saved, success=${SUCCESS}."
 }
 
 main "$@"

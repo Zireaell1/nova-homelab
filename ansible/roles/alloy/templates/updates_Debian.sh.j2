@@ -10,6 +10,9 @@
 # * apt-get -s -o Debug::NoLocking=true dist-upgrade : Simulates a full upgrade (dry-run) without locking the apt database.
 # * [ -f /var/run/reboot-required ]                  : Checks for the standard Debian/Ubuntu reboot flag file.
 # * stat -c %Y .../update-success-stamp              : Reads the timestamp of the last successful 'apt update' run.
+# * find /etc -xdev -name '*.dpkg-dist' ...          : Config files an upgrade left beside the live one.
+#                                                      new   = .dpkg-dist, .dpkg-new, .ucf-dist (the package's new default)
+#                                                      saved = .dpkg-old, .ucf-old (old file; the package's replaced it)
 # ==============================================================================
 
 set -Eeuo pipefail
@@ -23,6 +26,9 @@ PENDING_ALL=0
 PENDING_SECURITY=0
 REBOOT_REQUIRED=0
 CACHE_TIMESTAMP=0
+CONFIG_NEW=0
+CONFIG_SAVED=0
+CONFIG_FILES=""
 
 cleanup() {
     trap - EXIT
@@ -61,6 +67,27 @@ collect() {
     fi
 }
 
+find_config_leftovers() {
+    if ! CONFIG_FILES="$(find /etc -xdev -type f \( -name '*.dpkg-dist' -o -name '*.dpkg-new' -o -name '*.ucf-dist' \
+            -o -name '*.dpkg-old' -o -name '*.ucf-old' \) 2>/dev/null | sort)"; then
+        CONFIG_FILES=""
+        echo >&2 "[ERROR] Could not scan /etc for .dpkg-*/.ucf-* files."
+        SUCCESS=0
+        return
+    fi
+    CONFIG_NEW="$(grep -cE '\.(dpkg-dist|dpkg-new|ucf-dist)$' <<<"$CONFIG_FILES" || true)"
+    CONFIG_SAVED="$(grep -cE '\.(dpkg-old|ucf-old)$' <<<"$CONFIG_FILES" || true)"
+}
+
+emit_config_files() {
+    local f
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        f="${f//\\/\\\\}"
+        printf 'homelab_updates_config_leftover_info{path="%s"} 1\n' "${f//\"/\\\"}"
+    done <<<"$CONFIG_FILES"
+}
+
 emit() {
     cat <<PROM
 # HELP homelab_updates_pending Packages with a pending upgrade, by severity
@@ -73,6 +100,13 @@ homelab_updates_reboot_required ${REBOOT_REQUIRED}
 # HELP homelab_updates_cache_timestamp_seconds Unix time the package metadata was last refreshed
 # TYPE homelab_updates_cache_timestamp_seconds gauge
 homelab_updates_cache_timestamp_seconds ${CACHE_TIMESTAMP}
+# HELP homelab_updates_config_leftovers Config files an upgrade left beside the live one (new = .dpkg-dist/.dpkg-new/.ucf-dist, saved = .dpkg-old/.ucf-old)
+# TYPE homelab_updates_config_leftovers gauge
+homelab_updates_config_leftovers{kind="new"} ${CONFIG_NEW}
+homelab_updates_config_leftovers{kind="saved"} ${CONFIG_SAVED}
+# HELP homelab_updates_config_leftover_info One series per leftover config file
+# TYPE homelab_updates_config_leftover_info gauge
+$(emit_config_files)
 # HELP homelab_updates_last_check_timestamp_seconds Unix time this collector last ran
 # TYPE homelab_updates_last_check_timestamp_seconds gauge
 homelab_updates_last_check_timestamp_seconds $(date +%s)
@@ -85,10 +119,11 @@ PROM
 main() {
     mkdir -p "$PROM_DIR"
     collect
+    find_config_leftovers
     emit > "$PROM_TMP"
     mv -f "$PROM_TMP" "$PROM_FILE"
     chmod 0644 "$PROM_FILE"
-    echo "[INFO] ${PENDING_ALL} pending (${PENDING_SECURITY} security), reboot_required=${REBOOT_REQUIRED}."
+    echo "[INFO] ${PENDING_ALL} pending (${PENDING_SECURITY} security), reboot_required=${REBOOT_REQUIRED}, config leftovers: ${CONFIG_NEW} new / ${CONFIG_SAVED} saved."
 }
 
 main "$@"
