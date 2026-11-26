@@ -33,7 +33,8 @@
       "customType": "regex",
       "description": "Update dependencies in Ansible YAML files based on renovate comments",
       "managerFilePatterns": [
-        "ansible/roles/*/defaults/*.yml"
+        "ansible/roles/*/defaults/*.yml",
+        ".github/workflows/*.yml"
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)(?: packageName=(?<packageName>.*?))?(?: versioning=(?<versioning>.*?))?\\n\\s*.*?:\\s*[\"']?(?<currentValue>[^\"'\\s@]+)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?[\"']?"
@@ -180,6 +181,14 @@
       "prBodyNotes": [
         "**Before merging:** CI's *Pinned downloads match their sha256* fails on this PR until the `_sha256` next to the commit is updated: copy the value it prints."
       ]
+    },
+    {
+      "description": "restic and rclone for the backup end-to-end test (CI).",
+      "matchDepNames": [
+        "restic/restic",
+        "rclone/rclone"
+      ],
+      "extractVersion": "^v(?<version>.+)$"
     },
     {
       "description": "Python for the toolchain (.python-version): a new Python waits under Pending Approval on the Dependency Dashboard. Tick it once an ansible-core release lists that Python for the control node.",
