@@ -1,7 +1,8 @@
 ---
 openrgb_memory_limit: "500m"
 
-openrgb_upstream_commit: "b03cd94"
+# renovate: datasource=github-tags depName=openrgb packageName=CalcProgrammer1/OpenRGB
+openrgb_version: "release_1.1"
 
 # renovate: datasource=docker depName=docker.io/library/debian
 openrgb_base_image_version: "13.7-slim"

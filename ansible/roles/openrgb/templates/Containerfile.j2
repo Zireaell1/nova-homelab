@@ -1,4 +1,8 @@
+# OpenRGB {{ openrgb_version }}
+
 FROM docker.io/library/debian:{{ openrgb_base_image_version }} AS builder
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /src
 
@@ -6,11 +10,10 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         git \
         build-essential \
-        qtbase5-dev \
-        qtchooser \
-        qt5-qmake \
-        qtbase5-dev-tools \
-        qttools5-dev-tools \
+        qt6-base-dev \
+        qt6-base-dev-tools \
+        qt6-tools-dev-tools \
+        qmake6 \
         libusb-1.0-0-dev \
         libhidapi-dev \
         libmbedtls-dev \
@@ -18,16 +21,25 @@ RUN apt-get update && \
         ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-RUN git clone {{ openrgb_repo }} . && \
-    git checkout {{ openrgb_upstream_commit }} && \
+RUN git -c advice.detachedHead=false clone --depth 1 --branch {{ openrgb_version }} {{ openrgb_repo }} . && \
+    git rev-parse HEAD > /src/COMMIT && \
     mkdir build && \
     cd build && \
-    qmake ../OpenRGB.pro && \
-    make -j$(($(nproc) > 3 ? $(nproc) - 2 : 1))
+    qmake6 CONFIG+=release ../OpenRGB.pro && \
+    make -j$(($(nproc) > 3 ? $(nproc) - 2 : 1)) && \
+    strip openrgb
 
 FROM docker.io/library/debian:{{ openrgb_base_image_version }} AS runtime
 
+LABEL org.opencontainers.image.title="OpenRGB" \
+      org.opencontainers.image.version="{{ openrgb_version }}" \
+      org.opencontainers.image.source="{{ openrgb_repo }}" \
+      org.opencontainers.image.base.name="docker.io/library/debian:{{ openrgb_base_image_version }}"
+
 WORKDIR /app
+
+COPY --from=builder /src/build/openrgb /app/openrgb
+COPY --from=builder /src/COMMIT /app/COMMIT
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -35,15 +47,13 @@ RUN apt-get update && \
         libhidapi-hidraw0 \
         libmbedtls21 \
         libmbedcrypto16 \
-        libqt5core5t64 \
-        libqt5gui5t64 \
-        libqt5widgets5t64 \
-        libqt5dbus5t64 \
-        init-system-helpers \
+        libqt6core6t64 \
+        libqt6gui6 \
+        libqt6widgets6 \
+        libqt6dbus6 \
         tini && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY --from=builder /src/build/openrgb /app/openrgb
+    rm -rf /var/lib/apt/lists/* && \
+    ! ldd /app/openrgb | grep 'not found'
 
 EXPOSE 6742
 

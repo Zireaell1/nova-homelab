@@ -183,6 +183,13 @@
       ]
     },
     {
+      "description": "OpenRGB: stable releases only (release_X.Y[.Z]).",
+      "matchDepNames": [
+        "openrgb"
+      ],
+      "versioning": "regex:^release_(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?$"
+    },
+    {
       "description": "restic and rclone for the backup end-to-end test (CI).",
       "matchDepNames": [
         "restic/restic",
