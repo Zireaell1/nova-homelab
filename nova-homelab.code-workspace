@@ -24,6 +24,7 @@
 			"*.service.j2": "ini",
 			"*.timer.j2": "ini",
 			"*.socket.j2": "ini",
+			"*.sh.j2": "shellscript",
 			"*.container": "ini",
 			"*.network": "ini",
 			"*.service": "ini",
