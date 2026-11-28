@@ -147,7 +147,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -269,7 +269,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -451,7 +451,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -566,7 +566,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -681,7 +681,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -799,7 +799,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -881,7 +881,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -996,7 +996,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -1111,7 +1111,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -1886,6 +1886,7 @@
                                 "showControls": true,
                                 "showFieldSelector": false,
                                 "showLevel": true,
+                                "showLogAttributes": true,
                                 "showTime": true,
                                 "sortOrder": "Descending",
                                 "timestampResolution": "ms",
@@ -1893,7 +1894,7 @@
                                 "wrapLogMessage": true
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -2005,7 +2006,7 @@
                                 }
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -2091,7 +2092,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -2180,7 +2181,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -2269,7 +2270,7 @@
                                 "wideLayout": true
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             },
@@ -2725,11 +2726,6 @@
                                                 "value": [
                                                     {
                                                         "options": {
-                                                            "-1": {
-                                                                "color": "text",
-                                                                "index": 0,
-                                                                "text": "Unknown"
-                                                            },
                                                             "0": {
                                                                 "color": "blue",
                                                                 "index": 1,
@@ -2769,6 +2765,11 @@
                                                                 "color": "orange",
                                                                 "index": 8,
                                                                 "text": "Stopping"
+                                                            },
+                                                            "-1": {
+                                                                "color": "text",
+                                                                "index": 0,
+                                                                "text": "Unknown"
                                                             }
                                                         },
                                                         "type": "value"
@@ -2872,7 +2873,10 @@
                                                 }
                                             },
                                             {
-                                                "id": "color"
+                                                "id": "color",
+                                                "value": {
+                                                    "mode": "thresholds"
+                                                }
                                             }
                                         ]
                                     },
@@ -2935,10 +2939,11 @@
                                         "desc": false,
                                         "displayName": "Container"
                                     }
-                                ]
+                                ],
+                                "zebraStriping": false
                             }
                         },
-                        "version": "13.2.2"
+                        "version": "13.3.0"
                     }
                 }
             }
